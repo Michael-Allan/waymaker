@@ -1,0 +1,38 @@
+#!/usr/bin/env jjs
+/**
+  * build - Build script
+  *********
+  * This is the build script for Overware.  It runs under the Nashorn JavaScript engine
+  * (jjs) which is bundled with Oracle JDK 1.8 and later.  Invoke it like this:
+  *
+  *     $ JDK/bin/jjs overware/build [-- TARGET...]
+  *
+  * On Windows, you must use backslashes (\) not slashes (/).  On any platform, if your
+  * shell recognizes the shebang at top (#!) and the execution PATH includes jjs, or a
+  * link to it, then you may directly invoke the script, like this:
+  *
+  *     $ overware/build [-- TARGET...]
+  *
+  * Here are some concrete examples: [1]
+  *
+  *     $ overware/build
+  *     $ overware/build -- clean
+  *     $ overware/build -- android javadoc
+  *
+  * The default build target is 'release'.  For more information, see these files under
+  * installation directory overware/spec/build:
+  *
+  *     buildConfig.js          Instructions on configuring the build
+  *     buildConfigDefault.js   Catalogue of configuration variables
+  *     target.js               Definition of build targets
+  *
+  * Note:
+  *
+  *     [1] The double-dash delimiter for targets (--) is unfortunately required by jjs.
+  *         http://mail.openjdk.java.net/pipermail/nashorn-dev/2013-October/002265.html
+  */
+
+    load( Java.type('java.nio.file.Paths').get(__DIR__).toUri().resolve(
+      'spec/ov.js' ).toASCIIString() );
+    load( ov.ulocTo( 'overware/spec/build/build.js' ));
+    ov.build.run();
