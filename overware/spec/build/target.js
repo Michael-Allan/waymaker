@@ -1,27 +1,30 @@
 /** target.js - Definition of build targets
   *************
-  */ if( !ov.buildTarget ) { ov.buildTarget = 'loading'; // recursion guard
-
-ov.buildTarget = ( function()
+  */
+if( !ov.build.target ) { ( function()
 {
-    var our = {}; // public, all our.NAME is globally accessible as ov.buildTarget.NAME
+    var our = ov.build.target = {}; // public, our.NAME accessible as ov.build.target.NAME
 
+    var FileVisitResult = Java.type( 'java.nio.file.FileVisitResult' );
     var Files = Java.type( 'java.nio.file.Files' );
     var Paths = Java.type( 'java.nio.file.Paths' );
+    var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
     var System = Java.type( 'java.lang.System' );
+
+    var CONTINUE = FileVisitResult.CONTINUE;
 
 
 
 //// P u b l i c /////////////////////////////////////////////////////////////////////////
 
 
-    /** Builds a user interface for overguideways in the form of an Android application.
+    /** Builds the Android user interface.
       *
       *     $ overware/build -- android
       *
       * The product is an APK file (app.apk) ready to install and run on an Android
-      * device.  Assuming default values for configuration variables productLoc
-      * (overware-0.0) and appPackageName (com.example.overware), the commands are:
+      * device.  The relevant commands, assuming default configuration for productLoc
+      * (overware-0.0) and appPackageName (com.example.overware), are:
       *
       *     $ adb install -r overware-0.0/app.apk
       *     $ adb shell am start -n com.example.overware/overware.top.android.Overguidance
@@ -123,7 +126,7 @@ ov.buildTarget = ( function()
             var count = 0;
             var m = build.DEXED_TOP_CLASS_PATTERN.matcher( $OUT );
             while( m.find() ) ++count;
-            count = count.intValue(); // for pretty print, defeat ++'s conversion to double
+            count = count.intValue(); // [2]
             outS.append( '\b\b\b ' ).println( count );
         }
 
@@ -266,7 +269,6 @@ ov.buildTarget = ( function()
     our.clean = function()
     {
         var build = ov.build;
-        var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
         var outS = System.out;
         var locs = { tmp: build.tmpLoc(), release: build.config.productLoc };
         for( var l in locs )
@@ -276,8 +278,7 @@ ov.buildTarget = ( function()
 
             outS.append( build.indentation() ).append( '(' ).append( l ).append( '.. ' );
             var count = 0;
-            Files.walkFileTree( dir, new (Java.extend(
-              Java.type( 'java.nio.file.SimpleFileVisitor' )))
+            Files.walkFileTree( dir, new (Java.extend( SimpleFileVisitor ))
             {
                 postVisitDirectory: function( dir, x )
                 {
@@ -295,9 +296,64 @@ ov.buildTarget = ( function()
                     return CONTINUE;
                 }
             });
-            count = count.intValue(); // for pretty print, defeat ++'s conversion to double
+            count = count.intValue(); // [2]
             outS.append( '\b\b\b ' ).println( count );
         }
+    };
+
+
+
+    /** Includes a copy of the source directory "overware".
+      *
+      *     $ overware/build -- source
+      *
+      * You can filter the copy by defining sourceMatcher in your buildConfig.js.
+      */
+    our.source = function()
+    {
+        var build = ov.build;
+        var outS = System.out;
+        outS.append( build.indentation() ).append( '(' ).append( '.. ' );
+        var bc = build.config;
+        var sourceMatcher = bc.sourceMatcher;
+        var fromRoot = Paths.get( ov.loc(), 'overware' );
+        var toRoot = ov.ensureDir(Paths.get(bc.productLoc)).resolve( 'overware' );
+        var StandardCopyOption = Java.type( 'java.nio.file.StandardCopyOption' );
+        var COPY_ATTRIBUTES = StandardCopyOption.COPY_ATTRIBUTES;
+        var count = 0;
+        Files.walkFileTree( fromRoot, new (Java.extend( SimpleFileVisitor ))
+        {
+            preVisitDirectory: function( fromDir, fromAtt )
+            {
+                if( !sourceMatcher.matches( fromDir )) return FileVisitResult.SKIP_SUBTREE;
+
+                var toDir = toRoot.resolve( fromRoot.relativize( fromDir ));
+                if( !Files.isDirectory( toDir )) // assume uniprocess for atomic test/act
+                {
+                    Files.copy( fromDir, toDir, COPY_ATTRIBUTES );
+                    ++count;
+                }
+                return CONTINUE;
+            },
+
+            visitFile: function( fromFile, fromAtt )
+            {
+                if( sourceMatcher.matches( fromFile ))
+                {
+                    var toFile = toRoot.resolve( fromRoot.relativize( fromFile ));
+                    if( !Files.isRegularFile(toFile) ||
+                      fromAtt.lastModifiedTime().compareTo(Files.getLastModifiedTime(toFile)) > 0 )
+                    {
+                        Files.copy( fromFile, toFile, COPY_ATTRIBUTES,
+                          StandardCopyOption.REPLACE_EXISTING );
+                        ++count;
+                    }
+                }
+                return CONTINUE;
+            }
+        });
+        count = count.intValue(); // [2]
+        outS.append( '\b\b\b ' ).println( count );
     };
 
 
@@ -307,23 +363,27 @@ ov.buildTarget = ( function()
       *     $ overware/build
       *     $ overware/build -- release # the same thing
       */
-    our.release = function() { ov.build.indentAndBuild( 'android' ); };
+    our.release = function()
+    {
+        var b = ov.build;
+        b.indentAndBuild( 'source' );
+        b.indentAndBuild( 'android' );
+    };
 
 
-
-////////////////////
-
-    return our;
 
 }() );
-    // still under guard, if( !ov.buildTarget ) {
+    // still under load guard at top
     load( ov.ulocTo( 'overware/spec/build/build.js' ));
 }
 
 
-// Note:
-//
+// Notes
+// -----
 //   [1] http://stackoverflow.com/a/29313378/2402790
+//
+//   [2] Using explicit intValue conversion here in order to defeat previous ++ operator's
+//       implicit conversion to double, for sake of pretty printing.
 
 
 // Copyright 2015, Michael Allan.  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Overware Software"), to deal in the Overware Software without restriction, subject to the following conditions: The preceding copyright notice and this permission notice shall be included in all copies or substantial portions of the Overware Software.  The Overware Software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.  In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the Overware Software or the use or other dealings in the Overware Software.

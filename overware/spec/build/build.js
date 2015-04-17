@@ -1,10 +1,9 @@
 /** build.js - Utilities for building Overware
   ************
-  */ if( !ov.build ) { ov.build = 'loading'; // recursion guard
-
-ov.build = ( function()
+  */
+if( !ov.build.androidJarTested ) { ( function()
 {
-    var our = {}; // public, all our.NAME is globally accessible as ov.build.NAME
+    var our = ov.build; // public, our.NAME accessible as ov.build.NAME
     var my = {}; // private
 
     var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
@@ -39,7 +38,7 @@ ov.build = ( function()
       *
       *     @return java.nio.file.Path
       */
-    our.androidJarTested = function()
+    our.androidJarTested = function() // named by the load guard at top
     {
         var bc = our.config;
         var jar = my.androidJar;
@@ -180,7 +179,11 @@ ov.build = ( function()
       *
       *     @return String
       */
-    our.dxTested = function() { return my.androidBuildToolTested( 'dx', '--version' ); }
+    our.dxTested = function()
+    {
+        var name = ov.osTag() == 'win'? 'dx.bat': 'dx';
+        return my.androidBuildToolTested( name, '--version' );
+    }
 
 
 
@@ -194,7 +197,7 @@ ov.build = ( function()
         outS.print( our.indentation() )
         outS.println( target )
         our.indent();
-        try { ov.buildTarget[target](); } // build it
+        try { our.target[target](); } // build it
         finally { our.exdent(); }
     };
 
@@ -308,6 +311,10 @@ ov.build = ( function()
 
 
 
+    // target - Definition of build targets (target.js)
+
+
+
     /** The directory for expendable, intermediate output from the build process.  Target
       * "clean" deletes this directory together with its contents, while others recreate
       * it as needed.
@@ -341,7 +348,7 @@ ov.build = ( function()
         {
             var indiClass = indiClasses[i];
             var indiClassFile = outDir.resolve( indiClass + '.class' );
-            if( !Files.exists( indiClassFile )) args.push( indiClass );
+            if( !Files.exists( indiClassFile )) args.push( ov.loc() + ov.F + indiClass + '.java' );
         }
         var outPrefix = outDir.toString() + ov.F;
         Files.walkFileTree( outDir, new (Java.extend( SimpleFileVisitor ))
@@ -366,7 +373,7 @@ ov.build = ( function()
                     if( Files.getLastModifiedTime( inFile ).compareTo(
                         Files.getLastModifiedTime( outFile )) < 0 ) break test; // source unchanged
 
-                    args.push( arg );
+                    args.push( inFile.toString() );
                 }
                 return CONTINUE;
             }
@@ -375,13 +382,7 @@ ov.build = ( function()
         if( aN == 0 ) return;
 
         var out = new (Java.type('java.io.PrintWriter'))( argFile );
-        for( var a = 0; a < aN; ++a )
-        {
-            var arg = args[a];
-            out.append( arg );
-            out.append( '.java' );
-            out.println();
-        }
+        for( var a = 0; a < aN; ++a ) out.append( args[a] ).println();
         out.close();
     };
 
@@ -449,16 +450,28 @@ ov.build = ( function()
 ////////////////////
 
     my.init();
-    return our;
 
 }() );
-    // still under guard, if( !ov.build ) {
+    // still under load guard at top
     ( function() { load( ov.ulocTo( 'overware/spec/build/buildConfigDefault.js' )); }() );
     load( ov.ulocTo( 'overware/spec/build/target.js' )); // dependency of user's config:
-    ( function() // load user's build configuration, if any
+    ( function()
     {
+        // Load user's build configuration, if any
         var f = Java.type('java.nio.file.Paths').get( ov.userConfigLoc(), 'buildConfig.js' );
         if( Java.type('java.nio.file.Files').exists( f )) load( f.toString() );
+
+        // Apply any command-line overrides
+        var bc = ov.build.config;
+        var properties = Java.type('java.lang.System').getProperties();
+        var keyPrefix = 'ov.build.config.';
+        for each( var key in properties.keySet() ) // plain 'for' fails, not an array
+        {
+            if( !key.startsWith( keyPrefix )) continue;
+
+            var name = key.slice( keyPrefix.length );
+            bc[name] = properties.get( key ); // override
+        }
     }() );
 }
 

@@ -10,7 +10,8 @@ public final class Overguidance extends android.app.Activity
     {
         super.onCreate( state );
         final TextView v = new TextView( Overguidance.this );
-        v.setText( "This will be a UI for overguideways." ); // TEST
+     // v.setText( "This will be a UI for overguideways." ); // TEST
+        v.setText( overware.spec.Test.TEST );
         setContentView( v );
     }
 

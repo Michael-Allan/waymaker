@@ -1,15 +1,22 @@
 /** ov.js - Basic utilities for Overware scripts
   *********
-  */ if( !this.ov ) { this.ov = 'loading'; // recursion guard
-
-this.ov = ( function()
+  */
+if( !this.ov ) { ( function( globe )
 {
-    var our = {}; // public, all our.NAME is globally accessible as ov.NAME
+    var our = globe.ov = {}; // public, our.NAME accessible as ov.NAME
     var my = {}; // private
 
 
 
 //// P u b l i c /////////////////////////////////////////////////////////////////////////
+
+
+    /** Utilities for building Overware.
+      *
+      *     @see build/build.js
+      */
+    our.build = {}
+
 
 
     /** Ensures that the specified directory exists.
@@ -213,13 +220,13 @@ this.ov = ( function()
         {
             my.osTag = 'win';
             my.userConfigLoc = our.slashed(my.userHomeLoc) + 'AppData' + our.F + 'Local' + our.F
-              + 'overware';
+              + 'Overware';
         }
         else if( v === 'Mac' )
         {
             my.osTag = 'mac';
             my.userConfigLoc = our.slashed(my.userHomeLoc) + 'Library' + our.F
-              + 'Application Support' + our.F + 'overware';
+              + 'Application Support' + our.F + 'Overware';
         }
         else
         {
@@ -248,8 +255,7 @@ this.ov = ( function()
 ////////////////////
 
     my.init();
-    return our;
 
-}() );
-    // still under guard, if( !this.ov ) {
+}( /*globe*/this ) );
+    // still under load guard at top
 }

@@ -17,7 +17,7 @@
   *
   *     $ overware/build
   *     $ overware/build -- clean
-  *     $ overware/build -- android javadoc
+  *     $ overware/build -- android source
   *
   * The default build target is 'release'.  For more information, see these files under
   * installation directory overware/spec/build:

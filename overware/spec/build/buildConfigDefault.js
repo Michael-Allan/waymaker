@@ -19,7 +19,7 @@
  //
  // If set to an empty string '', the tools will instead be sought on the execution PATH.
 
-    bc.androidBuildToolsLoc = '';
+    bc.androidBuildToolsLoc = ''; // must not contain spaces [1]
 
 
 
@@ -39,7 +39,7 @@
         }
         else v = '/opt/android-sdk'; // Arch Linux and (if I recall) Gentoo
     }
-    bc.androidSDKLoc = v;
+    bc.androidSDKLoc = v; // must not contain spaces [1]
 
 
 
@@ -68,12 +68,24 @@
 
 
 
+ // sourceMatcher
+ // -------------
+ // Returns true if the file is a proper Overware source file.  Use this as necessary to
+ // screen the build process from personal files added to the Overware installation.
+
+    bc.sourceMatcher = new (Java.type('java.nio.file.PathMatcher'))(
+    {
+        matches: function( path ) { return true; } // by default, no filtering is needed
+    });
+
+
+
  // jdkBinLoc
  // ----------
  // The pathname of the Oracle JDK bin directory, where tools such as javac reside.  If
  // this is an empty string '', then the tools are sought on the execution PATH.
 
-    bc.jdkBinLoc = '';
+    bc.jdkBinLoc = ''; // must not contain spaces [1]
 
 
 
@@ -99,3 +111,18 @@
  // The version of Overware.
 
     bc.version = version;
+
+
+// Note
+// -----
+
+//   [1] Executable file paths must not contain spaces.  The script engine will fail to
+//       execute them owing to a bug.  https://bugs.openjdk.java.net/browse/JDK-8049300
+//
+//       For example, "C:\Program Files\fu\bar.exe" will fail to execute.  As a temporary
+//       workaround until the bug is fixed, consider creating a symbolic link to the
+//       offending portion of the path.  For example:
+//
+//           mklink /D C:\Program "C:\Program Files"
+//
+//       Then you could specify the path as "C:\Program\fu\bar.exe", for example.
