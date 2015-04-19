@@ -19,7 +19,7 @@
  //
  // If set to an empty string '', the tools will instead be sought on the execution PATH.
 
-    bc.androidBuildToolsLoc = ''; // must not contain spaces [1]
+    bc.androidBuildToolsLoc = '';
 
 
 
@@ -39,7 +39,7 @@
         }
         else v = '/opt/android-sdk'; // Arch Linux and (if I recall) Gentoo
     }
-    bc.androidSDKLoc = v; // must not contain spaces [1]
+    bc.androidSDKLoc = v;
 
 
 
@@ -84,8 +84,20 @@
  // ----------
  // The pathname of the Oracle JDK bin directory, where tools such as javac reside.  If
  // this is an empty string '', then the tools are sought on the execution PATH.
+ //
+ // The pathname may contain a space, as for example 'C:\\Program Files\\Java\\bin'.
+ // Beware however that mistyping a spaced pathname ('C:\\Program Files\\Typo\\bin') may
+ // result in a misleading error report:
+ //
+ //     Cannot run program "C:\Program": CreateProcess error=2,
+ //     The system cannot find the file specified
+ //
+ // This does not mean a problem with the space character.  Instead it means:
+ //
+ //     Cannot run program "C:\Program Files\Typo\bin": CreateProcess error=2,
+ //     The system cannot find the file specified
 
-    bc.jdkBinLoc = ''; // must not contain spaces [1]
+    bc.jdkBinLoc = '';
 
 
 
@@ -111,18 +123,3 @@
  // The version of Overware.
 
     bc.version = version;
-
-
-// Note
-// -----
-
-//   [1] Executable file paths must not contain spaces.  The script engine will fail to
-//       execute them owing to a bug.  https://bugs.openjdk.java.net/browse/JDK-8049300
-//
-//       For example, "C:\Program Files\fu\bar.exe" will fail to execute.  As a temporary
-//       workaround until the bug is fixed, consider creating a symbolic link to the
-//       offending portion of the path.  For example:
-//
-//           mklink /D C:\Program "C:\Program Files"
-//
-//       Then you could specify the path as "C:\Program\fu\bar.exe", for example.

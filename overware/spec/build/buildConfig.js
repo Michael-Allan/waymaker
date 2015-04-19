@@ -25,7 +25,7 @@
   *
   *       bc.NAME = VALUE;
   *
-  *   Variables may be overridden from the command line as follows.  This works reliabl
+  *   Variables may be overridden from the command line as follows.  This works reliably
   *   only for variables that have string-form values.
   *
   *     $ overware/build -Dov.build.config.NAME=VALUE
