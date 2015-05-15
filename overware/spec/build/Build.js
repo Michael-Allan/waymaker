@@ -4,7 +4,6 @@
 if( !overware.spec.build.Build ) {
      overware.spec.build.Build = {};
      overware.spec.build.BuildConfig = {}; // predefine in order to simplify config file
-load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 ( function()
 {
     var our = overware.spec.build.Build; // public as overware.spec.build.Build
@@ -15,18 +14,9 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
     var Paths = Java.type( 'java.nio.file.Paths' );
     var Pattern = Java.type( 'java.util.regex.Pattern' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
-    var Target = overware.spec.build.Target;
 
     var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
     var L = Overware.L;
-
-
-
-    var init = function()
-    {
-        init = undefined; // singleton
-        if( $ARG.length === 0 ) $ARG.unshift( 'release' ); // default target
-    };
 
 
 
@@ -42,7 +32,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
 
     /** Returns the command for Android build tool 'aapt', first smoke testing it if
-      * config variable 'androidBuildToolsLoc' is yet untested.
+      * configuration variable 'androidBuildToolsLoc' is yet untested.
       *
       *     @return String
       */
@@ -227,17 +217,17 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
 
 
-    /** Prints the name of the target with proper indentation, then builds it.
+    /** Prints the target name with proper indentation, then builds the target.
       *
-      *     @param target (String) The name of the target.
+      *     @param targetName (String)
       */
-    our.indentAndBuild = function( target )
+    our.indentAndBuild = function( targetName )
     {
         var outS = Java.type('java.lang.System').out;
         outS.print( our.indentation() )
-        outS.println( target )
+        outS.println( targetName )
         our.indent();
-        try { Target[target](); } // build it
+        try { overware.spec.build[targetName].Target.build(); }
         finally { our.exdent(); }
     };
 
@@ -283,7 +273,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
 
     /** Returns the command for the Java virtual machine 'java', first smoke testing it if
-      * config variable 'jdkBinLoc' is yet untested.
+      * configuration variable 'jdkBinLoc' is yet untested.
       *
       *     @return String
       */
@@ -306,14 +296,14 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
 
     /** Returns the command for the Java compiler 'javac', first smoke testing it if
-      * config variable 'jdkBinLoc' is yet untested.
+      * configuration variable 'jdkBinLoc' or 'jdkVersion' is yet untested.
       *
       *     @return String
       */
     our.javacTested = function()
     {
         var command = Overware.slashed(BuildConfig.jdkBinLoc) + 'javac';
-        if( !testedSet.contains( 'jdkBinLoc' ))
+        if( !testedSet.contains('jdkBinLoc') || !testedSet.contains('jdkVersion') )
         {
             try
             {
@@ -325,10 +315,11 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
             catch( x )
             {
                 Overware.exit( L + x + L +
-                  'Does your BuildConfig.js correctly set jdkBinLoc?  Is the JDK version '
+                  'Does your BuildConfig.js correctly set jdkBinLoc?  Is your JDK version '
                   + BuildConfig.jdkVersion + ' or later?' );
             }
             testedSet.add( 'jdkBinLoc' );
+            testedSet.add( 'jdkVersion' );
         }
         return command;
     };
@@ -339,14 +330,9 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
       */
     our.run = function()
     {
-        for( ;; )
-        {
-            var target = $ARG.shift();
-            if( !target ) break;
-
-            our.indentAndBuild( target );
-        }
         delete our.run; // singleton
+        var tN = $ARG.length;
+        for( var t = 0; t < tN; ++t ) our.indentAndBuild( $ARG[t] );
     };
 
 
@@ -432,7 +418,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
 
     /** Returns the command for Android build tool 'zipalign', first smoke testing it if
-      * config variable 'androidBuildToolsLoc' is yet untested.
+      * configuration variable 'androidBuildToolsLoc' is yet untested.
       *
       *     @return String
       */
@@ -444,7 +430,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
 
     /** Returns the command for the named Android build tool, first smoke testing it if
-      * config variable 'androidBuildToolsLoc' is yet untested.
+      * configuration variable 'androidBuildToolsLoc' is yet untested.
       *
       *     @param (String) The name of the command.
       *     @param (String) Arguments to pass to it for testing, or null to pass no
@@ -477,18 +463,12 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
 
 
-////////////////////
-
-    init();
-
 }() );
     // still under this module's load guard at top
     ( function()
     {
         load( overware.Overware.ulocTo( 'overware/spec/build/BuildConfig_default.js' ));
     }() );
- // load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' )); // dependency of user config:
- /// already loaded above
     ( function()
     {
         // Load user's build configuration, if any
@@ -506,6 +486,20 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
 
             var name = key.slice( keyPrefix.length );
             BuildConfig[name] = properties.get( key ); // override
+        }
+    }() );
+    ( function()
+    {
+        // Load the requested standard target modules
+        var Files = Java.type( 'java.nio.file.Files' );
+        var Paths = Java.type( 'java.nio.file.Paths' );
+        if( $ARG.length === 0 ) $ARG.unshift( 'release' ); // default target
+        for( var t = $ARG.length - 1; t >= 0; --t )
+        {
+            var moduleFile = Paths.get( overware.Overware.loc(), 'overware', 'spec', 'build',
+              $ARG[t], 'Target.js' );
+            if( Files.exists(moduleFile) ) load( moduleFile.toString() );
+            // else assume a custom target defined by the user
         }
     }() );
 }

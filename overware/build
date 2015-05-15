@@ -20,9 +20,9 @@
   *     $ overware/build -- android source
   *
   * The default target is 'release', which builds a full release.  For more information,
-  * see the files under installation directory overware/spec/build/:
+  * see these files under installation directory overware/spec/build/:
   *
-  *     Target.js               Definition of build targets
+  *     TARGET/Target.js        Definition of build targets
   *     BuildConfig.js          Instructions on configuring the build
   *     BuildConfig_default.js  Catalogue of configuration variables
   *

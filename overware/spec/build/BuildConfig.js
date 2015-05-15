@@ -31,14 +31,16 @@
   *     $ overware/build -Doverware.spec.build.BuildConfig.NAME=VALUE
   *
   *
-  * Defining build targets
-  * ----------------------
-  *   Define a custom build target, or redefine a standard one, like this:
+  * Defining custom build targets
+  * -----------------------------
+  *   Define a custom build target like this:
   *
-  *       overware.spec.build.Target.NAME = function() { CUSTOM CODE };
+  *       overware.spec.build.TARGET = {};
+  *       overware.spec.build.TARGET.Target = {};
+  *       overware.spec.build.TARGET.Target.build = function() { CUSTOM CODE };
   *
-  *   For the coding of the standard targets, see file overware/spec/build/Target.js.
-  *   Once defined, you can build a target using the command "overware/build -- NAME".
+  *   For the coding of standard targets, see files overware/spec/build/TARGET/Target.js.
+  *   Once defined, you can build the target using the command "overware/build -- NAME".
   */
 var bc = overware.spec.build.BuildConfig;
 
@@ -46,8 +48,10 @@ var bc = overware.spec.build.BuildConfig;
     bc.jdkBinLoc = '/opt/jdk/bin'; // example of a configuration setting
 
 
-    overware.spec.build.Target.myTarget = function() // example of a custom build target,
-    {                                               // build it with "overware/build -- myTarget"
-        print( 'Building my target' );
+    overware.spec.build.foo = {};
+    overware.spec.build.foo.Target = {};
+    overware.spec.build.foo.Target.build = function() // example of custom build target 'foo',
+    {                                                // build it with "overware/build -- foo"
+        print( 'Building target foo' );
         // put your custom code here
     };

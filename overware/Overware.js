@@ -65,6 +65,10 @@ if( !overware.Overware ) {
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         overware.spec = {};
         overware.spec.build = {};
+        overware.spec.build.android = {};
+        overware.spec.build.clean = {};
+        overware.spec.build.release = {};
+        overware.spec.build.source = {};
     };
 
 
