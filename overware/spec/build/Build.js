@@ -1,16 +1,32 @@
-/** build.js - Utilities for building Overware
+/** Build.js - Utilities for building Overware
   ************
   */
-if( !ov.build.androidJarTested ) { ( function()
+if( !overware.spec.build.Build ) {
+     overware.spec.build.Build = {};
+     overware.spec.build.BuildConfig = {}; // predefine in order to simplify config file
+load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' ));
+( function()
 {
-    var our = ov.build; // public, our.NAME accessible as ov.build.NAME
-    var my = {}; // private
+    var our = overware.spec.build.Build; // public as overware.spec.build.Build
 
-    var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
+    var BuildConfig = overware.spec.build.BuildConfig;
     var Files = Java.type( 'java.nio.file.Files' );
+    var Overware = overware.Overware;
     var Paths = Java.type( 'java.nio.file.Paths' );
     var Pattern = Java.type( 'java.util.regex.Pattern' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
+    var Target = overware.spec.build.Target;
+
+    var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
+    var L = Overware.L;
+
+
+
+    var init = function()
+    {
+        init = undefined; // singleton
+        if( $ARG.length === 0 ) $ARG.unshift( 'release' ); // default target
+    };
 
 
 
@@ -30,7 +46,7 @@ if( !ov.build.androidJarTested ) { ( function()
       *
       *     @return String
       */
-    our.aaptTested = function() { return my.androidBuildToolTested( 'aapt', 'version' ); }
+    our.aaptTested = function() { return androidBuildToolTested( 'aapt', 'version' ); }
 
 
 
@@ -40,22 +56,23 @@ if( !ov.build.androidJarTested ) { ( function()
       */
     our.androidJarTested = function() // named by the load guard at top
     {
-        var bc = our.config;
-        var jar = my.androidJar;
+        var jar = androidJar;
         if( !jar )
         {
-            jar = Paths.get( bc.androidSDKLoc, 'platforms', 'android-' + bc.androidVersion,
-              'android.jar' );
+            jar = Paths.get( BuildConfig.androidSDKLoc, 'platforms',
+              'android-' + BuildConfig.androidVersion, 'android.jar' );
             if( !Files.exists( jar ))
             {
-                ov.exit( ov.L + 'Missing SDK file: ' + jar + ov.L
-                  + 'Does your buildConfig.js correctly set androidSDKLoc and androidVersion?' );
+                Overware.exit( L + 'Missing SDK file: ' + jar + L
+                  + 'Does your BuildConfig.js correctly set androidSDKLoc and androidVersion?' );
             }
-
-            my.androidJar = jar; // cache
+            androidJar = jar; // cache
         }
         return jar;
     };
+
+
+        var androidJar;
 
 
 
@@ -65,20 +82,49 @@ if( !ov.build.androidJarTested ) { ( function()
       */
     our.androidSDKLibJarTested = function()
     {
-        var jar = my.androidSDKLibJar;
+        var jar = androidSDKLibJar;
         if( !jar )
         {
-            jar = Paths.get( our.config.androidSDKLoc, 'tools', 'lib', 'sdklib.jar' );
+            jar = Paths.get( BuildConfig.androidSDKLoc, 'tools', 'lib', 'sdklib.jar' );
             if( !Files.exists( jar ))
             {
-                ov.exit( ov.L + 'Missing SDK file: ' + jar + ov.L
-                  + 'Does your buildConfig.js correctly set androidSDKLoc?' );
+                Overware.exit( L + 'Missing SDK file: ' + jar + L
+                  + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
             }
-
-            my.androidSDKLibJar = jar; // cache
+            androidSDKLibJar = jar; // cache
         }
         return jar;
     };
+
+
+        var androidSDKLibJar;
+
+
+
+    /** Returns the path to the 'android-support-v4.jar', first testing that it exists.
+      *
+      *     @return java.nio.file.Path
+      *     @see http://developer.android.com/tools/support-library/setup.html
+      */
+    our.androidSupport4JarTested = function()
+    {
+        var jar = androidSupport4Jar;
+        if( !jar )
+        {
+            jar = Paths.get( BuildConfig.androidSDKLoc, 'extras', 'android', 'support', 'v4',
+              'android-support-v4.jar' );
+            if( !Files.exists( jar ))
+            {
+                Overware.exit( L + 'Missing SDK file: ' + jar + L
+                  + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
+            }
+            androidSupport4Jar = jar; // cache
+        }
+        return jar;
+    };
+
+
+        var androidSupport4Jar;
 
 
 
@@ -114,12 +160,6 @@ if( !ov.build.androidJarTested ) { ( function()
         });
         return array;
     };
-
-
-
-    /** The build configuration.
-      */
-    our.config = {};
 
 
 
@@ -181,8 +221,8 @@ if( !ov.build.androidJarTested ) { ( function()
       */
     our.dxTested = function()
     {
-        var name = ov.osTag() == 'win'? 'dx.bat': 'dx';
-        return my.androidBuildToolTested( name, '--version' );
+        var name = Overware.osTag() == 'win'? 'dx.bat': 'dx';
+        return androidBuildToolTested( name, '--version' );
     }
 
 
@@ -197,7 +237,7 @@ if( !ov.build.androidJarTested ) { ( function()
         outS.print( our.indentation() )
         outS.println( target )
         our.indent();
-        try { our.target[target](); } // build it
+        try { Target[target](); } // build it
         finally { our.exdent(); }
     };
 
@@ -205,24 +245,25 @@ if( !ov.build.androidJarTested ) { ( function()
 
     /** An indentation string that reflects the current level of target nesting.
       */
-    our.indentation = function() { return my.indentation; };
+    our.indentation = function() { return indentation; };
 
 
-        my.indentationUnit = '  ';
-        my.indentation = my.indentationUnit; // initial indentation of 1 unit
+        var indentationUnit = '  ';
+
+        var indentation = indentationUnit; // initial indentation of 1 unit
 
 
         /** Shortens the indentation string by 1 unit.
           */
         our.exdent = function()
         {
-            my.indentation = my.indentation.slice( 0, -my.indentationUnit.length );
+            indentation = indentation.slice( 0, -indentationUnit.length );
         };
 
 
         /** Lengthens the indentation string by 1 unit.
           */
-        our.indent = function() { my.indentation += my.indentationUnit; };
+        our.indent = function() { indentation += indentationUnit; };
 
 
 
@@ -248,17 +289,16 @@ if( !ov.build.androidJarTested ) { ( function()
       */
     our.javaTested = function()
     {
-        var command = ov.slashed(our.config.jdkBinLoc) + 'java';
-        if( !my.testedSet.contains( 'jdkBinLoc' ))
+        var command = Overware.slashed(BuildConfig.jdkBinLoc) + 'java';
+        if( !testedSet.contains( 'jdkBinLoc' ))
         {
-            try{ $EXEC( ov.logCommand( command + ' -version' )); }
+            try{ $EXEC( Overware.logCommand( command + ' -version' )); }
             catch( x )
             {
-                ov.exit( ov.L + x + ov.L + 'Does your buildConfig.js correctly set jdkBinLoc?' );
+                Overware.exit( L + x + L + 'Does your BuildConfig.js correctly set jdkBinLoc?' );
             }
-
-            ov.logCommandResult();
-            my.testedSet.add( 'jdkBinLoc' );
+            Overware.logCommandResult();
+            testedSet.add( 'jdkBinLoc' );
         }
         return command;
     };
@@ -272,23 +312,23 @@ if( !ov.build.androidJarTested ) { ( function()
       */
     our.javacTested = function()
     {
-        var command = ov.slashed(our.config.jdkBinLoc) + 'javac';
-        if( !my.testedSet.contains( 'jdkBinLoc' ))
+        var command = Overware.slashed(BuildConfig.jdkBinLoc) + 'javac';
+        if( !testedSet.contains( 'jdkBinLoc' ))
         {
             try
             {
-                $EXEC( ov.logCommand( command + ' -target ' + bc.jdkVersion + ' -version' ));
-                ov.logCommandResult();
+                $EXEC( Overware.logCommand( command + ' -target ' + BuildConfig.jdkVersion
+                  + ' -version' ));
+                Overware.logCommandResult();
                 if( $EXIT ) throw $ERR; // probably an older javac rejecting the -target option
             }
             catch( x )
             {
-                ov.exit( ov.L + x + ov.L +
-                  'Does your buildConfig.js correctly set jdkBinLoc?  Is the JDK version '
-                  + bc.jdkVersion + ' or later?' );
+                Overware.exit( L + x + L +
+                  'Does your BuildConfig.js correctly set jdkBinLoc?  Is the JDK version '
+                  + BuildConfig.jdkVersion + ' or later?' );
             }
-
-            my.testedSet.add( 'jdkBinLoc' );
+            testedSet.add( 'jdkBinLoc' );
         }
         return command;
     };
@@ -311,17 +351,16 @@ if( !ov.build.androidJarTested ) { ( function()
 
 
 
-    // target - Definition of build targets (target.js)
-
-
-
     /** The directory for expendable, intermediate output from the build process.  Target
       * "clean" deletes this directory together with its contents, while others recreate
       * it as needed.
       *
       *     @return String
       */
-    our.tmpLoc = function() { return my.tmpLoc; };
+    our.tmpLoc = function() { return tmpLoc; };
+
+
+        var tmpLoc = Overware.slashed(Overware.tmpLoc()) + 'build';
 
 
 
@@ -343,14 +382,18 @@ if( !ov.build.androidJarTested ) { ( function()
     our.writeSourceArgs = function( indiClasses, argFile, outDir )
     {
         Files.deleteIfExists( argFile );
+        var F = Overware.F;
         var args = []; // each without the '.java' extension
         for( var i = indiClasses.length - 1; i >= 0; --i )
         {
             var indiClass = indiClasses[i];
             var indiClassFile = outDir.resolve( indiClass + '.class' );
-            if( !Files.exists( indiClassFile )) args.push( ov.loc() + ov.F + indiClass + '.java' );
+            if( !Files.exists( indiClassFile ))
+            {
+                args.push( Overware.loc() + F + indiClass + '.java' );
+            }
         }
-        var outPrefix = outDir.toString() + ov.F;
+        var outPrefix = outDir.toString() + F;
         Files.walkFileTree( outDir, new (Java.extend( SimpleFileVisitor ))
         {
             visitFile: function( outFile, att )
@@ -363,11 +406,11 @@ if( !ov.build.androidJarTested ) { ( function()
                       // not a top-level class file
 
                     var arg = outFile.toString();
-                    if( !arg.startsWith( outPrefix )) ov.exit( null, __FILE__, __LINE__ ); // must
+                    if( !arg.startsWith( outPrefix )) throw 'Impossible state';
 
                     arg = arg.slice( outPrefix.length, -'.class'.length );
                       // relativized to outDir and relieved of .class extension
-                    var inFile = Paths.get( ov.loc(), arg + '.java' );
+                    var inFile = Paths.get( Overware.loc(), arg + '.java' );
                     if( !Files.exists( inFile )) break test; // source file was deleted
 
                     if( Files.getLastModifiedTime( inFile ).compareTo(
@@ -393,7 +436,7 @@ if( !ov.build.androidJarTested ) { ( function()
       *
       *     @return String
       */
-    our.zipalignTested = function() { return my.androidBuildToolTested( 'zipalign' ); }
+    our.zipalignTested = function() { return androidBuildToolTested( 'zipalign' ); }
 
 
 
@@ -409,68 +452,60 @@ if( !ov.build.androidJarTested ) { ( function()
       *
       *     @return String
       */
-    my.androidBuildToolTested = function( name, arg )
+    function androidBuildToolTested( name, arg )
     {
-        var command = ov.slashed(our.config.androidBuildToolsLoc) + name;
-        if( !my.testedSet.contains( 'androidBuildToolsLoc' ))
+        var command = Overware.slashed(BuildConfig.androidBuildToolsLoc) + name;
+        if( !testedSet.contains( 'androidBuildToolsLoc' ))
         {
             var testCommand = command;
             if( arg ) testCommand += ' ' + arg;
-            try { $EXEC( ov.logCommand( testCommand )); }
+            try { $EXEC( Overware.logCommand( testCommand )); }
             catch( x )
             {
-                ov.exit( ov.L + x + ov.L +
-                  'Does your buildConfig.js correctly set androidBuildToolsLoc?' );
+                Overware.exit( L + x + L +
+                  'Does your BuildConfig.js correctly set androidBuildToolsLoc?' );
             }
-
-            ov.logCommandResult();
-            my.testedSet.add( 'androidBuildToolsLoc' );
+            Overware.logCommandResult();
+            testedSet.add( 'androidBuildToolsLoc' );
         }
         return command;
-    };
+    }
 
 
 
-    my.init = function()
-    {
-        if( $ARG.length === 0 ) $ARG.unshift( 'release' ); // default target
-        delete my.init; // singleton
-    };
-
-
-
-    my.testedSet = new (Java.type('java.util.HashSet'))(); // names of smoke-tested config variables
-
-
-
-    my.tmpLoc = ov.slashed(ov.tmpLoc()) + 'build';
+    var testedSet = new (Java.type('java.util.HashSet'))(); // names of smoke-tested config variables
 
 
 
 ////////////////////
 
-    my.init();
+    init();
 
 }() );
-    // still under load guard at top
-    ( function() { load( ov.ulocTo( 'overware/spec/build/buildConfigDefault.js' )); }() );
-    load( ov.ulocTo( 'overware/spec/build/target.js' )); // dependency of user's config:
+    // still under this module's load guard at top
+    ( function()
+    {
+        load( overware.Overware.ulocTo( 'overware/spec/build/BuildConfig_default.js' ));
+    }() );
+ // load( overware.Overware.ulocTo( 'overware/spec/build/Target.js' )); // dependency of user config:
+ /// already loaded above
     ( function()
     {
         // Load user's build configuration, if any
-        var f = Java.type('java.nio.file.Paths').get( ov.userConfigLoc(), 'buildConfig.js' );
+        var f = Java.type('java.nio.file.Paths').get( overware.Overware.userConfigLoc(),
+          'BuildConfig.js' );
         if( Java.type('java.nio.file.Files').exists( f )) load( f.toString() );
 
         // Apply any command-line overrides
-        var bc = ov.build.config;
+        var BuildConfig = overware.spec.build.BuildConfig;
         var properties = Java.type('java.lang.System').getProperties();
-        var keyPrefix = 'ov.build.config.';
+        var keyPrefix = 'overware.spec.build.BuildConfig.';
         for each( var key in properties.keySet() ) // plain 'for' fails, not an array
         {
             if( !key.startsWith( keyPrefix )) continue;
 
             var name = key.slice( keyPrefix.length );
-            bc[name] = properties.get( key ); // override
+            BuildConfig[name] = properties.get( key ); // override
         }
     }() );
 }

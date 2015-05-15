@@ -1,13 +1,21 @@
-/** target.js - Definition of build targets
+/** Target.js - Definition of build targets
   *************
   */
-if( !ov.build.target ) { ( function()
+if( !overware.spec.build.Target ) {
+     overware.spec.build.Target = {};
+load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
+( function()
 {
-    var our = ov.build.target = {}; // public, our.NAME accessible as ov.build.target.NAME
+    var our = overware.spec.build.Target; // public as overware.spec.build.Target
 
+    var ArrayList = Java.type( 'java.util.ArrayList' );
+    var Build = overware.spec.build.Build;
+    var BuildConfig = overware.spec.build.BuildConfig;
     var FileVisitResult = Java.type( 'java.nio.file.FileVisitResult' );
     var Files = Java.type( 'java.nio.file.Files' );
+    var Overware = overware.Overware;
     var Paths = Java.type( 'java.nio.file.Paths' );
+    var PrintWriter = Java.type( 'java.io.PrintWriter' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
     var System = Java.type( 'java.lang.System' );
 
@@ -36,43 +44,58 @@ if( !ov.build.target ) { ( function()
     our.android = function() // based on [1], q.v. for additional comments
     {
         var outS = System.out;
-        var build = ov.build;
+        var jarList = new ArrayList();
+        jarList.add( Build.androidSupport4JarTested() );
 
       // Compile the source code to Java bytecode (.class files).
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        var tmpDir = Paths.get( build.tmpLoc(), 'android' );
-        var javacOutDir = ov.ensureDir( tmpDir.resolve( 'javacOut' ));
+        var tmpDir = Paths.get( Build.tmpLoc(), 'android' );
+        var javacOutDir = Overware.ensureDir( tmpDir.resolve( 'javacOut' ));
+        var javacArgInFile = tmpDir.resolve( 'javacArgIn' );
+        {
+            Files.deleteIfExists( javacArgInFile );
+            var out = new PrintWriter( javacArgInFile );
+            out.append( '-classpath ' );
+            out.append( javacOutDir.toString() );
+            for each( var jar in jarList )
+            {
+                out.append( Overware.P );
+                out.append( jar.toString() );
+            }
+            out.println();
+            out.close();
+        }
+
+        var F = Overware.F;
+        var relInLoc = 'overware' + F + 'top' + F + 'android';
         var javaInFile = tmpDir.resolve( 'javaIn' );
-        var relInLoc = 'overware' + ov.F + 'top' + ov.F + 'android';
-        build.writeSourceArgs( [relInLoc + ov.F + 'Overguidance'], javaInFile, javacOutDir );
-        var bc = build.config;
+        Build.writeSourceArgs( [relInLoc + F + 'Overguidance'], javaInFile, javacOutDir );
+
         if( Files.exists( javaInFile ))
         {
-            outS.append( build.indentation() ).append( '(javac.. ' );
-            var command = build.javacTested()
-              + ' -bootclasspath ' + build.androidJarTested()
-              + ' -classpath ' + javacOutDir
+            outS.append( Build.indentation() ).append( '(javac.. ' );
+            var command = Build.javacTested()
+              + ' -bootclasspath ' + Build.androidJarTested()
               + ' -d ' + javacOutDir
               + ' -source 1.7' // Java API version, cannot exceed -target
-              + ' -sourcepath ' + ov.loc()
+              + ' -sourcepath ' + Overware.loc()
               + ' -target 1.7' // JVM version, currently limited by Android build tools to 1.7
               + ' -Werror' // terminate compilation when a warning occurs
               + ' -Xdoclint:all,-missing' // verify all javadocs, but allow their omission
               + ' -Xlint'
+              + ' @' + javacArgInFile
               + ' @' + javaInFile;
             var compileTime = Files.getLastModifiedTime( javaInFile );
-            $EXEC( ov.logCommand( command ));
-            ov.logCommandResult();
-            if( $EXIT ) ov.exit( $ERR );
+            $EXEC( Overware.logCommand( command ));
+            Overware.logCommandResult();
+            if( $EXIT ) Overware.exit( $ERR );
 
-            var count = build.countCompiled( javacOutDir, compileTime );
+            var count = Build.countCompiled( javacOutDir, compileTime );
             outS.append( '\b\b\b ' ).println( count );
         }
 
       // Translate the output from Java to Android bytecode.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        var classesInFile = tmpDir.resolve( 'classesIn' );
-        Files.deleteIfExists( classesInFile );
         count = ' '; // skipped, till proven otherwise
         var dexFile = tmpDir.resolve( 'classes.dex' );
         var args =
@@ -81,19 +104,21 @@ if( !ov.build.target ) { ( function()
           + ' --verbose';
         dex:
         {
-            if( Files.exists( dexFile ))
+            if( Files.exists( dexFile )) // then update by translating the newly compiled classes
             {
                 var msCompileTime = Files.getLastModifiedTime( dexFile ).toMillis();
                 msCompileTime += 1; /* Compilation will have occured a considerable time
                   after previous dexFile was created, so it's safe to add something here.
                   Adding 1 ms suffices to prevent re-translating class files that were
                   compiled just before (almost simultaneous with) the last translation. */
-                var classesInArray = build.arrayCompiled( javacOutDir, msCompileTime );
+                var classesInArray = Build.arrayCompiled( javacOutDir, msCompileTime );
                 var cN = classesInArray.length;
                 if( cN == 0 ) break dex;
 
-                outS.append( build.indentation() ).append( '(dx.. ' );
-                var out = new (Java.type('java.io.PrintWriter'))( classesInFile );
+                outS.append( Build.indentation() ).append( '(dx.. ' );
+                var classesInFile = tmpDir.resolve( 'classesIn' );
+                Files.deleteIfExists( classesInFile );
+                var out = new PrintWriter( classesInFile );
                 for( var c = 0; c < cN; ++c )
                 {
                     var classFile = classesInArray[c];
@@ -107,24 +132,32 @@ if( !ov.build.target ) { ( function()
                 $ENV.PWD = javacOutDir.toString(); // so change dir to where the class files are
                 try
                 {
-                    var command = build.dxTested() + args
+                    var command = Build.dxTested() + args
                       + ' --incremental'
-                      + ' --input-list=' + classesInFile; // translate newly compiled classes
-                    $EXEC( ov.logCommand( command ));
+                      + ' --input-list=' + classesInFile;
+                    $EXEC( Overware.logCommand( command ));
                 }
                 finally{ $ENV.PWD = dir; } // restore working directory
             }
-            else
+            else // translate all classes
             {
-                outS.append( build.indentation() ).append( '(dx.. ' );
-                var command = build.dxTested() + args + ' ' + javacOutDir; // translate all classes
-                $EXEC( ov.logCommand( command ));
+                outS.append( Build.indentation() ).append( '(dx.. ' );
+                var dxInFile = tmpDir.resolve( 'dxIn' );
+                {
+                    Files.deleteIfExists( dxInFile );
+                    var out = new PrintWriter( dxInFile );
+                    out.println( javacOutDir.toString() );
+                    for each( var jar in jarList ) out.println( jar.toString() );
+                    out.close();
+                }
+                var command = Build.dxTested() + args + ' --input-list=' + dxInFile;
+                $EXEC( Overware.logCommand( command ));
             }
-            ov.logCommandResult();
-            if( $EXIT ) ov.exit( $ERR );
+            Overware.logCommandResult();
+            if( $EXIT ) Overware.exit( $ERR );
 
             var count = 0;
-            var m = build.DEXED_TOP_CLASS_PATTERN.matcher( $OUT );
+            var m = Build.DEXED_TOP_CLASS_PATTERN.matcher( $OUT );
             while( m.find() ) ++count;
             count = count.intValue(); // [2]
             outS.append( '\b\b\b ' ).println( count );
@@ -132,13 +165,13 @@ if( !ov.build.target ) { ( function()
 
       // Package up the resource files alone, making a partial APK.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        var manifestTemplate = Paths.get( ov.loc(), relInLoc, 'AndroidManifest.xml' );
+        var manifestTemplate = Paths.get( Overware.loc(), relInLoc, 'AndroidManifest.xml' );
         var apkPartFile = tmpDir.resolve( 'app.apkPart' );
         if( !Files.exists( apkPartFile )
           || Files.getLastModifiedTime( apkPartFile ).compareTo(
              Files.getLastModifiedTime( manifestTemplate )) < 0 ) // then do package it
         {
-            outS.append( build.indentation() ).append( '(aapt.. ' );
+            outS.append( Build.indentation() ).append( '(aapt.. ' );
 
             // 1 //  First generate the manifest from its template
             var xmlInputFactory = Java.type('javax.xml.stream.XMLInputFactory').newFactory();
@@ -168,11 +201,11 @@ if( !ov.build.target ) { ( function()
                         var name = xml.getName();
                         if( name.getLocalPart() == 'manifest' && name.getNamespaceURI() == '' )
                         {
-                            var attList = new (Java.type('java.util.ArrayList'))();
+                            var attList = new ArrayList();
                             var aa = xml.getAttributes();
                             while( aa.hasNext() ) attList.add( aa.next() );
                             attList.add( xmlEventFactory.createAttribute( 'package',
-                              bc.appPackageName ));
+                              BuildConfig.appPackageName ));
                             xml = xmlEventFactory.createStartElement( name, attList.iterator(),
                               xml.getNamespaces() );
                         }
@@ -187,20 +220,20 @@ if( !ov.build.target ) { ( function()
             }
 
             // 2 //  Now package up the resources
-            var command = build.aaptTested()
+            var command = Build.aaptTested()
               + ' package'
               + ' -f'
               + ' -F ' + apkPartFile
-              + ' -I ' + build.androidJarTested()
+              + ' -I ' + Build.androidJarTested()
               + ' -M ' + manifestFile
            // + ' -S ' + resDir;
            /// but no resources are needed yet, aside from the mandatory manifest
               + ' -v';
-            $EXEC( ov.logCommand( command ));
-            ov.logCommandResult();
-            if( $EXIT ) ov.exit( $ERR );
+            $EXEC( Overware.logCommand( command ));
+            Overware.logCommandResult();
+            if( $EXIT ) Overware.exit( $ERR );
 
-            var m = build.AAPT_PACKAGE_COUNT_PATTERN.matcher( $OUT );
+            var m = Build.AAPT_PACKAGE_COUNT_PATTERN.matcher( $OUT );
             var count = m.find()? m.group( 1 ): '?';
             outS.append( '\b\b\b ' ).println( count );
         }
@@ -221,39 +254,40 @@ if( !ov.build.target ) { ( function()
         }
         if( toDo )
         {
-            outS.append( build.indentation() ).append( '(apk.. ' );
-            var command = build.javaTested()
-              + ' -classpath ' + build.androidSDKLibJarTested()
+            outS.append( Build.indentation() ).append( '(apk.. ' );
+            var command = Build.javaTested()
+              + ' -classpath ' + Build.androidSDKLibJarTested()
               + ' com.android.sdklib.build.ApkBuilderMain' // deprecated as explained in [1]
               + ' ' + apkFullFile
               + ' -d'
               + ' -f ' + dexFile
               + ' -v'
               + ' -z ' + apkPartFile;
-            $EXEC( ov.logCommand( command ));
-            ov.logCommandResult();
-            if( $EXIT ) ov.exit( $ERR );
+            $EXEC( Overware.logCommand( command ));
+            Overware.logCommandResult();
+            if( $EXIT ) Overware.exit( $ERR );
 
             outS.append( '\b\b\b ' ).println( ' ' ); // done
         }
 
       // Optimize the data alignment of the APK.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        var apkAlignedFile = ov.ensureDir(Paths.get(bc.productLoc)).resolve( 'app.apk' );
+        var apkAlignedFile = Overware.ensureDir(Paths.get(BuildConfig.productLoc))
+          .resolve( 'app.apk' );
         if( !Files.exists( apkAlignedFile )
           || Files.getLastModifiedTime( apkAlignedFile ).compareTo(
              Files.getLastModifiedTime( apkFullFile )) < 0 ) // then do align it
         {
-            outS.append( build.indentation() ).append( '(zipalign.. ' );
-            var command = build.zipalignTested()
+            outS.append( Build.indentation() ).append( '(zipalign.. ' );
+            var command = Build.zipalignTested()
               + ' -f'
               + ' -v'
               + ' 4'
               + ' ' + apkFullFile
               + ' ' + apkAlignedFile;
-            $EXEC( ov.logCommand( command ));
-            ov.logCommandResult();
-            if( $EXIT ) ov.exit( $ERR );
+            $EXEC( Overware.logCommand( command ));
+            Overware.logCommandResult();
+            if( $EXIT ) Overware.exit( $ERR );
 
             outS.append( '\b\b\b ' ).println( ' ' ); // done
         }
@@ -268,15 +302,14 @@ if( !ov.build.target ) { ( function()
       */
     our.clean = function()
     {
-        var build = ov.build;
         var outS = System.out;
-        var locs = { tmp: build.tmpLoc(), release: build.config.productLoc };
+        var locs = { tmp: Build.tmpLoc(), release: overware.spec.build.BuildConfig.productLoc };
         for( var l in locs )
         {
             var dir = Paths.get( locs[l] );
             if( !Files.exists( dir )) continue;
 
-            outS.append( build.indentation() ).append( '(' ).append( l ).append( '.. ' );
+            outS.append( Build.indentation() ).append( '(' ).append( l ).append( '.. ' );
             var count = 0;
             Files.walkFileTree( dir, new (Java.extend( SimpleFileVisitor ))
             {
@@ -307,17 +340,15 @@ if( !ov.build.target ) { ( function()
       *
       *     $ overware/build -- source
       *
-      * You can filter the copy by defining sourceMatcher in your buildConfig.js.
+      * You can filter the copy by defining sourceMatcher in your BuildConfig.js.
       */
     our.source = function()
     {
-        var build = ov.build;
         var outS = System.out;
-        outS.append( build.indentation() ).append( '(' ).append( '.. ' );
-        var bc = build.config;
-        var sourceMatcher = bc.sourceMatcher;
-        var fromRoot = Paths.get( ov.loc(), 'overware' );
-        var toRoot = ov.ensureDir(Paths.get(bc.productLoc)).resolve( 'overware' );
+        outS.append( Build.indentation() ).append( '(' ).append( '.. ' );
+        var sourceMatcher = BuildConfig.sourceMatcher;
+        var fromRoot = Paths.get( Overware.loc(), 'overware' );
+        var toRoot = Overware.ensureDir(Paths.get(BuildConfig.productLoc)).resolve( 'overware' );
         var StandardCopyOption = Java.type( 'java.nio.file.StandardCopyOption' );
         var COPY_ATTRIBUTES = StandardCopyOption.COPY_ATTRIBUTES;
         var count = 0;
@@ -365,16 +396,14 @@ if( !ov.build.target ) { ( function()
       */
     our.release = function()
     {
-        var b = ov.build;
-        b.indentAndBuild( 'source' );
-        b.indentAndBuild( 'android' );
+        Build.indentAndBuild( 'source' );
+        Build.indentAndBuild( 'android' );
     };
 
 
 
 }() );
-    // still under load guard at top
-    load( ov.ulocTo( 'overware/spec/build/build.js' ));
+    // still under this module's load guard at top
 }
 
 

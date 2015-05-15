@@ -1,9 +1,9 @@
 #!/usr/bin/env jjs
 /**
-  * build - Build script
+  * build - Build the Overware software
   *********
-  * This is the build script for Overware.  It runs under the Nashorn JavaScript engine
-  * (jjs) which is bundled with Oracle JDK 1.8 and later.  Invoke it like this:
+  * This build script runs under the Nashorn JavaScript engine (jjs) which is bundled with
+  * Oracle JDK 1.8 and later.  Invoke it like this:
   *
   *     $ JDK/bin/jjs overware/build [-- TARGET...]
   *
@@ -19,20 +19,21 @@
   *     $ overware/build -- clean
   *     $ overware/build -- android source
   *
-  * The default build target is 'release'.  For more information, see these files under
-  * installation directory overware/spec/build:
+  * The default target is 'release', which builds a full release.  For more information,
+  * see the files under installation directory overware/spec/build/:
   *
-  *     buildConfig.js          Instructions on configuring the build
-  *     buildConfigDefault.js   Catalogue of configuration variables
-  *     target.js               Definition of build targets
+  *     Target.js               Definition of build targets
+  *     BuildConfig.js          Instructions on configuring the build
+  *     BuildConfig_default.js  Catalogue of configuration variables
   *
   * Note:
   *
   *     [1] The double-dash delimiter for targets (--) is unfortunately required by jjs.
   *         http://mail.openjdk.java.net/pipermail/nashorn-dev/2013-October/002265.html
   */
+this.overware = {}; // preliminary boilerplate required in all executable scripts
+load( Java.type('java.nio.file.Paths').get(__DIR__).toUri().resolve(
+  'Overware.js' ).toASCIIString() );
 
-    load( Java.type('java.nio.file.Paths').get(__DIR__).toUri().resolve(
-      'spec/ov.js' ).toASCIIString() );
-    load( ov.ulocTo( 'overware/spec/build/build.js' ));
-    ov.build.run();
+load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
+overware.spec.build.Build.run();
