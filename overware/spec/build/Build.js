@@ -12,7 +12,6 @@ if( !overware.spec.build.Build ) {
     var Files = Java.type( 'java.nio.file.Files' );
     var Overware = overware.Overware;
     var Paths = Java.type( 'java.nio.file.Paths' );
-    var Pattern = Java.type( 'java.util.regex.Pattern' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
 
     var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
@@ -21,101 +20,6 @@ if( !overware.spec.build.Build ) {
 
 
 //// P u b l i c /////////////////////////////////////////////////////////////////////////
-
-
-    /** Applied once (Matcher.find) to the verbose output of Android asset packaging tool
-      * 'aapt package', this pattern captures a single group: 1) the count of files added
-      * to the package.
-      */
-    our.AAPT_PACKAGE_COUNT_PATTERN = Pattern.compile( '^Generated (\\d+) file', Pattern.MULTILINE );
-
-
-
-    /** Returns the command for Android build tool 'aapt', first smoke testing it if
-      * configuration variable 'androidBuildToolsLoc' is yet untested.
-      *
-      *     @return String
-      */
-    our.aaptTested = function() { return androidBuildToolTested( 'aapt', 'version' ); }
-
-
-
-    /** Returns the path to the Android bootclass jar, first testing that it exists.
-      *
-      *     @return java.nio.file.Path
-      */
-    our.androidJarTested = function() // named by the load guard at top
-    {
-        var jar = androidJar;
-        if( !jar )
-        {
-            jar = Paths.get( BuildConfig.androidSDKLoc, 'platforms',
-              'android-' + BuildConfig.androidVersion, 'android.jar' );
-            if( !Files.exists( jar ))
-            {
-                Overware.exit( L + 'Missing SDK file: ' + jar + L
-                  + 'Does your BuildConfig.js correctly set androidSDKLoc and androidVersion?' );
-            }
-            androidJar = jar; // cache
-        }
-        return jar;
-    };
-
-
-        var androidJar;
-
-
-
-    /** Returns the path to the Android 'sdklib.jar', first testing that it exists.
-      *
-      *     @return java.nio.file.Path
-      */
-    our.androidSDKLibJarTested = function()
-    {
-        var jar = androidSDKLibJar;
-        if( !jar )
-        {
-            jar = Paths.get( BuildConfig.androidSDKLoc, 'tools', 'lib', 'sdklib.jar' );
-            if( !Files.exists( jar ))
-            {
-                Overware.exit( L + 'Missing SDK file: ' + jar + L
-                  + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
-            }
-            androidSDKLibJar = jar; // cache
-        }
-        return jar;
-    };
-
-
-        var androidSDKLibJar;
-
-
-
-    /** Returns the path to the 'android-support-v4.jar', first testing that it exists.
-      *
-      *     @return java.nio.file.Path
-      *     @see http://developer.android.com/tools/support-library/setup.html
-      */
-    our.androidSupport4JarTested = function()
-    {
-        var jar = androidSupport4Jar;
-        if( !jar )
-        {
-            jar = Paths.get( BuildConfig.androidSDKLoc, 'extras', 'android', 'support', 'v4',
-              'android-support-v4.jar' );
-            if( !Files.exists( jar ))
-            {
-                Overware.exit( L + 'Missing SDK file: ' + jar + L
-                  + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
-            }
-            androidSupport4Jar = jar; // cache
-        }
-        return jar;
-    };
-
-
-        var androidSupport4Jar;
-
 
 
     /** Arrays the class files compiled by javac.
@@ -189,31 +93,6 @@ if( !overware.spec.build.Build ) {
         count = count.intValue(); // per contract, defeat ++'s conversion to double
         return count;
     };
-
-
-
-    /** Applied repeatedly (Matcher.find) to the verbose output of Android translator 'dx
-      * --dex', this pattern matches once for each top-level class that was translated.
-      * Member classes, recognized by $ characters in their names, are excluded.
-      */
-    our.DEXED_TOP_CLASS_PATTERN = Pattern.compile(
-   // '^processing [^$\R]+\.class\.*$', Pattern.UNICODE_CHARACTER_CLASS/* for \R */ |
-   ///// [^\R] fails to exclude line ends as promised, but this works on both Unix and Windows:
-      '^processing [^$\n]+\.class\.*$',
-      Pattern.MULTILINE );
-
-
-
-    /** Returns the command for Android build tool 'dx', first smoke testing it if config
-      * variable 'androidBuildToolsLoc' is yet untested.
-      *
-      *     @return String
-      */
-    our.dxTested = function()
-    {
-        var name = Overware.osTag() == 'win'? 'dx.bat': 'dx';
-        return androidBuildToolTested( name, '--version' );
-    }
 
 
 
@@ -326,6 +205,42 @@ if( !overware.spec.build.Build ) {
 
 
 
+    /** Returns the command for the Java API documenter 'javadoc', first smoke testing it
+      * if configuration variable 'jdkBinLoc' is yet untested.
+      *
+      *     @return String
+      */
+    our.javadocTested = function()
+    {
+        var command = Overware.slashed(BuildConfig.jdkBinLoc) + 'javadoc';
+        if( !testedSet.contains( 'jdkBinLoc' ))
+        {
+            try{ $EXEC( Overware.logCommand( command + ' -help' )); }
+            catch( x )
+            {
+                Overware.exit( L + x + L + 'Does your BuildConfig.js correctly set jdkBinLoc?' );
+            }
+            Overware.logCommandResult();
+            testedSet.add( 'jdkBinLoc' );
+        }
+        return command;
+    };
+
+
+
+    /** The required minimum version of the JDK expressed in the form of a single number.
+      *
+      *     @return Integer
+      */
+    our.jdkSimpleVersion = function()
+    {
+        if( BuildConfig.jdkVersion == '1.8' ) return 8;
+
+        throw( 'Unable to determine simple form of JDK version: ' + BuildConfig.jdkVersion );
+    };
+
+
+
     /** Builds Overware.  Call once only.
       */
     our.run = function()
@@ -334,6 +249,17 @@ if( !overware.spec.build.Build ) {
         var tN = $ARG.length;
         for( var t = 0; t < tN; ++t ) our.indentAndBuild( $ARG[t] );
     };
+
+
+
+    /** The names of all smoke-tested configuration variables.
+      *
+      *     @return java.util.Set<String>
+      */
+    our.testedSet = function() { return testedSet; };
+
+
+        var testedSet = new (Java.type('java.util.HashSet'))();
 
 
 
@@ -414,52 +340,6 @@ if( !overware.spec.build.Build ) {
         for( var a = 0; a < aN; ++a ) out.append( args[a] ).println();
         out.close();
     };
-
-
-
-    /** Returns the command for Android build tool 'zipalign', first smoke testing it if
-      * configuration variable 'androidBuildToolsLoc' is yet untested.
-      *
-      *     @return String
-      */
-    our.zipalignTested = function() { return androidBuildToolTested( 'zipalign' ); }
-
-
-
-//// P r i v a t e ///////////////////////////////////////////////////////////////////////
-
-
-    /** Returns the command for the named Android build tool, first smoke testing it if
-      * configuration variable 'androidBuildToolsLoc' is yet untested.
-      *
-      *     @param (String) The name of the command.
-      *     @param (String) Arguments to pass to it for testing, or null to pass no
-      *       arguments.
-      *
-      *     @return String
-      */
-    function androidBuildToolTested( name, arg )
-    {
-        var command = Overware.slashed(BuildConfig.androidBuildToolsLoc) + name;
-        if( !testedSet.contains( 'androidBuildToolsLoc' ))
-        {
-            var testCommand = command;
-            if( arg ) testCommand += ' ' + arg;
-            try { $EXEC( Overware.logCommand( testCommand )); }
-            catch( x )
-            {
-                Overware.exit( L + x + L +
-                  'Does your BuildConfig.js correctly set androidBuildToolsLoc?' );
-            }
-            Overware.logCommandResult();
-            testedSet.add( 'androidBuildToolsLoc' );
-        }
-        return command;
-    }
-
-
-
-    var testedSet = new (Java.type('java.util.HashSet'))(); // names of smoke-tested config variables
 
 
 

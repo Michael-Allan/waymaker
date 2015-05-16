@@ -8,6 +8,7 @@
 if( !overware.spec.build.release.Target ) {
      overware.spec.build.release.Target = {};
 load( overware.Overware.ulocTo( 'overware/spec/build/android/Target.js' ));
+load( overware.Overware.ulocTo( 'overware/spec/build/javadoc/Target.js' ));
 load( overware.Overware.ulocTo( 'overware/spec/build/source/Target.js' ));
 load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 ( function()
@@ -27,6 +28,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     {
         Build.indentAndBuild( 'source' );
         Build.indentAndBuild( 'android' );
+        Build.indentAndBuild( 'javadoc' );
     };
 
 

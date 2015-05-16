@@ -17,11 +17,13 @@
   */
 if( !overware.spec.build.android.Target ) {
      overware.spec.build.android.Target = {};
+load( overware.Overware.ulocTo( 'overware/spec/build/android/Android.js' ));
 load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 ( function()
 {
     var our = overware.spec.build.android.Target; // public as overware.spec.build.android.Target
 
+    var Android = overware.spec.build.android.Android;
     var ArrayList = Java.type( 'java.util.ArrayList' );
     var Build = overware.spec.build.Build;
     var BuildConfig = overware.spec.build.BuildConfig;
@@ -41,8 +43,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     our.build = function() // based on [1], q.v. for additional comments
     {
         var outS = System.out;
-        var jarList = new ArrayList();
-        jarList.add( Build.androidSupport4JarTested() );
+        var compileTimeJarArray = Android.compileTimeJarArray();
 
       // Compile the source code to Java bytecode (.class files).
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,9 +55,10 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
             var out = new PrintWriter( javacArgInFile );
             out.append( '-classpath ' );
             out.append( javacOutDir.toString() );
-            for each( var jar in jarList )
+            var P = Overware.P;
+            for each( var jar in compileTimeJarArray )
             {
-                out.append( Overware.P );
+                out.append( P );
                 out.append( jar.toString() );
             }
             out.println();
@@ -72,7 +74,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
         {
             outS.append( Build.indentation() ).append( '(javac.. ' );
             var command = Build.javacTested()
-              + ' -bootclasspath ' + Build.androidJarTested()
+              + ' -bootclasspath ' + Android.androidJarTested()
               + ' -d ' + javacOutDir
               + ' -source 1.7' // Java API version, cannot exceed -target
               + ' -sourcepath ' + Overware.loc()
@@ -129,7 +131,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
                 $ENV.PWD = javacOutDir.toString(); // so change dir to where the class files are
                 try
                 {
-                    var command = Build.dxTested() + args
+                    var command = Android.dxTested() + args
                       + ' --incremental'
                       + ' --input-list=' + classesInFile;
                     $EXEC( Overware.logCommand( command ));
@@ -144,17 +146,17 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
                     Files.deleteIfExists( dxInFile );
                     var out = new PrintWriter( dxInFile );
                     out.println( javacOutDir.toString() );
-                    for each( var jar in jarList ) out.println( jar.toString() );
+                    for each( var jar in compileTimeJarArray ) out.println( jar.toString() );
                     out.close();
                 }
-                var command = Build.dxTested() + args + ' --input-list=' + dxInFile;
+                var command = Android.dxTested() + args + ' --input-list=' + dxInFile;
                 $EXEC( Overware.logCommand( command ));
             }
             Overware.logCommandResult();
             if( $EXIT ) Overware.exit( $ERR );
 
             var count = 0;
-            var m = Build.DEXED_TOP_CLASS_PATTERN.matcher( $OUT );
+            var m = Android.DEXED_TOP_CLASS_PATTERN.matcher( $OUT );
             while( m.find() ) ++count;
             count = count.intValue(); // [2]
             outS.append( '\b\b\b ' ).println( count );
@@ -217,11 +219,11 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
             }
 
             // 2 //  Now package up the resources
-            var command = Build.aaptTested()
+            var command = Android.aaptTested()
               + ' package'
               + ' -f'
               + ' -F ' + apkPartFile
-              + ' -I ' + Build.androidJarTested()
+              + ' -I ' + Android.androidJarTested()
               + ' -M ' + manifestFile
            // + ' -S ' + resDir;
            /// but no resources are needed yet, aside from the mandatory manifest
@@ -230,7 +232,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
             Overware.logCommandResult();
             if( $EXIT ) Overware.exit( $ERR );
 
-            var m = Build.AAPT_PACKAGE_COUNT_PATTERN.matcher( $OUT );
+            var m = Android.AAPT_PACKAGE_COUNT_PATTERN.matcher( $OUT );
             var count = m.find()? m.group( 1 ): '?';
             outS.append( '\b\b\b ' ).println( count );
         }
@@ -253,7 +255,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
         {
             outS.append( Build.indentation() ).append( '(apk.. ' );
             var command = Build.javaTested()
-              + ' -classpath ' + Build.androidSDKLibJarTested()
+              + ' -classpath ' + Android.sdkLibJarTested()
               + ' com.android.sdklib.build.ApkBuilderMain' // deprecated as explained in [1]
               + ' ' + apkFullFile
               + ' -d'
@@ -276,7 +278,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
              Files.getLastModifiedTime( apkFullFile )) < 0 ) // then do align it
         {
             outS.append( Build.indentation() ).append( '(zipalign.. ' );
-            var command = Build.zipalignTested()
+            var command = Android.zipalignTested()
               + ' -f'
               + ' -v'
               + ' 4'

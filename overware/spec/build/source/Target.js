@@ -20,9 +20,11 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     var FileVisitResult = Java.type( 'java.nio.file.FileVisitResult' );
     var Paths = Java.type( 'java.nio.file.Paths' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
+    var StandardCopyOption = Java.type( 'java.nio.file.StandardCopyOption' );
     var System = Java.type( 'java.lang.System' );
 
     var CONTINUE = FileVisitResult.CONTINUE;
+    var COPY_ATTRIBUTES = StandardCopyOption.COPY_ATTRIBUTES;
 
 
 
@@ -38,8 +40,6 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
         var sourceMatcher = BuildConfig.sourceMatcher;
         var fromRoot = Paths.get( Overware.loc(), 'overware' );
         var toRoot = Overware.ensureDir(Paths.get(BuildConfig.productLoc)).resolve( 'overware' );
-        var StandardCopyOption = Java.type( 'java.nio.file.StandardCopyOption' );
-        var COPY_ATTRIBUTES = StandardCopyOption.COPY_ATTRIBUTES;
         var count = 0;
         Files.walkFileTree( fromRoot, new (Java.extend( SimpleFileVisitor ))
         {

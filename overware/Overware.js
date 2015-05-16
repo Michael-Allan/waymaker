@@ -67,6 +67,7 @@ if( !overware.Overware ) {
         overware.spec.build = {};
         overware.spec.build.android = {};
         overware.spec.build.clean = {};
+        overware.spec.build.javadoc = {};
         overware.spec.build.release = {};
         overware.spec.build.source = {};
     };
