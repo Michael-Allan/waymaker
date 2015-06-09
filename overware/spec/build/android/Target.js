@@ -76,6 +76,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
             var command = Build.javacTested()
               + ' -bootclasspath ' + Android.androidJarTested()
               + ' -d ' + javacOutDir
+              + ' -encoding UTF-8' // of source; instead of platform default, whatever that might be
               + ' -source 1.7' // Java API version, cannot exceed -target
               + ' -sourcepath ' + Overware.loc()
               + ' -target 1.7' // JVM version, currently limited by Android build tools to 1.7

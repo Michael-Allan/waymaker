@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtdxhtml11.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml' lang='en-CA' xml:lang='en-CA'>
+    <head>
+        <title>forest</title>
+        </head>
+    <body>
+        <h2>forest</h2> <!-- <<< deindent -->
+
+<ul>
+    <li>the structure of a <a href='../gen/poll'>poll</a> based on transitive voting</li>
+    <li>a collection of in-trees; of arborescences each converging to a root</li>
+    </ul>
+<p>
+    The poll is structured by coalescent flows of transitive votes into a forest of <a
+    href='http://en.wikipedia.org/wiki/Arborescence_%28graph_theory%29'>arborescences</a>
+    each converging to a root (in-trees).  One may picture the votes streaming together
+    like raindrops down the leaves and branches of an actual forest.  Accordingly the
+    leafward direction is sometimes called ‘upstream’, and the rootward ‘downstream’.
+    Always the trees are pictured in natural orientation with their leaves at top and
+    their roots at bottom.
+    </p>
+
+
+        </body> <!-- >>> reindent -->
+    </html>

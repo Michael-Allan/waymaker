@@ -4,7 +4,8 @@
   *
   *     $ overware/build -- javadoc
   *
-  * The product is a directory named 'javadoc' which contains the documentation.
+  * The product is a directory named 'javadoc' which contains the documentation.  It
+  * includes HTML links to the source and therefore depends on ../source/Target.js.
   */
 if( !overware.spec.build.javadoc.Target ) {
      overware.spec.build.javadoc.Target = {};
@@ -60,10 +61,18 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
                 }
                 out.println();
             }
+            out.println( '-charset UTF-8' );
+              // Make explicit in generated HTML, because otherwise Firefox falls back to
+              // ISO-8859-1 (which it calls "windows-1252").
+              // https://developer.mozilla.org/en-US/docs/Web/Guide/Localizations_and_character_encodings
             out.append( '-d ' ).println( outDir );
+            out.println( '-encoding UTF-8' );
+              // Of source; UTF-8 instead of platform default, whatever that might be.
+              // This also governs the output encoding (-docencoding).
             out.append( '-link http://download.oracle.com/javase/' )
               .append( String(Build.jdkSimpleVersion()) ).println( '/docs/api/' );
-            out.println( '-linksource' );
+         // out.println( '-linksource' );
+         /// instead link to built source (../source/Target.js) consistent with javadoc comments
             out.println( '-noqualifier overware.*' );
             out.println( '-package' );
             out.append( '-sourcepath ' ).println( Overware.loc() );
