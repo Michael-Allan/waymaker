@@ -1,4 +1,4 @@
-package overware.gen; // Copyright 2009, 2011, 2015, Michael Allan.
+package overware.gen; // Copyright 2009, 2011, 2015, Michael Allan.  Licence MIT-Overware.
 
 import java.lang.annotation.*;
 

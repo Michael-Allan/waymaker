@@ -1,4 +1,4 @@
-package overware.top.android; // Copyright 2015, Michael Allan.
+package overware.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 
 
 final class CorrectedPosition extends Position2 // TEST, not yet implemented

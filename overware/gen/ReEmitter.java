@@ -1,4 +1,4 @@
-package overware.gen;
+package overware.gen; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 
 import java.util.Set;
 import overware.gen.CopyOnResizeArraySet;

@@ -36,3 +36,6 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 }() );
     // still under this module's load guard at top
 }
+
+
+// Copyright 2015, Michael Allan.  Licence MIT-Overware.

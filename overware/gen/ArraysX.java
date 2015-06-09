@@ -1,4 +1,4 @@
-package overware.gen; // Copyright 2015, Michael Allan.
+package overware.gen; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 
 
 /** More utilities for working with arrays.

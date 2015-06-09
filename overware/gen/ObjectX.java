@@ -1,4 +1,4 @@
-package overware.gen; // Copyright 2015, Michael Allan.
+package overware.gen; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 
 
 /** Utilities for working with {@linkplain Object objects}.

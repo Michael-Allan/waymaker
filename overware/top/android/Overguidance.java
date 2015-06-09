@@ -1,4 +1,4 @@
-package overware.top.android;
+package overware.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 
 import android.content.*;
 import android.net.Uri;
