@@ -69,22 +69,16 @@
 
 
 
- // sourceMatcher
- // -------------
- // Returns true if the file is a proper Overware source file.  Use this as necessary to
- // screen the build process from personal files added to the Overware installation.
-
-    bc.sourceMatcher = new (Java.type('java.nio.file.PathMatcher'))(
-    {
-        matches: function( path ) { return true; } // by default, no filtering is needed
-    });
-
-
-
  // jdkBinLoc
  // ----------
  // The pathname of the Oracle JDK bin directory, where tools such as javac reside.  If
- // this is an empty string '', then the tools are sought on the execution PATH.
+ // this is set to an empty string '', then the tools are sought on the execution PATH.
+ //
+ // Some underlying build tools such as Android dx will always seek the Java virtual
+ // machine launcher ('java') on the execution PATH regardless of the value of jdkBinLoc.
+ // It is therefore prudent when setting jdkBinLoc to also execute 'java -version' or
+ // 'which java' from the command line in order to test that the launcher is on the PATH.
+ // Its version need not always be identical to the version at jdkBinLoc.
  //
  // The pathname may contain a space, as for example 'C:\\Program Files\\Java\\bin'.
  // Beware however that mistyping a spaced pathname ('C:\\Program Files\\Typo\\bin') may
@@ -116,6 +110,18 @@
  // together with its contents, while others recreate it as needed.
 
     bc.productLoc = 'overware-' + version;
+
+
+
+ // sourceMatcher
+ // -------------
+ // Returns true if the file is a proper Overware source file.  Use this as necessary to
+ // screen the build process from personal files added to the Overware installation.
+
+    bc.sourceMatcher = new (Java.type('java.nio.file.PathMatcher'))(
+    {
+        matches: function( path ) { return true; } // by default, no filtering is needed
+    });
 
 
 

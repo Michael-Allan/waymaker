@@ -38,12 +38,14 @@ td.colLast a:hover,
 }
 
 
+
 /** - blocklist ------------------------
   */
 ul.blockList ul.blockList ul.blockList h3
 {
     font-size: 1.1em; /* defeat massive subtitles */
 }
+
 
 
 /** - code -----------------------------
@@ -131,6 +133,15 @@ h6
 
 
 
+/** - indent --------------------------- [ADD]
+  */
+.indent
+{
+    margin-left: 10mm;
+}
+
+
+
 /** - indexContainer -------------------
   */
 div.indexContainer
@@ -175,22 +186,22 @@ li
 }
 
 
-/** - overviewSummary ------------------
+/** - memberSummary --------------------
   */
-table.overviewSummary code
+table.memberSummary code
 {
     font-family: sans-serif; /* defeat pointless use of "code" */
 }
 
 
-table.overviewSummary td.colFirst
+table.memberSummary td.colFirst
 {
     font-size: 0.85em; /* generic parameters often too huge for one line */
-    white-space: normal; /* ", instead of nowrap */
+    white-space: normal; /* instead of nowrap */
 }
 
 
-div.summary table.overviewSummary td.colFirst /* specific div.summary prevents it applying
+div.summary table.memberSummary td.colFirst /* specific div.summary, prevents it applying
   to package names on the overview page */
 {
     text-align: right !important; /* instead of left */
@@ -255,4 +266,10 @@ var
 
 
 
-/* Copyright 2009, 2012, Michael Allan.  Licence MIT-Overware. */
+/** Note
+  * ----
+  * [ADD] Added style class, not original to javadocs.
+  *
+  *
+  * Copyright 2009, 2012, Michael Allan.  Licence MIT-Overware.
+  */

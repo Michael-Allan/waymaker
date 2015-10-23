@@ -26,19 +26,21 @@ if( !overware.Overware ) {
         var ppSys = System.getProperties();
         our.L = ppSys.getProperty( 'line.separator' );
         our.P = ppSys.getProperty( 'path.separator' );
-        tmpLoc = our.slashed(ppSys.getProperty('java.io.tmpdir')) + 'overware';
 
         var Paths = Java.type( 'java.nio.file.Paths' );
+        tmpLoc = our.slashed(ppSys.getProperty('java.io.tmpdir')) + 'overware';
+        tmpDir = our.ensureDir( Paths.get( tmpLoc )); // fulfill #tmpLoc
+
         var v = Paths.get(__DIR__).toRealPath();
      // v = v.getRoot().resolve( v.subpath( 0, v.getNameCount() - 1 )); // minus overware
      /// IllegalArgumentException when installed to root, e.g. of mapped drive on Windows, so:
         v = v.getParent(); // e.g. path/install/overware -> path/install
         loc = v.toString();
-        outLog = Files.newBufferedWriter( Paths.get(tmpLoc,'log'));
+        outLog = Files.newBufferedWriter( tmpDir.resolve( 'log' ));
         uri = v.toUri();
 
       // Initialize OS specifics.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         userHomeLoc = ppSys.getProperty( 'user.home' );
         v = ppSys.getProperty( 'os.name' ).slice( 0, 3 );
         if( v === 'Win' )
@@ -62,7 +64,7 @@ if( !overware.Overware ) {
         }
 
       // Predefine all namespaces eagerly.  Simpler than defining them lazily, ad hoc.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         overware.spec = {};
         overware.spec.build = {};
         overware.spec.build.android = {};
@@ -74,13 +76,13 @@ if( !overware.Overware ) {
 
 
 
-//// P u b l i c /////////////////////////////////////////////////////////////////////////
+//// P u b l i c ///////////////////////////////////////////////////////////////////////////////////////
 
 
     /** Ensures that the specified directory exists.
       *
       *     @param dir (java.nio.file.Path)
-      *     @return the same directory.
+      *     @return The same directory.
       */
     our.ensureDir = function( dir )
     {
@@ -120,7 +122,7 @@ if( !overware.Overware ) {
     /** The absolute filepath of the real Overware installation directory.  Most of its
       * files are located within a subdirectory called 'overware'.
       *
-      *     @return String
+      *     @return (String)
       *     @see #ulocTo
       */
     our.loc = function() { return loc; };
@@ -132,7 +134,7 @@ if( !overware.Overware ) {
 
     /** Logs a command that is being issued through the command-line interface.
       *
-      *     @return (String) the same command.
+      *     @return (String) The same command.
       */
     our.logCommand = function( command )
     {
@@ -184,7 +186,7 @@ if( !overware.Overware ) {
     /** The OS identifier, which is either 'mac', 'win' or 'nix'.  The latter means the OS
       * is assumed (by default) to be a generic variant of Unix.
       *
-      *     @return String
+      *     @return (String)
       */
     our.osTag = function() { return osTag; };
 
@@ -216,10 +218,10 @@ if( !overware.Overware ) {
 
 
 
-    /** The directory for expendable, intermediate output from scripted processes.  It
-      * might not exist, so the caller should create it as needed.  Do not delete it.
+    /** The directory for expendable, intermediate output from scripted processes.  It is
+      * created by #init().  Do not delete it.
       *
-      *     @return String
+      *     @return (String)
       */
     our.tmpLoc = function() { return tmpLoc; };
 
@@ -232,7 +234,7 @@ if( !overware.Overware ) {
       *
       *     @param subLoc (String) The URI path of the file relative to the
       *       Overware installation directory.
-      *     @return String
+      *     @return (String)
       *     @see #loc
       */
     our.ulocTo = function( subLoc ) { return uri.resolve( subLoc ).toASCIIString(); };
@@ -241,7 +243,7 @@ if( !overware.Overware ) {
 
     /** The directory that stores the user's Overware configuration.
       *
-      *     @return String
+      *     @return (String)
       */
     our.userConfigLoc = function() { return userConfigLoc; };
 
@@ -252,7 +254,7 @@ if( !overware.Overware ) {
 
     /** The user's home directory.
       *
-      *     @return String
+      *     @return (String)
       */
     our.userHomeLoc = function() { return userHomeLoc; };
 
@@ -261,7 +263,7 @@ if( !overware.Overware ) {
 
 
 
-//// P r i v a t e ///////////////////////////////////////////////////////////////////////
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
     var outLog; // java.io.BufferedWriter

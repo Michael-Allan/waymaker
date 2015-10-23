@@ -15,9 +15,11 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     var Paths = Java.type( 'java.nio.file.Paths' );
     var Pattern = Java.type( 'java.util.regex.Pattern' );
 
+    var L = Overware.L;
 
 
-//// P u b l i c /////////////////////////////////////////////////////////////////////////
+
+//// P u b l i c ///////////////////////////////////////////////////////////////////////////////////////
 
 
     /** Applied once (Matcher.find) to the verbose output of Android asset packaging tool
@@ -31,7 +33,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     /** Returns the command for Android build tool 'aapt', first smoke testing it if
       * configuration variable 'androidBuildToolsLoc' is yet untested.
       *
-      *     @return String
+      *     @return (String)
       */
     our.aaptTested = function() { return androidBuildToolTested( 'aapt', 'version' ); };
 
@@ -39,7 +41,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 
     /** Returns the path to the Android bootclass jar, first testing that it exists.
       *
-      *     @return java.nio.file.Path
+      *     @return (java.nio.file.Path)
       */
     our.androidJarTested = function() // named by the load guard at top
     {
@@ -65,11 +67,12 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 
     /** The jars required at compile time.
       *
-      *     @return JS Array of java.nio.file.Path
+      *     @return (JS Array of java.nio.file.Path)
       */
     our.compileTimeJarArray = function()
     {
-        if( !compileTimeJarArray ) compileTimeJarArray = [ support4JarTested() ];
+     // if( !compileTimeJarArray ) compileTimeJarArray = [ support4JarTested() ];
+        if( !compileTimeJarArray ) compileTimeJarArray = [];
         return compileTimeJarArray;
     };
 
@@ -93,7 +96,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     /** Returns the command for Android build tool 'dx', first smoke testing it if config
       * variable 'androidBuildToolsLoc' is yet untested.
       *
-      *     @return String
+      *     @return (String)
       */
     our.dxTested = function()
     {
@@ -105,7 +108,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 
     /** Returns the path to the Android 'sdklib.jar', first testing that it exists.
       *
-      *     @return java.nio.file.Path
+      *     @return (java.nio.file.Path)
       */
     our.sdkLibJarTested = function()
     {
@@ -131,13 +134,13 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     /** Returns the command for Android build tool 'zipalign', first smoke testing it if
       * configuration variable 'androidBuildToolsLoc' is yet untested.
       *
-      *     @return String
+      *     @return (String)
       */
     our.zipalignTested = function() { return androidBuildToolTested( 'zipalign' ); };
 
 
 
-//// P r i v a t e ///////////////////////////////////////////////////////////////////////
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
     /** Returns the command for the named Android build tool, first smoke testing it if
@@ -147,7 +150,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
       *     @param (String) Arguments to pass to it for testing, or null to pass no
       *       arguments.
       *
-      *     @return String
+      *     @return (String)
       */
     function androidBuildToolTested( name, arg )
     {
@@ -171,30 +174,30 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 
 
 
-    /** Returns the path to the 'android-support-v4.jar', first testing that it exists.
-      *
-      *     @return java.nio.file.Path
-      *     @see http://developer.android.com/tools/support-library/setup.html
-      */
-    function support4JarTested()
-    {
-        var jar = support4Jar;
-        if( !jar )
-        {
-            jar = Paths.get( BuildConfig.androidSDKLoc, 'extras', 'android', 'support', 'v4',
-              'android-support-v4.jar' );
-            if( !Files.exists( jar ))
-            {
-                Overware.exit( L + 'Missing SDK file: ' + jar + L
-                  + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
-            }
-            support4Jar = jar; // cache
-        }
-        return jar;
-    }
-
-
-        var support4Jar;
+ // /** Returns the path to the 'android-support-v4.jar', first testing that it exists.
+ //   *
+ //   *     @return (java.nio.file.Path)
+ //   *     @see http://developer.android.com/tools/support-library/setup.html
+ //   */
+ // function support4JarTested()
+ // {
+ //     var jar = support4Jar;
+ //     if( !jar )
+ //     {
+ //         jar = Paths.get( BuildConfig.androidSDKLoc, 'extras', 'android', 'support', 'v4',
+ //           'android-support-v4.jar' );
+ //         if( !Files.exists( jar ))
+ //         {
+ //             Overware.exit( L + 'Missing SDK file: ' + jar + L
+ //               + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
+ //         }
+ //         support4Jar = jar; // cache
+ //     }
+ //     return jar;
+ // }
+ //
+ //
+ //     var support4Jar;
 
 
 

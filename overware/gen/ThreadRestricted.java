@@ -16,14 +16,12 @@ import java.lang.annotation.*;
   * Warning}("thread restricted object") and &#064;{@linkplain Warning Warning}( "thread
   * restricted elements")].</p>
   *
-  * <h3>Default restriction for methods</h3>
+  * <h3>Default restriction for constructors and methods</h3>
   *
   * <p>When applied to a type (class or interface), the ThreadRestricted annotation
-  * specifies the default restriction for all public methods.  Any public method that
-  * lacks its own restriction is bound by the default.  See the <a
-  * href='ThreadSafe.html#method-test'>step-by-step rules</a> for resolving the thread
-  * safety of public methods.  Methods alone have such defaults, not fields or
-  * constructors.</p>
+  * specifies the default restriction for all non-private constructors and methods.  Any
+  * such member that lacks its own restriction is bound by the default.  See the <a
+  * href='ThreadSafe.html#ctor-method-test'>step-by-step rules</a> in this case.
   *
   * <h3>Restriction to a particular thread</h3>
   *
@@ -38,14 +36,6 @@ import java.lang.annotation.*;
   *
   * <pre>
   *     assert java.awt.EventQueue.isDispatchThread();</pre>
-  *
-  * <p>The thread may be specified as the constructor.  In this case, access is restricted
-  * to the construction thread <em>as though for purposes of construction</em>.  This
-  * means that access is forbidden even to the construction thread if another thread has
-  * already accessed an instance member.</p>
-  *
-  * <pre>
-  *     &#064;ThreadRestricted("constructor")</pre>
   *
   * <h3>Restriction to threads holding a particular lock</h3>
   *
@@ -72,46 +62,63 @@ import java.lang.annotation.*;
   *
   * <pre>
   *     &#064;ThreadRestricted("touch")
-  *     &#064;ThreadRestricted("touch <em>Class</em>.this")
   *     &#064;ThreadRestricted("touch <em>object</em>")
-  *     &#064;ThreadRestricted("touch <em>lock</em>")</pre>
+  *     &#064;ThreadRestricted("touch <em>lock</em>")
+  *     &#064;ThreadRestricted("touch <em>Class</em>.this")</pre>
   *
-  * <p>These mean that access is superficially thread-safe, but modifications to state
-  * variables are not guaranteed visible to other threads unless those threads
-  * touch-synchronize on a common lock.  The method of touch-synchronizing depends on
-  * whether the thread is reading from state, or writing to it.  If reading, the thread
-  * must grab the lock at some point <em>before</em> reading (thus ensuring that its local
-  * memory cache is invalidated).  The thread need not continue to hold the lock while
-  * reading, but may release it beforehand.</p>
+  * <p>Access is superficially thread-safe, but modifications to state variables are not
+  * guaranteed visible across threads unless the threads touch-synchronize on a common
+  * lock.  The form of touch-synchronization depends on whether the thread is reading
+  * from state, or writing to it.  If reading, the thread must grab the lock at some point
+  * <em>before</em> reading in order to invalidate its local memory cache.  The thread
+  * need not continue to hold the lock while reading, but may release it beforehand.</p>
   *
   * <p>If writing to state, the thread must release the lock at some point <em>after</em>
-  * writing (thus ensuring that its local memory cache is flushed).  The thread need not
-  * actually hold the lock at time of writing, but may grab it and subsequently release
-  * it.  Only after the lock is released are the state changes guaranteed to reach main
-  * memory and become readable by other threads that touch-synchronize.</p>
+  * writing in order to flush its local memory cache.  The thread need not hold the lock
+  * at time of writing, but may subsequently grab it and release it.  Only after the lock
+  * is released are the state changes guaranteed to reach main memory and become readable
+  * by other threads that touch-synchronize.</p>
   *
   * <p>If the thread is both reading and writing, then it must do both: grab the lock
-  * before reading and release it after writing.  It need not hold onto the lock in the
-  * meantime, but may grab it and release it once beforehand, then once afterward.</p>
+  * before reading and release it after writing.  It need not hold the lock in the
+  * meantime unless it wants exclusive access, but may instead grab and immediately
+  * release the lock once beforehand, then once again afterward.</p>
   *
-  * <p>If no particular lock is specified, then any lock (or locks) will suffice.
-  * Visibility is guaranteed only among those threads that touch-synchronize on the same
-  * lock.</p>
+  * <p>If no particular lock is specified, then any lock will suffice.  Visibility is guaranteed
+  * only among threads that touch-synchronize on the same lock.  This guarantee rests on the
+  * <a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.4.4' target='_top'
+  * >Java memory model</a>, in particular on the rule that
+  * an “unlock action on monitor m <em>synchronizes-with</em> all subsequent lock actions on m”
+  * and thereby <em>happens-before</em> those actions.
+  * (See also this <a target='_top' href='http://stackoverflow.com/questions/686415#31933260'
+  * >answer on Stack Exchange</a>.)</p>
   *
   * <h3>Restriction unspecified</h3>
   *
-  * <p>The restriction may be left unspecified.  This is the default value, so these are
-  * equivalent:</p>
+  * <p>The restriction may be left unspecified.  This is the default value.  The following
+  * forms of annotation are therefore equivalent:</p>
   *
   * <pre>
   *     &#064;ThreadRestricted
-  *     &#064;ThreadRestricted("unspecified")</pre>
+  *     &#064;ThreadRestricted("unspecified")
+  *     <em>no annotation, neither &#064;ThreadRestricted nor &#064;ThreadSafe</em></pre>
   *
-  * <p>This form of the annotation is generally applied at the type level.  It defers the
-  * choice of restriction to the runtime code that constructs instances of the type.  The
-  * code may choose either a single threaded or a locking restriction, and its choices may
-  * vary from instance to instance.  In other words, the unpecified thread restriction
-  * simply means “not thread safe” and is handled accordingly.</p>
+  * <p>An unspecified restriction simply means “not thread safe” without specifying a particular means
+  * of synchronization.  In the case of an instance method, the means of synchronization is instead
+  * specified or otherwise ruled by the code that constructs the instance.  Any of the usual,
+  * general-purpose means will suffice.</p>
+  *
+  * <p>In the case of a parametized constructor or static method that is likewise “not thread safe”, the
+  * means of synchronization is ruled by the code that constructs the actual parameters.  If the given
+  * parameters are actually thread safe, then so is the constructor.</p>
+  *
+  * <p>In the case of an <em>unparametized</em> constructor or static method, the only valid means of
+  * synchronization is single threading.  Such a member is unsafe for use in multi-threaded programs.
+  * Multi-threaded programs and libraries will therefore commonly annotate unparametized constructors
+  * and static methods as thread safe, while letting other members default to unsafe.  This pattern is
+  * especially common for constructors and factory methods, where it means that any thread may safely
+  * construct an instance of the class and then access it, but access by other threads requires some
+  * means of synchronization, the choice of which is left to the programmer.</p>
   *
   *     @see ThreadSafe
   */

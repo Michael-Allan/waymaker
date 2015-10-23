@@ -4,9 +4,9 @@
   *
   *     $ overware/build -- android
   *
-  * The product is an APK file (app.apk) ready to install and run on an Android
-  * device.  The relevant commands, assuming default configuration for productLoc
-  * (overware-0.0) and appPackageName (com.example.overware), are:
+  * The product is an APK file (app.apk) ready to install and run on an Android device.  The relevant
+  * commands, assuming default configuration for productLoc (overware-0.0) and appPackageName
+  * (com.example.overware), are:
   *
   *     $ adb install -r overware-0.0/app.apk
   *     $ adb shell am start -n com.example.overware/overware.top.android.Overguidance
@@ -35,18 +35,18 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 
 
 
-//// P u b l i c /////////////////////////////////////////////////////////////////////////
+//// P u b l i c ///////////////////////////////////////////////////////////////////////////////////////
 
 
     /** Builds this target.
       */
-    our.build = function() // based on [1], q.v. for additional comments
+    our.build = function() // based on [H], q.v. for additional comments
     {
         var outS = System.out;
         var compileTimeJarArray = Android.compileTimeJarArray();
 
       // Compile the source code to Java bytecode (.class files).
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         var tmpDir = Paths.get( Build.tmpLoc(), 'android' );
         var javacOutDir = Overware.ensureDir( tmpDir.resolve( 'javacOut' ));
         var javacArgInFile = tmpDir.resolve( 'javacArgIn' );
@@ -81,7 +81,8 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
               + ' -sourcepath ' + Overware.loc()
               + ' -target 1.7' // JVM version, currently limited by Android build tools to 1.7
               + ' -Werror' // terminate compilation when a warning occurs
-              + ' -Xdoclint:all,-missing' // verify all javadocs, but allow their omission
+              + ' -Xdoclint:all,-missing' /* verify all javadoc comments, but allow their omission;
+                    changing? change also in ../javadoc/Target.js */
               + ' -Xlint'
               + ' @' + javacArgInFile
               + ' @' + javaInFile;
@@ -95,7 +96,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
         }
 
       // Translate the output from Java to Android bytecode.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         count = ' '; // skipped, till proven otherwise
         var dexFile = tmpDir.resolve( 'classes.dex' );
         var args =
@@ -137,7 +138,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
                       + ' --input-list=' + classesInFile;
                     $EXEC( Overware.logCommand( command ));
                 }
-                finally{ $ENV.PWD = dir; } // restore working directory
+                finally { $ENV.PWD = dir; } // restore working directory
             }
             else // translate all classes
             {
@@ -159,12 +160,12 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
             var count = 0;
             var m = Android.DEXED_TOP_CLASS_PATTERN.matcher( $OUT );
             while( m.find() ) ++count;
-            count = count.intValue(); // [2]
+            count = count.intValue(); // [IV]
             outS.append( '\b\b\b ' ).println( count );
         }
 
       // Package up the resource files alone, making a partial APK.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         var manifestTemplate = Paths.get( Overware.loc(), relInLoc, 'AndroidManifest.xml' );
         var apkPartFile = tmpDir.resolve( 'app.apkPart' );
         if( !Files.exists( apkPartFile )
@@ -239,7 +240,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
         }
 
       // Make the full APK.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         var apkFullFile = tmpDir.resolve( 'app.apkUnalign' );
         var toDo = true; // till proven otherwise
         skip:
@@ -257,7 +258,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
             outS.append( Build.indentation() ).append( '(apk.. ' );
             var command = Build.javaTested()
               + ' -classpath ' + Android.sdkLibJarTested()
-              + ' com.android.sdklib.build.ApkBuilderMain' // deprecated as explained in [1]
+              + ' com.android.sdklib.build.ApkBuilderMain' // deprecated as explained in [H]
               + ' ' + apkFullFile
               + ' -d'
               + ' -f ' + dexFile
@@ -271,7 +272,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
         }
 
       // Optimize the data alignment of the APK.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         var apkAlignedFile = Overware.ensureDir(Paths.get(BuildConfig.productLoc))
           .resolve( 'app.apk' );
         if( !Files.exists( apkAlignedFile )
@@ -302,10 +303,10 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 
 // Notes
 // -----
-//   [1] http://stackoverflow.com/a/29313378/2402790
+//  [H] http://stackoverflow.com/a/29313378/2402790
 //
-//   [2] Using explicit intValue conversion here in order to defeat previous ++ operator's
-//       implicit conversion to double, for sake of pretty printing.
+//  [IV] Using explicit intValue conversion here in order to defeat previous ++ operator's
+//      implicit conversion to double, for sake of pretty printing.
 
 
 // Copyright 2015, Michael Allan.  Licence MIT-Overware.

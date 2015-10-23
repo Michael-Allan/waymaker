@@ -3,24 +3,40 @@ package overware.gen; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 import android.os.Parcel;
 
 
-/** A maintainer of state for an instance of type T.
+/** A persister of state for something.
+  *
+  *     @param <T> The type of thing for which state is persisted.
+  *
+  *     @see <a href='http://developer.android.com/training/basics/activity-lifecycle/recreating.html'
+  *       target='_top'>Recreating an Activity</a>
   */
-public interface Stator<T>
+public abstract class Stator<T> implements KittedStatorSR<T,Object,Object>
 {
 
 
-   // - S t a t o r ----------------------------------------------------------------------
+   // - S t a t o r ------------------------------------------------------------------------------------
 
 
-    /** Restores state to the instance, reading in from a parcel.
+    /** Saves state from the thing, writing out to the parcel.
       */
-    public void get( T i, Parcel in );
+    public abstract void save( T t, Parcel out );
 
 
 
-    /** Saves state from the instance, writing out to a parcel.
+    /** Restores state to the thing, reading in from the parcel.
       */
-    public void put( T i, Parcel out );
+    public abstract void restore( T t, Parcel in );
+
+
+
+   // - S t a t o r - S - R ----------------------------------------------------------------------------
+
+
+    public final void save( final T t, final Parcel out, Object unusedKit ) { save( t, out); }
+
+
+
+    public final void restore( final T t, final Parcel in, Object unusedKit ) { restore( t, in ); }
 
 
 }

@@ -2,15 +2,18 @@ package overware.gen; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 
 
 /** A source of dings and a registry for auditors.
+  *
+  *     @param <D> The type of ding.
   */
 public interface Bell<D extends Ding<D>>
 {
 
 
-   // - B e l l --------------------------------------------------------------------------
+   // - B e l l ----------------------------------------------------------------------------------------
 
 
-    /** Ensures the auditor is registered to receive future dings from this bell.
+    /** Ensures the auditor is entered in this bell’s register so that it will receive
+      * future dings from this bell.
       */
     public void register( Auditor<D> auditor );
 

@@ -19,7 +19,7 @@ if( !overware.spec.build.Build ) {
 
 
 
-//// P u b l i c /////////////////////////////////////////////////////////////////////////
+//// P u b l i c ///////////////////////////////////////////////////////////////////////////////////////
 
 
     /** Arrays the class files compiled by javac.
@@ -31,7 +31,7 @@ if( !overware.spec.build.Build ) {
       *       in the result.  The reliability of this filter depends on msCompileTime
       *       originating with the file system, as other clocks may differ in granularity.
       *
-      *     @return JS Array of java.nio.file.Path
+      *     @return (JS Array of java.nio.file.Path)
       */
     our.arrayCompiled = function( dir, msCompileTime )
     {
@@ -66,7 +66,7 @@ if( !overware.spec.build.Build ) {
       *       compiler was invoked, or just before.  Only files modified at compileTime or
       *       later are included in the result.
       *
-      *     @return Integer
+      *     @return (Integer)
       */
     our.countCompiled = function( dir, compileTime )
     {
@@ -90,7 +90,7 @@ if( !overware.spec.build.Build ) {
                 return CONTINUE;
             }
         });
-        count = count.intValue(); // per contract, defeat ++'s conversion to double
+        count = count.intValue(); // as per contract, defeat ++'s conversion to double
         return count;
     };
 
@@ -154,14 +154,14 @@ if( !overware.spec.build.Build ) {
     /** Returns the command for the Java virtual machine 'java', first smoke testing it if
       * configuration variable 'jdkBinLoc' is yet untested.
       *
-      *     @return String
+      *     @return (String)
       */
     our.javaTested = function()
     {
         var command = Overware.slashed(BuildConfig.jdkBinLoc) + 'java';
         if( !testedSet.contains( 'jdkBinLoc' ))
         {
-            try{ $EXEC( Overware.logCommand( command + ' -version' )); }
+            try { $EXEC( Overware.logCommand( command + ' -version' )); }
             catch( x )
             {
                 Overware.exit( L + x + L + 'Does your BuildConfig.js correctly set jdkBinLoc?' );
@@ -177,7 +177,7 @@ if( !overware.spec.build.Build ) {
     /** Returns the command for the Java compiler 'javac', first smoke testing it if
       * configuration variable 'jdkBinLoc' or 'jdkVersion' is yet untested.
       *
-      *     @return String
+      *     @return (String)
       */
     our.javacTested = function()
     {
@@ -208,14 +208,14 @@ if( !overware.spec.build.Build ) {
     /** Returns the command for the Java API documenter 'javadoc', first smoke testing it
       * if configuration variable 'jdkBinLoc' is yet untested.
       *
-      *     @return String
+      *     @return (String)
       */
     our.javadocTested = function()
     {
         var command = Overware.slashed(BuildConfig.jdkBinLoc) + 'javadoc';
         if( !testedSet.contains( 'jdkBinLoc' ))
         {
-            try{ $EXEC( Overware.logCommand( command + ' -help' )); }
+            try { $EXEC( Overware.logCommand( command + ' -help' )); }
             catch( x )
             {
                 Overware.exit( L + x + L + 'Does your BuildConfig.js correctly set jdkBinLoc?' );
@@ -230,7 +230,7 @@ if( !overware.spec.build.Build ) {
 
     /** The required minimum version of the JDK expressed in the form of a single number.
       *
-      *     @return Integer
+      *     @return (Integer)
       */
     our.jdkSimpleVersion = function()
     {
@@ -238,6 +238,33 @@ if( !overware.spec.build.Build ) {
 
         throw( 'Unable to determine simple form of JDK version: ' + BuildConfig.jdkVersion );
     };
+
+
+
+    /** Returns the path to the JDK bootclass jar, first testing that it exists.
+      *
+      *     @return (java.nio.file.Path)
+      */
+    our.rtJarTested = function() // named by the load guard at top
+    {
+        var jar = rtJar;
+        if( !jar )
+        {
+            jar = Paths.get( BuildConfig.jdkBinLoc, '..', 'jre', 'lib', 'rt.jar' ).normalize();
+              // this abuse of jdkBinLoc (along with need of rt.jar) is expected to be temporary
+            if( !Files.exists( jar ))
+            {
+                Overware.exit( L + 'Missing JDK file: ' + jar + L
+                  + 'Does your BuildConfig.js correctly set jdkBinLoc?' + L
+                  + 'It must explicitly be set in this (hopefully temporary) case.' );
+            }
+            rtJar = jar; // cache
+        }
+        return jar;
+    };
+
+
+        var rtJar;
 
 
 
@@ -254,7 +281,7 @@ if( !overware.spec.build.Build ) {
 
     /** The names of all smoke-tested configuration variables.
       *
-      *     @return java.util.Set<String>
+      *     @return (java.util.Set<String>)
       */
     our.testedSet = function() { return testedSet; };
 
@@ -267,7 +294,7 @@ if( !overware.spec.build.Build ) {
       * "clean" deletes this directory together with its contents, while others recreate
       * it as needed.
       *
-      *     @return String
+      *     @return (String)
       */
     our.tmpLoc = function() { return tmpLoc; };
 

@@ -1,6 +1,6 @@
 <?xml version='1.0'?><!-- incomplete template -->
 <manifest xmlns:a='http://schemas.android.com/apk/res/android' a:versionCode='0' a:versionName='0'>
-    <application>
+    <application a:name='overware.top.android.Application'>
         <activity a:name='overware.top.android.Overguidance'>
              <intent-filter>
                 <category a:name='android.intent.category.LAUNCHER'/>

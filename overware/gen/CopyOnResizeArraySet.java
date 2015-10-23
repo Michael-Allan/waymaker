@@ -3,59 +3,76 @@ package overware.gen; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 import java.util.*;
 
 
-/** A non-blocking variant of {@linkplain java.util.concurrent.CopyOnWriteArraySet
-  * CopyOnWriteArraySet} that is based on CopyOnResizeArrayList instead of
-  * CopyOnWriteArrayList.
+/** A thread restricted, non-blocking variant of {@linkplain java.util.concurrent.CopyOnWriteArraySet
+  * CopyOnWriteArraySet} that is based on CopyOnResizeArrayList instead of CopyOnWriteArrayList.
   */
-public @ThreadRestricted final class CopyOnResizeArraySet<E> extends CopyOnResizeArrayList<E>
-  implements Set<E>
+public abstract class CopyOnResizeArraySet<E> extends CopyOnResizeArrayList<E> implements Set<E>
 {
 
 
-   // - C o l l e c t i o n --------------------------------------------------------------
+    public @ThreadSafe CopyOnResizeArraySet() {}
 
 
-    public final @Override boolean add( final E element )
+
+   // --------------------------------------------------------------------------------------------------
+
+
+    public final @Override void array( E[] _array )
     {
-        boolean wasAdded;
-        try{ wasAdded = super.add( element ); }
-        catch( Duplication _x ) { wasAdded = false; }
-        return wasAdded;
+        throw new UnsupportedOperationException( "Not yet coded" );
     }
 
 
 
-   // - L i s t --------------------------------------------------------------------------
+   // - C o l l e c t i o n ----------------------------------------------------------------------------
 
 
-    public final @Override void add( final int index, final E element )
+    public final @Override/*to properly handle Duplication*/ boolean add( final E element )
+    {
+        if( contains( element )) return false;
+
+        return super.add( element );
+    }
+
+
+
+   // - L i s t ----------------------------------------------------------------------------------------
+
+
+    public final @Override void add( final int e, final E element )
     {
         if( contains( element )) throw new Duplication();
           // obey the contract for this method, treating the rejection as exceptional
 
-        super.add( index, element );
+        super.add( e, element );
     }
 
 
 
-    public final @Override E set( final int index, final E element )
+    public final @Override boolean addAll( int e, Collection<? extends E> addenda )
     {
-        if( contains( element )) throw new Duplication();
+        throw new UnsupportedOperationException( "Not yet coded" );
+    }
+
+
+
+    public final @Override E set( final int e, final E element )
+    {
+        if( indexOf(element) != e ) throw new Duplication();
           // obey the contract for this method, treating the rejection as exceptional
 
-        return super.set( index, element );
+        return super.set( e, element );
     }
 
 
 
-   // ====================================================================================
+   // ==================================================================================================
 
 
-    /** Thrown when a duplicate element is offered through a method that provides no
-      * other, suitable means of rejecting it.
+    /** Thrown when a duplicate element is offered through a method that provides no other, suitable
+      * means of rejecting it.
       */
-      @SuppressWarnings("serial")
-    public static final class Duplication extends IllegalArgumentException {}
+    public static @SuppressWarnings("serial") final class Duplication extends IllegalArgumentException {}
 
 
 }

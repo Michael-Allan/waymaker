@@ -3,27 +3,27 @@ package overware.gen; // Copyright 2015, Michael Allan.  Licence MIT-Overware.
 
 /** A ding that signifies a change.
   */
-public final class Changed implements Ding<Changed>
+public @ThreadSafe final class Changed implements Ding<Changed>
 {
 
 
-    private Changed() { source = new ReEmitter<Changed>( this ); }
+    private Changed() { source = new ReRinger<Changed>( this ); }
 
 
 
-   // ------------------------------------------------------------------------------------
+   // --------------------------------------------------------------------------------------------------
 
 
-    /** Creates a ReEmitter for signifying changes.
+    /** Constructs a ReRinger for signifying changes.
       */
-    public static ReEmitter<Changed> newReEmitter()
+    public static ReRinger<Changed> newReRinger()
     {
-        return (ReEmitter<Changed>)new Changed().source;
+        return (ReRinger<Changed>)new Changed().source;
     }
 
 
 
-   // - D i n g --------------------------------------------------------------------------
+   // - D i n g ----------------------------------------------------------------------------------------
 
 
     public Bell<Changed> source() { return source; }

@@ -13,7 +13,7 @@
   *
   *     $ overware/build [-- TARGET...]
   *
-  * Here are some concrete examples: [1]
+  * Here are some concrete examples: [DD]
   *
   *     $ overware/build
   *     $ overware/build -- clean
@@ -28,7 +28,7 @@
   *
   * Note:
   *
-  *     [1] The double-dash delimiter for targets (--) is unfortunately required by jjs.
+  *     [DD] The double-dash delimiter for targets (--) is unfortunately required by jjs.
   *         http://mail.openjdk.java.net/pipermail/nashorn-dev/2013-October/002265.html
   */
 this.overware = {}; // preliminary boilerplate required in all executable scripts

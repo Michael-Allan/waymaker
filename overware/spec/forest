@@ -10,19 +10,33 @@
         <h2>forest</h2> <!-- <<< deindent -->
 
 <ul>
-    <li>the structure of a <a href='../gen/poll'>poll</a> based on transitive voting</li>
+    <li>the structure of a count of a guideway <a href='../gen/poll'>poll</a>
+        based on transitive voting</li>
     <li>a collection of in-trees; of arborescences each converging to a root</li>
     </ul>
 <p>
-    The poll is structured by coalescent flows of transitive votes into a forest of <a
-    href='http://en.wikipedia.org/wiki/Arborescence_%28graph_theory%29'>arborescences</a>
-    each converging to a root (in-trees).  One may picture the votes streaming together
-    like raindrops down the leaves and branches of an actual forest.  Accordingly the
-    leafward direction is sometimes called ‘upstream’, and the rootward ‘downstream’.
-    Always the trees are pictured in natural orientation with their leaves at top and
-    their roots at bottom.
+    The count is structured by coalescent flows of transitive votes into a forest
+    of <a href='http://en.wikipedia.org/wiki/Arborescence_%28graph_theory%29'>arborescences</a>
+    each converging to a root (in-trees).
+    One may picture the votes streaming like raindrops down the leaves and branches to the roots.
+    Accordingly the rootward direction is sometimes called ‘downstream’, and the leafward ‘upstream’.
+    Always trees are pictured in natural orientation with their leaves at top and roots at bottom.
     </p>
-
+<!--
+    - count generation
+        | continuous count with latest version only
+            - seems to be the original plan
+                ( as per poll/ogw/._/androidFromHTML.task, spec/._/spec.task
+      / | continuous count with micro-versioning
+      /     - enables each UI to fix on a particular version for sake of consistency
+      /     - most like repo in that old data is immediately available
+      /     - huge footprint in long-term storage
+      /         - though might reserve only versions actually needed by at least one client
+      // at best premature as client must in any case be able to fully refresh
+      / | periodic snapshot counts
+      /     - like Votorola
+      // probably too expensive at full scale
+    -->
 
         </body> <!-- >>> reindent -->
     </html>

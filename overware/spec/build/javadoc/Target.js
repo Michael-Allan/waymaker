@@ -4,8 +4,9 @@
   *
   *     $ overware/build -- javadoc
   *
-  * The product is a directory named 'javadoc' which contains the documentation.  It
-  * includes HTML links to the source and therefore depends on ../source/Target.js.
+  * The product is a directory named 'overware/spec/javadoc' that contains the
+  * documentation.  It includes HTML links to the source code and therefore depends on
+  * ../source/Target.js.
   */
 if( !overware.spec.build.javadoc.Target ) {
      overware.spec.build.javadoc.Target = {};
@@ -29,7 +30,7 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
 
 
 
-//// P u b l i c /////////////////////////////////////////////////////////////////////////
+//// P u b l i c ///////////////////////////////////////////////////////////////////////////////////////
 
 
     /** Builds this target.
@@ -37,18 +38,24 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
     our.build = function()
     {
         var tmpDir = Overware.ensureDir( Paths.get( Build.tmpLoc(), 'javadoc' ));
-        var outDir = Overware.ensureDir( Paths.get(BuildConfig.productLoc) ).resolve( 'javadoc' );
+        var outDir = Overware.ensureDir( Paths.get( BuildConfig.productLoc, 'overware', 'spec',
+          'javadoc' ));
 
         var argInFile = tmpDir.resolve( 'argIn' );
         Files.deleteIfExists( argInFile );
         var out = new PrintWriter( argInFile );
         {
+            var P = Overware.P;
+         // out.append( '-bootclasspath ' ).println( Android.androidJarTested() );
+         /// "class file for java.lang.FunctionalInterface not found" under JDK 1.8 + SDK 22,
+         /// which lacks lambda (functional) expressions, so include JDK bootclass jar too:
+            out.append( '-bootclasspath ' ).append( Build.rtJarTested().toString() )
+              .append( P ).println( Android.androidJarTested() );
             out.println( '-breakiterator' );
             var compileTimeJarArray = Android.compileTimeJarArray(); // no others at present
             var jN = compileTimeJarArray.length;
             if( jN > 0 )
             {
-                var P = Overware.P;
                 out.append( '-classpath ' );
                 for( var j = 0;; )
                 {
@@ -71,6 +78,15 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
               // This also governs the output encoding (-docencoding).
             out.append( '-link http://download.oracle.com/javase/' )
               .append( String(Build.jdkSimpleVersion()) ).println( '/docs/api/' );
+         // out.append( '-linkoffline http://developer.android.com/reference/ ' )
+         //   .println( Paths.get(BuildConfig.androidSDKLoc,'docs','reference') );
+         /// But the resulting links often have broken IDs, because doclets are incompatible.
+          // E.g. "@see Activity#runOnUiThread(Runnable)" generates JDK-1.8-style IDs:
+          // http://developer.android.com/reference/android/app/Activity.html#runOnUiThread-java.lang.Runnable-
+          // while Android continues to use the old style IDs:
+          // http://developer.android.com/reference/android/app/Activity.html#runOnUiThread(java.lang.Runnable)
+          // It's hard to correct this by compiling standard javadocs for Android because javadoc
+          // tags in source are often incompatible too, using the syntax of the custom doclet.
          // out.println( '-linksource' );
          /// instead link to built source (../source/Target.js) consistent with javadoc comments
             out.println( '-noqualifier overware.*' );
@@ -79,6 +95,8 @@ load( overware.Overware.ulocTo( 'overware/spec/build/Build.js' ));
             out.println( '-subpackages overware' );
             out.println( '-use' );
             out.println( "-windowtitle 'Overware Java API'" );
+            out.println( ' -Xdoclint:all,-missing' ); /* verify all javadoc comments, but allow their omission;
+              changing? change also in ../android/Target.js */
             out.close();
         }
         var command = Build.javadocTested() + ' @' + argInFile;

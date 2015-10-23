@@ -10,8 +10,13 @@
         <h2>poll</h2> <!-- <<< deindent -->
 
 <ul>
-    <li>a recording of <a href='vote'>votes</a> on a common set of alternatives</li>
+    <li>a recording of <a href='vote'>votes</a> on a single issue</li>
     </ul>
+<!--
+    - overguidance formalizes just the poll
+        - not the larger issue that it concerns, nor unpolled issues in general
+        - so the name "poll" is favoured over "issue"
+    -->
 
         </body> <!-- >>> reindent -->
     </html>
