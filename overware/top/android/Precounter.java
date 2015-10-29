@@ -139,13 +139,13 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
                 ( meaning one is a person
             [ active turnout
                 - non-action poll types only
-                - recognized as active in corresponding action poll
-                    | where non-action poll is law, action poll is assembly election poll
+                - recognized as active in corresponding "action poll":
+                    | action poll is assembly election poll if non-action poll is law
                         ( as per notebook 2015.7.2
                         - active is he currently predicted to win a seat in the next election
                         - meaning that he is expected to have an official vote in the assembly
                             ( making the results a prediction of future legal code
-                    | otherwise action poll is executive
+                    | else action poll is executive
                         ( partly as per notebook 2015.7.3
                         - active is he voting for an end or intermediate guide on the endward
                           relational path of an executive officer (office pipe) who recognizes him

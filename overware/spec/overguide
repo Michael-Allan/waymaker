@@ -14,15 +14,13 @@
     - SVG saved from Inkscape as "Plain"
         - not "Optimized" (ideal) or marker heads are somehow clipped
     - legend
-        (1) universal collective end
-            ( poll name always '1'
-            (1', g', 0') poll
+        (end) universal collective end
+            ( poll name always 'end'
+            (end', g', act') poll
                 - morally facilitates M2
                 - implemented in guideway
                     - each overguideway typically provides its own guideways, one per poll
                     - guideway form may vary among overguideways
-        (0) personal action
-            ( poll name varies, not usually '0' though
         (r) relation
             - morally facilitates M1
             (r') branches caused by plurality of guides and actions
@@ -30,6 +28,8 @@
             - e.g. theory, myth or plan
         (t) transguide
             - overscripted relations in connection with guide
+        (act) personal action
+            ( poll name varies, not usually 'act' though
     -->
 
         </body> <!-- >>> reindent -->

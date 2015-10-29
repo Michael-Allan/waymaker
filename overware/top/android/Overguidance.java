@@ -23,6 +23,16 @@ public @ThreadRestricted("app main") final class Overguidance extends android.ap
 
 ///////
 
+    /* * *
+    - action cues in overguide UI
+        ( as per notebook 2015.7.3; Precounter.precount count registers
+        - from norms decided by elected officials (laws, ministerial plans, etc) to election
+            - lines "lit up" where a shift of one's electoral vote would help to execute the norm
+        - from all norms to executive
+            - rightward lines show amount of executive recognition on offer
+            - so one can seek executive branches that need help
+      */
+
 
     { lifeStage = INITIALIZING; }
 
@@ -230,7 +240,7 @@ public @ThreadRestricted("app main") final class Overguidance extends android.ap
                 button.setText( "Extend roots" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    private final GuidewayCount guidewayCount = new GuidewayCount( /*poll*/"1" );
+                    private final GuidewayCount guidewayCount = new GuidewayCount( /*poll*/"end" );
                     public void onClick( View _v )
                     {
                         guidewayCount.enqueuePeersRequest( null/*ground*/, forest, /*paddedLimit*/0 );
@@ -267,7 +277,7 @@ public @ThreadRestricted("app main") final class Overguidance extends android.ap
                 Forest.stators.save( og.forest, out );
             }
         });
-        forest = new Forest( /*poll*/"1", feedbackView, this, inP );
+        forest = new Forest( /*poll*/"end", feedbackView, this, inP );
 
       // Forester.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
