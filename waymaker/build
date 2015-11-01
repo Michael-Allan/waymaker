@@ -1,0 +1,39 @@
+#!/usr/bin/env jjs
+/**
+  * build - Build the Waymaker software
+  *********
+  * This build script runs under the Nashorn JavaScript engine (jjs) which is bundled with
+  * Oracle JDK 1.8 and later.  Invoke it like this:
+  *
+  *     $ JDK/bin/jjs waymaker/build [-- TARGET...]
+  *
+  * On Windows, you must use backslashes (\) not slashes (/).  On any platform, if your
+  * shell recognizes the shebang at top (#!) and the execution PATH includes jjs, or a
+  * link to it, then you may directly invoke the script, like this:
+  *
+  *     $ waymaker/build [-- TARGET...]
+  *
+  * Here are some concrete examples: [DD]
+  *
+  *     $ waymaker/build
+  *     $ waymaker/build -- clean
+  *     $ waymaker/build -- android source
+  *
+  * The default target is 'release', which builds a full release.  For more information,
+  * see these files under installation directory waymaker/spec/build/:
+  *
+  *     TARGET/Target.js        Definition of build targets
+  *     BuildConfig.js          Instructions on configuring the build
+  *     BuildConfig_default.js  Catalogue of configuration variables
+  *
+  * Note:
+  *
+  *     [DD] The double-dash delimiter for targets (--) is unfortunately required by jjs.
+  *         http://mail.openjdk.java.net/pipermail/nashorn-dev/2013-October/002265.html
+  */
+this.waymaker = {}; // preliminary boilerplate required in all executable scripts
+load( Java.type('java.nio.file.Paths').get(__DIR__).toUri().resolve(
+  'Waymaker.js' ).toASCIIString() );
+
+load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
+waymaker.spec.build.Build.run();

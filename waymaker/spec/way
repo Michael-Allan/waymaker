@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtdxhtml11.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml' lang='en-CA' xml:lang='en-CA'>
+    <!-- Copyright 2015, Michael Allan.  Licence MIT-Waymaker. -->
+    <head>
+        <title>way</title>
+        </head>
+    <body>
+        <h2>way</h2> <!-- <<< deindent -->
+
+<object data='way.svg' type='image/svg+xml'/>
+<!--
+    - SVG saved from Inkscape as "Plain"
+        - not "Optimized" (ideal) or marker heads are somehow clipped
+    - legend
+        (end) universal collective end
+            ( poll name is always 'end'
+            (end', norm', act') pollar choice given by waymaker
+                - morally facilitates M2
+        (←) relation
+            - morally facilitates M1
+        (norm) action norm
+            - e.g. plan, law, theory, myth
+        (transnorm) transnorm
+            - wayscripted relations in connection with norm
+        (act) personal action
+            ( poll name varies, not usually 'act' though
+    -->
+
+        </body> <!-- >>> reindent -->
+    </html>
