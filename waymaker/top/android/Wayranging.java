@@ -16,15 +16,15 @@ import static waymaker.gen.ActivityLifeStage.*;
 
 /** The principle (and only) activity of this application.
   */
-public @ThreadRestricted("app main") final class Waymaking extends android.app.Activity
+public @ThreadRestricted("app main") final class Wayranging extends android.app.Activity
 {
 
-    private static final PolyStator<Waymaking> stators = new PolyStator<>();
+    private static final PolyStator<Wayranging> stators = new PolyStator<>();
 
 ///////
 
     /* * *
-    - action cues in waymaker UI
+    - action cues in waykit UI
         ( as per notebook 2015.7.3; Precounter.precount count registers
         - from norms decided by elected officials (laws, ministerial plans, etc) to election
             - lines "lit up" where a shift of one's electoral vote would help to execute the norm
@@ -49,7 +49,7 @@ public @ThreadRestricted("app main") final class Waymaking extends android.app.A
         else
         {
             System.err.println( " --- onCreate from saved bundle: " + inB ); // TEST
-            final byte[] state = inB.getByteArray( Waymaking.class.getName() ); // get state from bundle
+            final byte[] state = inB.getByteArray( Wayranging.class.getName() ); // get state from bundle
             // Not following the Android convention of using the bundle to save and restore each complex
             // object as a whole Parcelable, complete with its references to external dependencies.  Rather
             // restoring the complex whole as originally created using constructors and/or initializers to
@@ -78,7 +78,7 @@ public @ThreadRestricted("app main") final class Waymaking extends android.app.A
         - configuration and control of previews in wayrepo-based UI views
           such as pollar forest (precount) and relational graph (wayscript precompilation)
         - deployment
-            - to be shown via ActivityBar
+            - to be shown via ActionBar
                 - via Settings item
                     - via standard Preference UI
                         < http://developer.android.com/guide/topics/ui/settings.html
@@ -270,30 +270,30 @@ public @ThreadRestricted("app main") final class Waymaking extends android.app.A
 
       // Forest.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        if( isFirstConstruction ) stators.add( new StateSaver<Waymaking>()
+        if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
         {
-            public void save( final Waymaking wm, final Parcel out )
+            public void save( final Wayranging wr, final Parcel out )
             {
-                Forest.stators.save( wm.forest, out );
+                Forest.stators.save( wr.forest, out );
             }
         });
         forest = new Forest( /*poll*/"end", feedbackView, this, inP );
 
       // Forester.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        if( isFirstConstruction ) stators.add( new StateSaver<Waymaking>()
+        if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
         {
-            public void save( final Waymaking wm, final Parcel out )
+            public void save( final Wayranging wr, final Parcel out )
             {
-                Forester.stators.save( wm.foresterV.forester(), out );
-                ForesterV.stators.save( wm.foresterV, out );
+                Forester.stators.save( wr.forestV.forester(), out );
+                ForestV.stators.save( wr.forestV, out );
             }
         });
-        foresterV = new ForesterV( new Forester( forest ));
+        forestV = new ForestV( new Forester( forest ));
         if( inP != null ) // restore
         {
-            Forester.stators.restore( foresterV.forester(), inP );
-            ForesterV.stators.restore( foresterV, inP );
+            Forester.stators.restore( forestV.forester(), inP );
+            ForestV.stators.restore( forestV, inP );
         }
 
       // - - -
@@ -390,7 +390,7 @@ public @ThreadRestricted("app main") final class Waymaking extends android.app.A
         }
 
 
-        /** Returns a message to show the user in the event access via an wayrepo treeLoc is denied by
+        /** Returns a message to show the user in the event access via a wayrepo treeLoc is denied by
           * a SecurityException.  How this might occur in normal operation is unclear; maybe after
           * uninstalling the document provider that formed the treeLoc.
           *
@@ -497,7 +497,7 @@ public @ThreadRestricted("app main") final class Waymaking extends android.app.A
             state = outP.marshall(); // (sic) form parcel into state
         }
         finally { outP.recycle(); }
-        outB.putByteArray( Waymaking.class.getName(), state ); // put state into bundle
+        outB.putByteArray( Wayranging.class.getName(), state ); // put state into bundle
     }
 
 
@@ -508,15 +508,15 @@ public @ThreadRestricted("app main") final class Waymaking extends android.app.A
     private TextView feedbackView; // final after onCreate
 
 
-        static { stators.add( new Stator<Waymaking>()
+        static { stators.add( new Stator<Wayranging>()
         {
-            public void save( final Waymaking wm, final Parcel out )
+            public void save( final Wayranging wr, final Parcel out )
             {
-                out.writeString( wm.feedbackView.getText().toString() );
+                out.writeString( wr.feedbackView.getText().toString() );
             }
-            public void restore( final Waymaking wm, final Parcel in )
+            public void restore( final Wayranging wr, final Parcel in )
             {
-                wm.feedbackView.setText( in.readString() );
+                wr.feedbackView.setText( in.readString() );
             }
         });}
 
@@ -526,11 +526,11 @@ public @ThreadRestricted("app main") final class Waymaking extends android.app.A
 
 
 
-    private ForesterV foresterV; // final after make, which adds stator
+    private ForestV forestV; // final after make, which adds stator
 
 
 
-    private static final java.util.logging.Logger logger = LoggerX.getLogger( Waymaking.class );
+    private static final java.util.logging.Logger logger = LoggerX.getLogger( Wayranging.class );
 
 
 

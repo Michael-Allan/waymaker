@@ -9,7 +9,7 @@
   * (com.example.waymaker), are:
   *
   *     $ adb install -r waymaker-0.0/app.apk
-  *     $ adb shell am start -n com.example.waymaker/waymaker.top.android.Waymaking
+  *     $ adb shell am start -n com.example.waymaker/waymaker.top.android.Wayranging
   *
   * To uninstall it:
   *
@@ -68,7 +68,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
         var F = Waymaker.F;
         var relInLoc = 'waymaker' + F + 'top' + F + 'android';
         var javaInFile = tmpDir.resolve( 'javaIn' );
-        Build.writeSourceArgs( [relInLoc + F + 'Waymaking'], javaInFile, javacOutDir );
+        Build.writeSourceArgs( [relInLoc + F + 'Wayranging'], javaInFile, javacOutDir );
 
         if( Files.exists( javaInFile ))
         {

@@ -34,7 +34,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
       *     @param groundState The state of ground on which to base the precount, obtained from
       *       UnadjustedGround.{@linkplain UnadjustedGround#stators stators}, or null to use an empty,
       *       newly constructed ground.
-      *     @see Waymaking#wayrepoTreeLoc()
+      *     @see Wayranging#wayrepoTreeLoc()
       */
    @ThreadSafe Precounter( String _pollName, final byte[] groundState, ContentResolver _contentResolver,
      String _wayrepoTreeLoc )
@@ -163,7 +163,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
         try { provider = contentResolver.acquireContentProviderClient( wayrepoTreeUri ); }
         catch( final SecurityException x )
         {
-            throw new CountFailure( Waymaking.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
+            throw new CountFailure( Wayranging.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
         }
 
         read: try
@@ -175,7 +175,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
             catch( final SecurityException x )
             {
                 // usually but not always thrown first on acquireContentProviderClient above
-                throw new CountFailure( Waymaking.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
+                throw new CountFailure( Wayranging.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
             }
 
             docID = findDirectory( "poll", docID, provider );

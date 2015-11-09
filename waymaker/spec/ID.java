@@ -277,7 +277,7 @@ public class ID implements TriSerialID
                 [ generator
                     - 2 digits, minimal form 00
                     - domain + generator identifies a single tri-serial ID generator
-                    - typically two generators operate per waymaker provider
+                    - typically two generators operate per waykit provider
                         - even and odd
                         - each generates instance serial numbers
                         - if a genarator's numbers become too large for comfort,

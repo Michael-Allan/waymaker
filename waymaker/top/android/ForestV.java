@@ -4,9 +4,9 @@ import java.util.List;
 import waymaker.gen.*;
 
 
-/** A view of a forest by a {@linkplain Forester forester}.
+/** A forest view that is oriented by a {@linkplain Forester forester}.
   */
-@ThreadRestricted("app main") final class ForesterV
+@ThreadRestricted("app main") final class ForestV
 {
     /* * *
     - f-structure as per notebook 2015.1.31
@@ -19,14 +19,16 @@ import waymaker.gen.*;
         - as per notebook 2015.6.1, ad b
       */
 
-    static final PolyStator<ForesterV> stators = new PolyStator<>();
+    static final PolyStator<ForestV> stators = new PolyStator<>();
 
 ///////
 
 
-    /** Constructs a ForesterV.
+    /** Constructs a ForestV.
+      *
+      *     @see #forester()
       */
-    ForesterV( Forester _forester )
+    ForestV( Forester _forester )
     {
         forester = _forester;
         groundWidth = forester.cache().ground().voters().size();
@@ -56,7 +58,7 @@ import waymaker.gen.*;
                 show();
             }
         });
-        System.err.println( " --- ForesterV constructed --------------------------" ); // TEST
+        System.err.println( " --- ForestV constructed --------------------------" ); // TEST
         show();
     }
 
@@ -74,7 +76,7 @@ import waymaker.gen.*;
 
 
 
-    /** The underlying forester that orients this view.
+    /** The forester that orients this view.
       */
     Forester forester() { return forester; }
 

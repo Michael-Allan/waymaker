@@ -14,7 +14,7 @@ public @ThreadSafe final class LoggerX
    /* * *
    - Android logging via "java.util.logging" is hard-filtered to level INFO and higher
        - cannot find an easy way to pass the lower levels
-       - the following (with TAG=wayWaymaking) did not help
+       - the following (with TAG=wayWayranging) did not help
            > adb shell setprop log.tag.TAG VERBOSE
            > adb logcat TAG:V
      */

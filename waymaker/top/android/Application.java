@@ -67,7 +67,7 @@ public @ThreadRestricted("app main") final class Application extends android.app
 
     /** The general preference store for this application.
       *
-      *     @see Waymaking#registerStrongly(SharedPreferences.OnSharedPreferenceChangeListener)
+      *     @see Wayranging#registerStrongly(SharedPreferences.OnSharedPreferenceChangeListener)
       */
     SharedPreferences preferences() { return preferences; }
 

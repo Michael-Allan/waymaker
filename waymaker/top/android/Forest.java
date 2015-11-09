@@ -29,10 +29,10 @@ import static java.util.logging.Level.WARNING;
       *     @see #startRefreshFromWayrepo(TextView)
       *     @param inP The parceled state to restore, or null to restore none.
       */
-    Forest( String _pollName, final TextView refreshFeedbackView, Waymaking _wm, final Parcel inP )
+    Forest( String _pollName, final TextView refreshFeedbackView, Wayranging _wr, final Parcel inP )
     {
         pollName = _pollName;
-        wm = _wm;
+        wr = _wr;
         if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
         final boolean isFirstConstruction;
         if( wasConstructorCalled ) isFirstConstruction = false;
@@ -304,7 +304,7 @@ import static java.util.logging.Level.WARNING;
             finally { out.recycle(); }
         }
         final ContentResolver cResolver = app.getContentResolver(); // grep ContentResolver-TS
-        final String wayrepoTreeLoc = wm.wayrepoTreeLoc();
+        final String wayrepoTreeLoc = wr.wayrepoTreeLoc();
         final int serial = ++tPrecountSerialLast;
 
         tPrecount = new Thread( new Runnable() // grep StartSync
@@ -386,7 +386,7 @@ import static java.util.logging.Level.WARNING;
 
 
 
-    private final Waymaking wm;
+    private final Wayranging wr;
 
 
 
