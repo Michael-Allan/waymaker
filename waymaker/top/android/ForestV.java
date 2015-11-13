@@ -9,14 +9,18 @@ import waymaker.gen.*;
 @ThreadRestricted("app main") final class ForestV
 {
     /* * *
-    - f-structure as per notebook 2015.1.31
+    - f-structure notebook 2015.1.31
         - heaviest nodes at bottom of peers, as that allows voters to slide into peers
+    [ vote control
+        - to right of horizontal voters atop view
+        - when on-path, subject node is either directly there, or upstream
+            - because waypath crosses via transnorm of first pipe downstream of subject
     - peer overflow accessed via page up control atop peers
         - ellipsis form
         - down control appears at bottom of peers, when paged
     - minor peers handled by appendage to final page
         - similar to Votorola
-        - as per notebook 2015.6.1, ad b
+        - notebook 2015.6.1, ad b
       */
 
     static final PolyStator<ForestV> stators = new PolyStator<>();

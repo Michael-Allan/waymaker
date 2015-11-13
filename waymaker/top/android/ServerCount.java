@@ -82,7 +82,7 @@ final class ServerCount
                     - where gFlow is total flow of peer group
                         ( for voter group, inflow of candidate
                         ( for root group, total inflow of roots, viz. turnout
-                            ( not using ground flow registers to calculate turnout, as per notebook 2015.9.30
+                            ( not using ground flow registers to calculate turnout, notebook 2015.9.30
                 - major node has inflow > threshold
                 - as threshold changes it should be easy to isolate range of nodes affected by change
                   and adjust their peer ordinals accordingly

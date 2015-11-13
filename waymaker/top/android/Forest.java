@@ -26,10 +26,9 @@ import static java.util.logging.Level.WARNING;
     /** Constructs a Forest.
       *
       *     @see #pollName()
-      *     @see #startRefreshFromWayrepo(TextView)
       *     @param inP The parceled state to restore, or null to restore none.
       */
-    Forest( String _pollName, final TextView refreshFeedbackView, Wayranging _wr, final Parcel inP )
+    Forest( String _pollName, Wayranging _wr, final Parcel inP )
     {
         pollName = _pollName;
         wr = _wr;
@@ -71,7 +70,7 @@ import static java.util.logging.Level.WARNING;
 
       // - - -
         if( isFirstConstruction ) stators.seal();
-        if( inP == null ) startRefreshFromWayrepo( refreshFeedbackView ); // if new, not restoration
+        if( inP == null ) startRefreshFromWayrepo(); // if new, not restoration
     }
 
 
@@ -103,6 +102,15 @@ import static java.util.logging.Level.WARNING;
 
 
 
+    /** A bell that rings when a note is changed.
+      */
+    Bell<Changed> notaryBell() { return notaryBell; }
+
+
+        private final ReRinger<Changed> notaryBell = Changed.newReRinger();
+
+
+
     /** The name of the poll that was counted to form this forest.
       */
     String pollName() { return pollName; }
@@ -112,24 +120,37 @@ import static java.util.logging.Level.WARNING;
 
 
 
-    /** Initiates a refresh of this forest by attempting to re-read all contributing data, including
-      * position data from the user's local wayrepo, and count data from the remote count server.  A
-      * successful refresh will eventually replace the underlying {@linkplain #cache() cache}, sounding
-      * its bell.
-      *
-      *     @param feedbackView A channel to inform the user of the ultimate result.
+    /** The latest note posted to the user on the ultimate result of a refresh attempt.  Any change in
+      * the return value will be signalled by the {@linkplain #notaryBell() notary bell}.
       */
-    void startRefresh( final TextView feedbackView ) { ensurePrecount( true, feedbackView ); }
+    String refreshNote() { return refreshNote; }
+
+
+        private String refreshNote = "Not yet refreshed";
+
+
+        static { stators.add( new Stator<Forest>()
+        {
+            public void save( final Forest f, final Parcel out ) { out.writeString( f.refreshNote ); }
+            public void restore( final Forest f, final Parcel in ) { f.refreshNote = in.readString(); }
+        });}
+
+
+
+    /** Initiates a refresh of this forest by attempting to re-read all contributing data, including
+      * both position data from the user's local wayrepo, and count data from the remote count server.
+      * A successful refresh eventually replaces the underlying {@linkplain #cache() cache} and sounds
+      * its bell.  User feedback is posted as a {@linkplain #refreshNote() refresh note}.
+      */
+    void startRefresh() { ensurePrecount( true ); }
 
 
 
     /** Initiates a refresh of this forest by attempting to re-read position data from the user’s local
-      * wayrepo.  A successful refresh will eventually replace the underlying {@linkplain #cache()
-      * cache}, sounding its bell.
-      *
-      *     @param feedbackView A channel to inform the user of the ultimate result.
+      * wayrepo.  A successful refresh eventually replaces the underlying {@linkplain #cache() cache}
+      * and sounds its bell.  User feedback is posted as a {@linkplain #refreshNote() refresh note}.
       */
-    void startRefreshFromWayrepo( final TextView feedbackView ) { ensurePrecount( false, feedbackView ); }
+    void startRefreshFromWayrepo() { ensurePrecount( false ); }
 
 
 
@@ -285,7 +306,7 @@ import static java.util.logging.Level.WARNING;
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private void ensurePrecount( final boolean isDeep, final TextView feedbackView )
+    private void ensurePrecount( final boolean isDeep )
     {
         if( tPrecount != null ) tPrecount.interrupt(); // old one no longer wanted, try to tell it
         final Application app = Application.i();
@@ -328,7 +349,8 @@ import static java.util.logging.Level.WARNING;
                             final StringBuilder b = app.stringBuilderClear();
                             b.append( "Refresh " ).append( serial ).append( ": " );
                             ThrowableX.toStringDeeply( x, b );
-                            feedbackView.setText( b.toString() );
+                            refreshNote = b.toString();
+                            notaryBell.ring();
                         }
                     });
                     return;
@@ -352,7 +374,8 @@ import static java.util.logging.Level.WARNING;
 
                         cache = _cache;
                         cacheBell.ring();
-                        feedbackView.setText( "Refresh " + serial + " done" );
+                        refreshNote = "Refresh " + serial + " done";
+                        notaryBell.ring();
                     }
                 });
             }

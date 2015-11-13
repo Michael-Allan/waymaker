@@ -23,16 +23,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 ///////
 
-    /* * *
-    - action cues in waykit UI
-        ( as per notebook 2015.7.3; Precounter.precount count registers
-        - from norms decided by elected officials (laws, ministerial plans, etc) to election
-            - lines "lit up" where a shift of one's electoral vote would help to execute the norm
-        - from all norms to executive
-            - rightward lines show amount of executive recognition on offer
-            - so one can seek executive branches that need help
-      */
-
 
     { lifeStage = INITIALIZING; }
 
@@ -70,7 +60,9 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    private void make()
+    /** @param _inP The parceled state to restore, or null to restore none.
+      */
+    private void make( final Parcel _inP )
     {
       // CONFIGURATION EDITOR FOR OVERREPO PREVIEW.
       // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -114,7 +106,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                       (i.e. in all wayrepo-based UI views) by impatience gesture
                         - such as deselection with immediate reselection
                         - when refresh gesture immediately repeated, depth of effect escalates:
-                            ( as per notebook 2015.6.4
+                            ( notebook 2015.6.4
                             - 1st locally refreshes
                             - 2nd fully refreshes
                 [ feedback view
@@ -182,7 +174,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 });
             }
         }
-        feedbackView = new TextView( this );
         {
             final LinearLayout x = new LinearLayout( this );
             y.addView( x );
@@ -194,7 +185,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 button.setText( "Refresh from wayrepo" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { forest.startRefreshFromWayrepo( feedbackView ); }
+                    public void onClick( View _v ) { forest.startRefreshFromWayrepo(); }
                 });
             }
             {
@@ -205,15 +196,15 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 button.setText( "From all sources" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { forest.startRefresh( feedbackView ); }
+                    public void onClick( View _v ) { forest.startRefresh(); }
                 });
             }
         }
 
       // Feedback view.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        y.addView( feedbackView );
-        if( isCreatedAnew ) feedbackView.setText( "Not yet refreshed" );
+        final TextView noteView = new TextView( this );
+        y.addView( noteView );
 
 
       // MISCELLANEOUS TOOLS.
@@ -248,17 +239,11 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 });
             }
         }
-    }
+        final Parcel inP = _inP;
 
 
-
-    /** @param inP The parceled state to restore, or null to restore none.
-      */
-    private void make( final Parcel inP )
-    {
-        // here following the pattern of restoring (inP) constructors elsewhere
-
-        make(); // whatever can be made without inline restoration
+      // IN-LINE RESTORATION.  (here following the pattern of restoring (inP) constructors elsewhere)
+      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
         final boolean isFirstConstruction;
         if( wasConstructorCalled ) isFirstConstruction = false;
@@ -277,7 +262,13 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 Forest.stators.save( wr.forest, out );
             }
         });
-        forest = new Forest( /*poll*/"end", feedbackView, this, inP );
+        forest = new Forest( /*poll*/"end", this, inP );
+        forest.notaryBell().register( new Auditor<Changed>()
+        { // no need to unregister, registry does not outlive this registrant
+            public void hear( Changed _ding ) { update(); }
+            private void update() { noteView.setText( forest.refreshNote() ); }
+            { update(); } // init
+        });
 
       // Forester.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -503,23 +494,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
-
-
-    private TextView feedbackView; // final after onCreate
-
-
-        static { stators.add( new Stator<Wayranging>()
-        {
-            public void save( final Wayranging wr, final Parcel out )
-            {
-                out.writeString( wr.feedbackView.getText().toString() );
-            }
-            public void restore( final Wayranging wr, final Parcel in )
-            {
-                wr.feedbackView.setText( in.readString() );
-            }
-        });}
-
 
 
     private Forest forest; // final after make, which adds stator

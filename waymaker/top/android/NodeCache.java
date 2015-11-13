@@ -12,7 +12,7 @@ interface NodeCache
 {
     /* * *
     - cache inconsistency due to lazy growth is detected by repocaster serial number (RepocastSer)
-        ( as per notebook 2015.5.27
+        ( notebook 2015.5.27
         - to detect
             - remote count server (re)stamps with current repocaster serial number
                 - each (re)counted node
