@@ -5,11 +5,11 @@ import android.net.Uri;
 import android.os.*;
 import android.view.View;
 import android.widget.*;
-import java.util.ArrayList;
 import waymaker.gen.*;
 
 import static android.content.Intent.ACTION_OPEN_DOCUMENT;
 import static android.content.Intent.ACTION_OPEN_DOCUMENT_TREE;
+import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import static java.util.logging.Level.WARNING;
 import static waymaker.gen.ActivityLifeStage.*;
 
@@ -117,16 +117,26 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         final LinearLayout y = new LinearLayout( this );
         setContentView( y );
         y.setOrientation( LinearLayout.VERTICAL );
+        final SharedPreferences preferences = Application.i().preferences();
         {
           // Wayrepo location view.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             final TextView view = new TextView( this );
             y.addView( view );
-            registerStrongly( new SharedPreferences.OnSharedPreferenceChangeListener()
+            preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
             {
-                { set(); } // init
-                private void set() { view.setText( wayrepoTreeLoc() ); }
-                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { set(); }
+                {
+                    relay(); // init
+                    Object lifeStageAuditor = preferencesUnregisterOnDestruction( this );
+                      // no need to unregister auditor, registry does not outlive this registrant
+                }
+                private void relay()
+                {
+                    String text = wayrepoTreeLoc();
+                    if( text == null ) text = "location unspecified";
+                    view.setText( text );
+                }
+                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
             });
         }
         {
@@ -187,13 +197,24 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 {
                     public void onClick( View _v ) { forest.startRefreshFromWayrepo(); }
                 });
+                preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
+                {
+                    {
+                        relay(); // init
+                        Object lifeStageAuditor = preferencesUnregisterOnDestruction( this );
+                          // no need to unregister auditor, registry does not outlive this registrant
+                    }
+                    private void relay() { button.setEnabled( wayrepoTreeLoc() != null ); }
+                      // hint to user that refresh without a wayrepo is pointless
+                    public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
+                });
             }
             {
               // Full refresh button, to refresh from all sources.
               // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 final Button button = new Button( this );
                 x.addView( button );
-                button.setText( "From all sources" );
+                button.setText( "from all" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
                     public void onClick( View _v ) { forest.startRefresh(); }
@@ -265,9 +286,9 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         forest = new Forest( /*poll*/"end", this, inP );
         forest.notaryBell().register( new Auditor<Changed>()
         { // no need to unregister, registry does not outlive this registrant
-            public void hear( Changed _ding ) { update(); }
-            private void update() { noteView.setText( forest.refreshNote() ); }
-            { update(); } // init
+            { relay(); } // init
+            private void relay() { noteView.setText( forest.refreshNote() ); }
+            public void hear( Changed _ding ) { relay(); }
         });
 
       // Forester.
@@ -344,7 +365,10 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       *     @see <a href='https://developer.android.com/about/versions/android-5.0.html#DirectorySelection'
       *       target='_top'>Android 5.0 § Directory selection</a>
       */
-    String wayrepoTreeLoc() { return preferences.getString( "wayrepoTreeLoc", /*default*/null ); }
+    String wayrepoTreeLoc()
+    {
+        return Application.i().preferences().getString( "wayrepoTreeLoc", /*default*/null );
+    }
 
 
         private void wayrepoTreeLoc( final Uri uri )
@@ -357,7 +381,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 try { r.releasePersistableUriPermission( Uri.parse(locOld), flags ); }
                 catch( final SecurityException x ) { logger.info( x.toString() ); }
             }
-            final SharedPreferences.Editor e = preferences.edit();
+            final SharedPreferences.Editor e = Application.i().preferences().edit();
             if( uri == null ) e.remove( "wayrepoTreeLoc" );
             else
             {
@@ -391,37 +415,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         {
             return "Cannot access wayrepo via " + treeLoc
               + "\nTry using the wayrepo preview to reselect its location";
-        }
-
-
-
-    /** Adds a change listener to the {@linkplain Application#preferences() general preference store}
-      * and holds its reference in this activity.  This convenience method is a workaround for the
-      * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
-      * target='_top'>weak register</a> in the store.
-      *
-      *     @see #unregisterStrongly(SharedPreferences.OnSharedPreferenceChangeListener)
-      */
-    void registerStrongly( final SharedPreferences.OnSharedPreferenceChangeListener l )
-    {
-        preferences.registerOnSharedPreferenceChangeListener( l );
-        strongRegister.add( l );
-    }
-
-
-        private final ArrayList<SharedPreferences.OnSharedPreferenceChangeListener> strongRegister =
-          new ArrayList<>();
-
-
-        /** Removes a change listener from the {@linkplain Application#preferences() general preference
-          * store} and releases its reference from this activity.
-          *
-          *     @see #registerStrongly(SharedPreferences.OnSharedPreferenceChangeListener)
-          */
-        void unregisterStrongly( final SharedPreferences.OnSharedPreferenceChangeListener l )
-        {
-            preferences.unregisterOnSharedPreferenceChangeListener( l );
-            strongRegister.remove( l );
         }
 
 
@@ -508,7 +501,59 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    private static final SharedPreferences preferences = Application.i().preferences();
+ // /** Adds a change listener to the {@linkplain Application#preferences() general preference store}
+ //   * and holds its reference in this activity.  This convenience method is a workaround for the
+ //   * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
+ //   * target='_top'>weak register</a> in the store.
+ //   */
+ // private void preferencesRegisterStrongly( final OnSharedPreferenceChangeListener l )
+ // {
+ //     Application.i().preferences().registerOnSharedPreferenceChangeListener( l );
+ //     preferencesStrongRegister.add( l );
+ // }
+ //
+ //
+ //     private final ArrayList<OnSharedPreferenceChangeListener> preferencesStrongRegister =
+ //       new ArrayList<>();
+ //
+ //
+ //     /** Removes a change listener from the {@linkplain Application#preferences() general preference
+ //       * store} and releases its reference from this activity.
+ //       */
+ //     private void preferencesUnregisterStrongly( final OnSharedPreferenceChangeListener l )
+ //     {
+ //         Application.i().preferences().unregisterOnSharedPreferenceChangeListener( l );
+ //         preferencesStrongRegister.remove( l );
+ //     }
+ //
+ /// not actually needed yet; agents (such as unregisterOnDestruction) that unregister the listeners
+ /// all happen to be strongly held, with consequence that listener itself is strongly held
+
+
+
+    /** Schedules the listener to be unregistered
+      * from the {@linkplain Application#preferences() general preference store}
+      * when this activity is destroyed.  This convenience method happens also to defeat the
+      * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
+      * target='_top'>weak register</a> in the store by holding a strong reference to the listener.
+      *
+      *     @return The auditor of the {@linkplain #lifeStageBell() life stage bell} that is responsible
+      *       soley for unregistering the listener.
+      */
+    private Auditor<Changed> preferencesUnregisterOnDestruction( final OnSharedPreferenceChangeListener l )
+    {
+        final Auditor<Changed> auditor = new Auditor<Changed>()
+        {
+            public void hear( Changed _ding )
+            {
+                if( lifeStage != DESTROYING ) return;
+
+                Application.i().preferences().unregisterOnSharedPreferenceChangeListener( l );
+            }
+        };
+        lifeStageBell.register( auditor );
+        return auditor;
+    }
 
 
 

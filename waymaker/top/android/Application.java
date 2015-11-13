@@ -65,9 +65,9 @@ public @ThreadRestricted("app main") final class Application extends android.app
 
 
 
-    /** The general preference store for this application.
-      *
-      *     @see Wayranging#registerStrongly(SharedPreferences.OnSharedPreferenceChangeListener)
+    /** The general preference store for this application.  Be aware that its change listeners are only
+      * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
+      * target='_top'>weakly registered</a>.
       */
     SharedPreferences preferences() { return preferences; }
 
