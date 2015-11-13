@@ -1,5 +1,7 @@
 <?xml version='1.0'?><!-- incomplete template -->
 <manifest xmlns:a='http://schemas.android.com/apk/res/android' a:versionCode='0' a:versionName='0'>
+	<uses-sdk a:minSdkVersion='21' a:targetSdkVersion='23'/>
+                 <!-- requires 21 for SAF directory selection in Wayranging.wayrepoTreeLoc -->
     <application a:name='waymaker.top.android.Application'>
         <activity a:name='waymaker.top.android.Wayranging'>
              <intent-filter>
