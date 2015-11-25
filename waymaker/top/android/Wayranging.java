@@ -25,7 +25,11 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
     { lifeStage = INITIALIZING; }
+{ System.err.println( " --- init activity on thread " + Thread.currentThread() ); } // TEST, esp. for stators
 
+
+
+   // ` c r e a t i o n ````````````````````````````````````````````````````````````````````````````````
 
 
     protected @Override void onCreate( final Bundle inB )
@@ -35,7 +39,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         lifeStage = CREATING;
         lifeStageBell.ring();
         super.onCreate( inB );
-        if( isCreatedAnew ) make( null );
+        if( isCreatedAnew ) create( null );
         else
         {
             System.err.println( " --- onCreate from saved bundle: " + inB ); // TEST
@@ -50,7 +54,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             {
                 inP.unmarshall( state, 0, state.length ); // (sic) form state into parcel
                 inP.setDataPosition( 0 ); // (undocumented requirement)
-                make( inP );
+                create( inP );
             }
             finally { inP.recycle(); }
         }
@@ -62,9 +66,9 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
     /** @param _inP The parceled state to restore, or null to restore none.
       */
-    private void make( final Parcel _inP )
+    private void create( final Parcel _inP )
     {
-      // CONFIGURATION EDITOR FOR OVERREPO PREVIEW.
+      // CONFIGURATION EDITOR FOR WAYREPO PREVIEW.
       // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         /* * *
         - configuration and control of previews in wayrepo-based UI views
@@ -127,8 +131,8 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             {
                 {
                     relay(); // init
-                    Object lifeStageAuditor = preferencesUnregisterOnDestruction( this );
-                      // no need to unregister auditor, registry does not outlive this registrant
+                    Object unregistrationAgent = preferencesUnregisterOnDestruction( this );
+                      // no need to unregister the agent itself, its registry does not outlive it
                 }
                 private void relay()
                 {
@@ -164,12 +168,12 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                     public void onClick( View _v )
                     {
                         final int req =
-                          REQ_OVERREPO;
+                          REQ_WAYREPO;
                        // REQ_DOCUMENT; // TEST mostly just to doc this type of request, which is more common
                         final Intent intent;
                         try
                         {
-                            if( req == REQ_OVERREPO ) intent = new Intent( ACTION_OPEN_DOCUMENT_TREE );
+                            if( req == REQ_WAYREPO ) intent = new Intent( ACTION_OPEN_DOCUMENT_TREE );
                             else
                             {
                                 intent = new Intent( ACTION_OPEN_DOCUMENT );
@@ -195,14 +199,14 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 button.setText( "Refresh from wayrepo" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { forest.startRefreshFromWayrepo(); }
+                    public void onClick( View _v ) { forests.startRefreshFromWayrepo( wayrepoTreeLoc() ); }
                 });
                 preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
                 {
                     {
                         relay(); // init
-                        Object lifeStageAuditor = preferencesUnregisterOnDestruction( this );
-                          // no need to unregister auditor, registry does not outlive this registrant
+                        Object unregistrationAgent = preferencesUnregisterOnDestruction( this );
+                          // no need to unregister the agent itself, its registry does not outlive it
                     }
                     private void relay() { button.setEnabled( wayrepoTreeLoc() != null ); }
                       // hint to user that refresh without a wayrepo is pointless
@@ -217,7 +221,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 button.setText( "from all" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { forest.startRefresh(); }
+                    public void onClick( View _v ) { forests.startRefresh( wayrepoTreeLoc() ); }
                 });
             }
         }
@@ -252,15 +256,16 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 button.setText( "Extend roots" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    private final ServerCount serverCount = new ServerCount( /*poll*/"end" );
                     public void onClick( View _v )
                     {
-                        serverCount.enqueuePeersRequest( null/*ground*/, forest, /*paddedLimit*/0 );
+                        final Forest forest = forests.get( "end" );
+                        new ServerCount(forest.pollName()).enqueuePeersRequest( null/*ground*/, forest,
+                          /*paddedLimit*/0 );
                     }
                 });
             }
         }
-        final Parcel inP = _inP;
+        final Parcel inP/*grep CtorRestore*/ = _inP;
 
 
       // IN-LINE RESTORATION.  (here following the pattern of restoring (inP) constructors elsewhere)
@@ -274,22 +279,23 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             wasConstructorCalled = true;
         }
 
-      // Forest.
+      // Forests.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
         {
             public void save( final Wayranging wr, final Parcel out )
             {
-                Forest.stators.save( wr.forest, out );
+                ForestCache.stators.save( wr.forests, out );
             }
         });
-        forest = new Forest( /*poll*/"end", this, inP );
-        forest.notaryBell().register( new Auditor<Changed>()
+        forests = new ForestCache( inP/*by CtorRestore*/ );
+        forests.notaryBell().register( new Auditor<Changed>()
         { // no need to unregister, registry does not outlive this registrant
             { relay(); } // init
-            private void relay() { noteView.setText( forest.refreshNote() ); }
+            private void relay() { noteView.setText( forests.refreshNote() ); }
             public void hear( Changed _ding ) { relay(); }
         });
+        if( isFirstConstruction ) forests.startRefreshFromWayrepo( wayrepoTreeLoc() );
 
       // Forester.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -301,7 +307,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 ForestV.stators.save( wr.forestV, out );
             }
         });
-        forestV = new ForestV( new Forester( forest ));
+        forestV = new ForestV( new Forester( forests/*by CtorRestore*/.getOrMakeForest( "end" )));
         if( inP != null ) // restore
         {
             Forester.stators.restore( forestV.forester(), inP );
@@ -314,7 +320,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    private static boolean wasConstructorCalled; /* or more correctly 'wasMakeCalled',
+    private static boolean wasConstructorCalled; /* or more correctly 'wasCreateCalled',
       but here following the pattern of restoring (inP) constructors elsewhere */
 
 
@@ -358,7 +364,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    /** The location of the user’s wayrepo in the form of a "tree URI", or null if no location is
+    /** The access location of the user’s wayrepo in the form of a "tree URI", or null if no location is
       * known.  The return value is backed by the {@linkplain Application#preferences() general
       * preference store}.
       *
@@ -405,8 +411,8 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         }
 
 
-        /** Returns a message to show the user in the event access via a wayrepo treeLoc is denied by
-          * a SecurityException.  How this might occur in normal operation is unclear; maybe after
+        /** Returns a message for the user stating that access via the given wayrepo treeLoc is denied
+          * by a SecurityException.  How this might happen in normal operation is unclear; maybe after
           * uninstalling the document provider that formed the treeLoc.
           *
           *     @see #wayrepoTreeLoc()
@@ -434,7 +440,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             return;
         }
 
-        if( req != REQ_OVERREPO ) throw new IllegalStateException( "Unrecognized req: " + req );
+        if( req != REQ_WAYREPO ) throw new IllegalStateException( "Unrecognized req: " + req );
 
         if( res != RESULT_OK )
         {
@@ -489,11 +495,11 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private Forest forest; // final after make, which adds stator
+    private ForestCache forests; // final after create, which adds stator
 
 
 
-    private ForestV forestV; // final after make, which adds stator
+    private ForestV forestV; // final after create, which adds stator
 
 
 
@@ -537,8 +543,8 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
       * target='_top'>weak register</a> in the store by holding a strong reference to the listener.
       *
-      *     @return The auditor of the {@linkplain #lifeStageBell() life stage bell} that is responsible
-      *       soley for unregistering the listener.
+      *     @return The agent that is responsible soley for unregistering the listener.  The agent is
+      *       implemented as an auditor of the {@linkplain #lifeStageBell() life stage bell}.
       */
     private Auditor<Changed> preferencesUnregisterOnDestruction( final OnSharedPreferenceChangeListener l )
     {
@@ -557,7 +563,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    private static final int REQ_OVERREPO = 0; // using SAF [SAF] ACTION_OPEN_DOCUMENT_TREE
+    private static final int REQ_WAYREPO = 0; // using SAF [SAF] ACTION_OPEN_DOCUMENT_TREE
 
     private static final int REQ_DOCUMENT = 1; /* using SAF [SAF] ACTION_OPEN_DOCUMENT (single,
       isolated doc) for regression testing of this action in external Android SMBProvider app */

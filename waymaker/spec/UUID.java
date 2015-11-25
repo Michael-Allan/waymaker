@@ -32,6 +32,47 @@ public abstract class UUID extends ID implements TriSerialUUID
 
 
 
+   // --------------------------------------------------------------------------------------------------
+
+
+    /** A comparator based on the {@linkplain #compareUniversally(TriSerialUUID) universal comparison}.
+      * It accepts null identifiers.
+      */
+    public static final Comparator<TriSerialUUID> comparatorUniversal = new Comparator<TriSerialUUID>()
+    {
+        public int compare( final TriSerialUUID i, final TriSerialUUID j )
+        {
+            if( i == j ) return 0; // short cut, optimizing for a common case
+
+            if( i == null ) return -1;
+
+            if( j == null ) return 1;
+
+            return ((UUID)i).compareUniversally( j );
+        }
+    };
+
+
+
+    /** Compares this identifier to the other based on both its scope and serial numbers.  Does no
+      * preliminary "other == this" short cutting, but instead lets the caller do that.
+      *
+      *     @return A negative number, zero, or a positive number as this identifier is less less than,
+      *       equal to, or greater than the other.
+      *     @throws NullPointerException if other is null.
+      */
+    final int compareUniversally( final TriSerialUUID _other )
+    {
+        final UUID other = (UUID)_other; // gain accesss to package-protected scopeByte for faster comparison
+        int result = Byte.compare( scopeByte(), other.scopeByte() ); // or throws NullPointerException
+        assert Integer.signum(result) == Integer.signum(scope().compareTo(other.scope()));
+          // byte-form comparisons are consistent with name form, as name alone is canonical
+        if( result == 0 ) result = compareNumerically( other );
+        return result;
+    }
+
+
+
     /** Constructs a UUID by adopting a byte array that encodes its serial numbers.  The new identifier
       * will thenceforth own the given array; do not alter its contents.
       *
@@ -80,47 +121,6 @@ public abstract class UUID extends ID implements TriSerialUUID
             }
         }
         throw new MalformedID( "Bad scope suffix", scopedString );
-    }
-
-
-
-   // --------------------------------------------------------------------------------------------------
-
-
-    /** A comparator based on the {@linkplain #compareUniversally(TriSerialUUID) universal comparison}.
-      * It accepts null identifiers.
-      */
-    public static final Comparator<TriSerialUUID> comparatorUniversal = new Comparator<TriSerialUUID>()
-    {
-        public int compare( final TriSerialUUID i, final TriSerialUUID j )
-        {
-            if( i == j ) return 0; // short cut, optimizing for a common case
-
-            if( i == null ) return -1;
-
-            if( j == null ) return 1;
-
-            return ((UUID)i).compareUniversally( j );
-        }
-    };
-
-
-
-    /** Compares this identifier to the other based on both its scope and serial numbers.  Does no
-      * preliminary "other == this" short cutting, but instead lets the caller do that.
-      *
-      *     @return A negative number, zero, or a positive number as this identifier is less less than,
-      *       equal to, or greater than the other.
-      *     @throws NullPointerException if other is null.
-      */
-    final int compareUniversally( final TriSerialUUID _other )
-    {
-        final UUID other = (UUID)_other; // gain accesss to package-protected scopeByte for faster comparison
-        int result = Byte.compare( scopeByte(), other.scopeByte() ); // or throws NullPointerException
-        assert Integer.signum(result) == Integer.signum(scope().compareTo(other.scope()));
-          // byte-form comparisons are consistent with name form, as name alone is canonical
-        if( result == 0 ) result = compareNumerically( other );
-        return result;
     }
 
 

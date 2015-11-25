@@ -1,12 +1,13 @@
 package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
+import android.os.Parcel;
 import waymaker.spec.VotingID;
 
 
 /** A partial store of the nodes that contribute to a {@linkplain Forest pollar forest}.  Although it
-  * might comprise just the {@linkplain #ground() ground pseudo-node} initially, it will grow
-  * {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) on demand} as further
-  * nodal data is received from the server count engine.
+  * might initially comprise just the {@linkplain #ground() ground pseudo-node}, it can grow on demand
+  * by {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) requesting} further nodal
+  * data from the count server.
   */
 interface NodeCache
 {
@@ -37,6 +38,13 @@ interface NodeCache
             - serial number of user node is returned for all requests
                 - any change (e.g. by parallel modification) invalidates cache
       */
+
+
+    /** Extra node capacity for newly constructed caches: {@value}.  This addition of space is traded
+      * for a reduction of time in rehashes.
+      */
+    static final int INITIAL_HEADROOM = 30;
+
 
 
    // - N o d e - C a c h e ----------------------------------------------------------------------------

@@ -2,12 +2,12 @@ package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Way
 
 import java.util.Map;
 import waymaker.gen.ThreadSafe;
-import waymaker.spec.VotingID;
+import waymaker.spec.*;
 
 
 /** A pollar count at the remote count server.
   */
-final class ServerCount
+final @ThreadSafe class ServerCount
 {
     /* * *
     - redundant requests
@@ -32,7 +32,7 @@ final class ServerCount
 
     /** Constructs a ServerCount.
       */
-    @ThreadSafe ServerCount( final String pollName ) { this.pollName = pollName; }
+    ServerCount( final String pollName ) { this.pollName = pollName; }
 
 
 
@@ -146,6 +146,13 @@ final class ServerCount
         /* * *
         - must also detect and throw exception on serial inconstency (RepocastSer)
           */
+
+
+
+    /** Answers whether the given string is a well formed poll name, that is a well formed rep
+      * {@linkplain ID#isSerialForm(String) serial number}.
+      */
+    static boolean isPollNameForm( final String string ) { return ID.isSerialForm( string ); }
 
 
 

@@ -11,21 +11,18 @@ import java.util.*;
   *     @param <S> The type of saving kit.
   *     @param <R> The type of restoration kit.
   */
-public final class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
+public @ThreadRestricted("app main") class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
 {
 
-    // Changing?  See also PolyStatorSR.
 
-
-    /** Constructs a KittedPolyStatorSR.  Be sure to seal it after adding all component stators, and before
-      * using it.
+    /** Constructs a KittedPolyStatorSR.  Seal it after adding all component stators, and before using it.
       */
-    public @ThreadSafe KittedPolyStatorSR() {}
+    public KittedPolyStatorSR() {}
 
 
 
-    /** Constructs a KittedPolyStatorSR with the given stator as its initial component.  Be sure to seal it
-      * after adding all component stators, and before using it.
+    /** Constructs a KittedPolyStatorSR with the given stator as its initial component.  Seal it after
+      * adding all component stators, and before using it.
       */
     public KittedPolyStatorSR( final KittedStatorSR<? super T, ? super S, ? super R> stator ) { add( stator ); }
 
@@ -38,7 +35,7 @@ public final class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
       *
       *     @throws IllegalStateException if this poly-stator is already sealed.
       */
-    public void add( final KittedStatorSR<? super T, ? super S, ? super R> stator )
+    public final void add( final KittedStatorSR<? super T, ? super S, ? super R> stator )
     {
         try { stators.add( stator ); }
         catch( final UnsupportedOperationException x )
@@ -50,9 +47,20 @@ public final class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
 
 
 
+    /** The synchronization lock for the composition of all poly-stators.
+      * Threads other than "app main" that save or restore state via a poly-stator must first
+      * <a href='ThreadRestricted.html#touch'>touch-synchronize</a>
+      * on the intrinsic monitor lock of COMPOSITION_LOCK.
+      */
+    public static final Object COMPOSITION_LOCK = new Object(); /* so a single touch suffices for access
+      to the poly-stator, any poly-stator nested as its component, and any other poly-stator indirectly
+      referenced during the save or restore */
+
+
+
     /** Removes the facility to add new component stators, freeing memory.
       */
-    public void seal()
+    public final void seal()
     {
         if( stators.getClass().equals( ListOnArray.class ))
         {
@@ -64,16 +72,18 @@ public final class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
         final @SuppressWarnings({ "rawtypes", "unchecked" })
           KittedStatorSR<? super T, ? super S, ? super R>[] statorArray = new KittedStatorSR[stators.size()];
         stators = new ListOnArray<>( stators.toArray( statorArray ));
+        synchronized( COMPOSITION_LOCK ) {} // as per stators
     }
 
 
 
-   // - S t a t o r - S - R ----------------------------------------------------------------------------
+   // - K i t t e d - S t a t o r - S - R --------------------------------------------------------------
 
 
     /** @throws AssertionError if assertions are enabled and this poly-stator is still unsealed.
       */
-    public void save( final T t, final Parcel out, S kit )
+      @ThreadRestricted("touch COMPOSITION_LOCK before") // as per stators
+    public final void save( final T t, final Parcel out, S kit )
     {
         assert stators.getClass().equals( ListOnArray.class ): "Poly-stator is sealed";
         for( KittedStatorSR<? super T, ? super S, ? super R> s: stators ) s.save( t, out, kit );
@@ -83,7 +93,8 @@ public final class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
 
     /** @throws AssertionError if assertions are enabled and this poly-stator is still unsealed.
       */
-    public void restore( final T t, final Parcel in, final R kit )
+      @ThreadRestricted("touch COMPOSITION_LOCK before") // as per stators
+    public final void restore( final T t, final Parcel in, final R kit )
     {
         assert stators.getClass().equals( ListOnArray.class ): "Poly-stator is sealed";
         for( KittedStatorSR<? super T, ? super S, ? super R> s: stators ) s.restore( t, in, kit );
@@ -94,6 +105,7 @@ public final class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
+      @ThreadRestricted("touch COMPOSITION_LOCK") // for visibility of both array and elements
     private List<KittedStatorSR<? super T, ? super S, ? super R>> stators = new ArrayList<>();
 
 

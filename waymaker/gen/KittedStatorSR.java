@@ -16,7 +16,7 @@ public interface KittedStatorSR<T,S,R>
 {
 
 
-   // - S t a t o r - S - R ----------------------------------------------------------------------------
+   // - K i t t e d - S t a t o r - S - R --------------------------------------------------------------
 
 
     /** Saves state from the thing, writing out to the parcel.

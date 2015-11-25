@@ -27,7 +27,7 @@ public final class ReRinger<D extends Ding<D>> implements Bell<D>
 
     /** The ding that is emitted on each ring of the bell.
       */
-    public D ding() { return ding; }
+    public @ThreadSafe D ding() { return ding; }
 
 
         private final D ding;

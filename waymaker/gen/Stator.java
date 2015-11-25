@@ -14,9 +14,6 @@ public abstract class Stator<T> implements KittedStatorSR<T,Object,Object>
 {
 
 
-   // - S t a t o r ------------------------------------------------------------------------------------
-
-
     /** Saves state from the thing, writing out to the parcel.
       */
     public abstract void save( T t, Parcel out );
@@ -29,7 +26,7 @@ public abstract class Stator<T> implements KittedStatorSR<T,Object,Object>
 
 
 
-   // - S t a t o r - S - R ----------------------------------------------------------------------------
+   // - K i t t e d - S t a t o r - S - R --------------------------------------------------------------
 
 
     public final void save( final T t, final Parcel out, Object unusedKit ) { save( t, out); }

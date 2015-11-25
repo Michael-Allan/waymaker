@@ -16,13 +16,6 @@ public abstract class CopyOnResizeArrayList<E> implements List<E>, RandomAccess
 {
 
 
-    public @ThreadSafe CopyOnResizeArrayList() {}
-
-
-
-   // --------------------------------------------------------------------------------------------------
-
-
     /** Sets the elements by setting the underlying array, which is thenceforth owned by this list.
       */
     public void array( final E[] _array ) { array = _array; }

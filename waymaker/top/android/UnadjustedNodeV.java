@@ -65,7 +65,7 @@ abstract class UnadjustedNodeV extends UnadjustedNode
       // c.
       // - - -
         final UnadjustedNode1 voter = new UnadjustedNode1( id, peerOrdinal, rootwardHither );
-        kit.cache( voter );
+        kit.encache( voter );
         UnadjustedNode1.stators.restore( voter, in, kit );
         return voter;
     }
@@ -241,9 +241,9 @@ abstract class UnadjustedNodeV extends UnadjustedNode
 
        // - U n a d j u s t e d - N o d e - V . R - K i t ----------------------------------------------
 
-        /** Stores a restored node in the {@linkplain Forest#cache() forest cache}.
+        /** Stores a restored node in the {@linkplain Forest#nodeCache() node cache}.
           */
-        public void cache( final UnadjustedNode node );
+        public void encache( final UnadjustedNode node );
 
 
         /** Adds a restored node to the list of {@linkplain SKit#outlyingVotersUna()

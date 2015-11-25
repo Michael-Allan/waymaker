@@ -4,8 +4,8 @@ import java.util.List;
 import waymaker.gen.*;
 
 
-/** An agent to move incrementally through the forest structure of a pollar count.  Motion is commanded
-  * by the following methods:
+/** An agent to move incrementally through forests.  Motion in a particular forest is commanded by the
+  * following methods:
   *
   * <ul>
   *     <li>{@linkplain #ascendToVoter(Node) ascendToVoter}</li>
@@ -27,17 +27,21 @@ import waymaker.gen.*;
       *
       *     @see #forest()
       */
-    Forester( Forest _forest )
+    Forester( final Forest forest )
     {
-        forest = _forest;
-        cache = forest.cache();
-        candidate = cache.ground();
-        forest.cacheBell().register( new Auditor<Changed>() // TEST
+        this.forest = forest;
+        forestCache = forest.forestCache();
+        nodeCache = forest.nodeCache();
+        candidate = nodeCache.ground();
+        forestCache.nodeCacheBell().register( new Auditor<Changed>() // TEST
         {
             public void hear( Changed _ding )
             {
-                cache = forest.cache();
-                candidate = cache.ground(); // pending code to attempt something less disruptive
+                final NodeCache _nodeCache = forest.nodeCache();
+                if( _nodeCache == nodeCache ) return;
+
+                nodeCache = _nodeCache;
+                candidate = nodeCache.ground(); // pending code to attempt something less disruptive
                 node = null;
                 bell.ring();
             }
@@ -63,7 +67,7 @@ import waymaker.gen.*;
 
 
 
-    /** A bell that rings when this forester moves or experiences a cache change.
+    /** A bell that rings when this forester moves or experiences a node cache change.
       */
     Bell<Changed> bell() { return bell; }
 
@@ -72,20 +76,10 @@ import waymaker.gen.*;
 
 
 
-    /** The current cache of nodes that defines the forest structure.  Any change in the return value
-      * will be signalled by the {@linkplain #bell() bell}.
-      */
-    NodeCache cache() { return cache; }
-
-
-        private NodeCache cache; // may temporarily lag forest.cache instance, till change propagates here
-
-
-
-    /** The node directly rootward on which the position of this forester is immediately based.  Any
-      * change in the return value will be signalled by the {@linkplain #bell() bell}.  The value is
-      * identical to node.{@linkplain Node#rootwardInPrecount() rootwardInPrecount}.candidate when the
-      * node is non-null, and is never itself null.
+    /** The node directly rootward of this forester’s specific position ({@linkplain #node() node}).
+      * Any change in the return value will be signalled by the {@linkplain #bell() bell}.  The value is
+      * identical to {@linkplain #node() node}.rootwardInPrecount.candidate when {@linkplain #node()
+      * node} is non-null, and is never itself null.
       *
       *     @return Either a real node or the {@linkplain NodeCache#ground() ground pseudo-node}.
       */
@@ -105,12 +99,21 @@ import waymaker.gen.*;
 
 
 
-    /** The forest in which this forester moves.
+    /** The forest in which this forester now moves.
       */
     Forest forest() { return forest; }
 
 
         private final Forest forest;
+
+
+
+    /** The store of each forest.
+      */
+    ForestCache forestCache() { return forestCache; }
+
+
+        private final ForestCache forestCache;
 
 
 
@@ -127,14 +130,26 @@ import waymaker.gen.*;
 
 
 
-    /** The nodal position of this forester in the forest, or null if the position is unspecified.  Any
-      * change in the return value will be signalled by the {@linkplain #bell() bell}.  When the value
-      * is null and the {@linkplain #candidate() candidate} is ground, the forester is ‘grounded’.
+    /** The specific position of this forester in the forest, or null if the position is unspecified.
+      * Any change in the return value will be signalled by the {@linkplain #bell() bell}.  The general
+      * position ({@linkplain #candidate() candidate}) is always non-null regardless.  When the specific
+      * position is null and the {@linkplain #candidate() candidate} is ground, then the forester is
+      * said to be ‘grounded’ at its default position.
       */
     Node node() { return node; }
 
 
         private Node node;
+
+
+
+    /** The current cache of nodes that defines the forest structure.  Any change in the return value
+      * will be signalled by the {@linkplain #bell() bell}.
+      */
+    NodeCache nodeCache() { return nodeCache; }
+
+
+        private NodeCache nodeCache; // may temporarily lag forest.nodeCache instance till change reaches here
 
 
 ///////

@@ -19,11 +19,11 @@ public final class ListOnArray<E> extends AbstractList<E> implements RandomAcces
       *
       *     @param elements The elements of the backing array, or the backing array itself.
       */
-    public @SafeVarargs @SuppressWarnings("varargs") ListOnArray( final E... elements )
+    public @SafeVarargs @SuppressWarnings("varargs") @ThreadSafe ListOnArray( final E... elements )
     {
         if( elements == null ) throw new NullPointerException(); // fail fast
 
-        this.elements = elements;
+        this.elements = elements; // grep FreezeSync
     }
 
 

@@ -2,9 +2,9 @@ package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Way
 
 import android.content.*;
 import android.content.res.AssetFileDescriptor;
-import android.database.*;
+import android.database.Cursor;
 import android.net.Uri;
-import android.os.*;
+import android.os.RemoteException;
 import android.provider.DocumentsContract; // grep DocumentsContract-TS
 import java.io.*;
 import java.util.HashMap;
@@ -13,8 +13,6 @@ import waymaker.gen.*;
 import waymaker.spec.*;
 
 import static android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME;
-import static android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID;
-import static android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE;
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
 import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
 import static org.xmlpull.v1.XmlPullParser.START_TAG;
@@ -31,34 +29,30 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
     /** Constructs a precounter.
       *
       *     @see #pollName()
-      *     @param groundState The state of ground on which to base the precount, obtained from
-      *       UnadjustedGround.{@linkplain UnadjustedGround#stators stators}, or null to use an empty,
-      *       newly constructed ground.
+      *     @param groundUnaState The {@linkplain UnadjustedGround#restore(byte[],UnadjustedNodeV.RKit)
+      *       marshalled state} of the unadjusted ground on which to base the precount, or null to base
+      *       it on nothing, in which case the COMPOSITION_LOCK synchronization may be skipped.
+      *     @param originalUnaCount The number of unadjusted nodes in the original groundUnaState cache,
+      *        or zero if groundUnaState is null.  The value serves only to enlarge the initial capacity
+      *        of the node map in order to avoid forseeable rehashes.
       *     @see Wayranging#wayrepoTreeLoc()
       */
-   @ThreadSafe Precounter( String _pollName, final byte[] groundState, ContentResolver _contentResolver,
-     String _wayrepoTreeLoc )
+      @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per UnadjustedGround.restore
+   Precounter( final String pollName, final byte[] groundUnaState, final int originalUnaCount,
+     final ContentResolver contentResolver, final String wayrepoTreeLoc )
     {
-        pollName = _pollName;
-        contentResolver = _contentResolver;
-        wayrepoTreeLoc = _wayrepoTreeLoc;
+        this.pollName = pollName;
+        this.contentResolver = contentResolver;
+        this.wayrepoTreeLoc = wayrepoTreeLoc;
+        nodeMap = new HashMap<>( MapX.hashCapacity(originalUnaCount + NodeCache.INITIAL_HEADROOM),
+          MapX.HASH_LOAD_FACTOR );
         serverCount = new ServerCount( pollName );
         try { xhtmlParserFactory = Application.i().xhtmlConfigured( XmlPullParserFactory.newInstance() ); }
         catch( final XmlPullParserException x ) { throw new RuntimeException( x ); }
 
         ground = new UnadjustedGround();
-        nodeMap.put( ground.id(), ground );
-        if( groundState != null )
-        {
-            final Parcel in = Parcel.obtain(); // grep Parcel-TS
-            try
-            {
-                in.unmarshall( groundState, 0, groundState.length ); // sic
-                in.setDataPosition( 0 ); // undocumented requirement
-                UnadjustedGround.stators.restore( ground, in, this );
-            }
-            finally { in.recycle(); }
-        }
+        encache( ground );
+        if( groundUnaState != null ) ground.restore( groundUnaState, /*kit*/this );
     }
 
 
@@ -88,13 +82,13 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
 
 
-    /** The original, unadjusted {@linkplain NodeCache#ground() ground} to which the {@linkplain
+    /** The original, unadjusted {@linkplain NodeCache#ground() ground}.  Here the {@linkplain
       * #precount() precount} attaches the adjusted ground, if any.
       */
     UnadjustedGround ground() { return ground; }
 
 
-        private UnadjustedGround ground;
+        private final UnadjustedGround ground;
 
 
 
@@ -112,7 +106,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
     HashMap<VotingID,UnadjustedNode> nodeMap() { return nodeMap; }
 
 
-        private final HashMap<VotingID,UnadjustedNode> nodeMap = new HashMap<>();
+        private final HashMap<VotingID,UnadjustedNode> nodeMap;
 
 
 
@@ -125,9 +119,8 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
 
 
-    /** Forms the adjusted count if there is one, and attaches it among the nodes of the cache
-      * ({@linkplain #ground() ground} and {@linkplain #nodeMap() map}) as
-      * <var>node</var>.{@linkplain UnadjustedNode#precounted() precounted}.  Call once only.
+    /** Forms the adjusted count if possible, and attaches it among the {@linkplain #nodeMap() mapped}
+      * nodes as <var>node</var>.{@linkplain UnadjustedNode#precounted() precounted}.  Call once only.
       */
     void precount() throws CountFailure, InterruptedException
     {
@@ -154,19 +147,12 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
           / [ active recognition (variable weighting)
           // no utility to such weights, no meaning, instead recognition is all or nothing
           */
-        if( wayrepoTreeLoc == null ) return; // no local wayrepo
+        if( wayrepoTreeLoc == null ) throw new CountFailure( "User has set no wayrepo location" );
 
         final PersonID ownerID; // owner of wayrepo, typically the user
         VotingID ownerCandidateNewID = null; // thus far
-        wayrepoTreeUri = Uri.parse( wayrepoTreeLoc );
-        final ContentProviderClient provider; // grep ContentProviderClient-TS
-        try { provider = contentResolver.acquireContentProviderClient( wayrepoTreeUri ); }
-        catch( final SecurityException x )
-        {
-            throw new CountFailure( Wayranging.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
-        }
-
-        read: try
+        final Uri wayrepoTreeUri = Uri.parse( wayrepoTreeLoc );
+        read: try( final WayrepoReader inWr = new WayrepoReader( wayrepoTreeUri, contentResolver ))
         {
             String docID;
             docID = DocumentsContract.getTreeDocumentId( wayrepoTreeUri );
@@ -174,19 +160,20 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
             try { wayrepoUri = DocumentsContract.buildDocumentUriUsingTree( wayrepoTreeUri, docID ); }
             catch( final SecurityException x )
             {
-                // usually but not always thrown first on acquireContentProviderClient above
+                // usually but not always thrown first by acquireContentProviderClient in WayrepoReader
                 throw new CountFailure( Wayranging.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
             }
 
-            docID = findDirectory( "poll", docID, provider );
+            docID = inWr.findDirectory( "poll", docID );
             if( docID == null ) throw new CountFailure( "Wayrepo has no 'poll' directory" );
 
           // Identify owner of wayrepo.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            try // must be just after findDirectory (queryChildDocuments) or SMBProvider returns null cursor
+            final ContentProviderClient provider = inWr.provider(); // grep ContentProviderClient-TS
+            try // must be just after findDirectory (queryChildren) or SMBProvider returns null cursor
             (
-                final Cursor c = provider.query( wayrepoUri, proNAME, /*selector*/null, /*selectorArgs*/null,
-                  /*order*/null );
+                final Cursor c = inWr.provider().
+                  query( wayrepoUri, proNAME, /*selector*/null, /*selectorArgs*/null, /*order*/null );
             ){
                 if( c == null || !c.moveToFirst() ) throw new CountFailure( "Cannot read wayrepo directory" );
 
@@ -196,10 +183,10 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
           // Read the wayrepo documents.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            docID = findDirectory( pollName, docID, provider );
+            docID = inWr.findDirectory( pollName, docID );
             if( docID == null ) break read; // wayrepo has no nodes for this poll
 
-            try( final Cursor cPos/*proID_NAME_TYPE*/ = queryChildIDs( docID, provider ); )
+            try( final Cursor cPos/*proID_NAME_TYPE*/ = inWr.queryChildren( docID ); )
             {
                 personalPositionFiles: while( cPos.moveToNext() )
                 {
@@ -207,12 +194,12 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
                     final boolean isDirectory = MIME_TYPE_DIR.equals( cPos.getString( 2 ));
                     if( !isDirectory && "position.xht".equals(name) )
                     {
-                        ownerCandidateNewID = parsePosition( ownerID, /*docID*/cPos.getString(0), provider );
+                        ownerCandidateNewID = parsePosition( ownerID, /*docID*/cPos.getString(0), inWr );
                     }
                     else if( isDirectory && "pipe".equals(name) )
                     {
                         docID = cPos.getString( 0 );
-                        try( final Cursor cPP/*proID_NAME_TYPE*/ = queryChildIDs( docID, provider ); )
+                        try( final Cursor cPP/*proID_NAME_TYPE*/ = inWr.queryChildren( docID ); )
                         {
                             pipes: while( cPP.moveToNext() )
                             {
@@ -224,7 +211,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
                                   // Ensure pipe is precounted.
                                   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                                     VotingID candidateNewID = null; // thus far
-                                    try( final Cursor cPipe/*pro same*/ = queryChildIDs( docID, provider ); )
+                                    try( final Cursor cPipe/*pro same*/ = inWr.queryChildren( docID ); )
                                     {
                                         pipePositionFiles: while( cPipe.moveToNext() )
                                         {
@@ -232,7 +219,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
                                               && "position.xht".equals(cPipe.getString(1)) )
                                             {
                                                 candidateNewID = parsePosition( pipeID,
-                                                  /*docID*/cPipe.getString(0), provider );
+                                                  /*docID*/cPipe.getString(0), inWr );
                                                 break;
                                             }
                                         }
@@ -251,8 +238,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
                 }
             }
         }
-        catch( MalformedID _x ) { throw new CountFailure( _x ); }
-        finally { provider.release(); }
+        catch( final MalformedID|WayrepoX x ) { throw new CountFailure( x ); }
 
       // Ensure owner is precounted.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -267,7 +253,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
    // - U n a d j u s t e d - N o d e - V . R - K i t --------------------------------------------------
 
 
-    public void cache( final UnadjustedNode node ) { nodeMap.put( node.id(), node ); }
+    public void encache( final UnadjustedNode node ) { nodeMap.put( node.id(), node ); }
 
 
 
@@ -282,74 +268,22 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
 
 
-    /** @return The document ID of the directory, or null if none was found.
-      */
-    private String findDirectory( final String name, final String parentID,
-      final ContentProviderClient provider ) throws CountFailure, InterruptedException
-    {
-        try( final Cursor c/*proID_NAME_TYPE*/ = queryChildIDs( parentID, provider ); )
-        {
-            while( c.moveToNext() )
-            {
-                if( !name.equals( c.getString(1) )) continue;
-
-                if( !MIME_TYPE_DIR.equals( c.getString(2) )) continue;
-
-                return c.getString( 0 );
-            }
-        }
-        return null; // directory not found
-    }
-
-
-
     private final ServerCount serverCount;
-
-
-
-    private static final long MS_TIMEOUT_MIN = 4500;
-
-
-
-    private static final long MS_TIMEOUT_INTERVAL = 500;
-
-
-
-    private Uri wayrepoTopmostUri() // topmost ancestor of wayrepoTreeUri
-    {
-        if( wayrepoTopmostUri == null )
-        {
-            wayrepoTopmostUri = uriBuilderSA().scheme(wayrepoTreeUri.getScheme())
-              .authority(wayrepoTreeUri.getAuthority()).build();
-        }
-        return wayrepoTopmostUri;
-    }
-
-
-        private Uri wayrepoTopmostUri;
-
-
-
-    private final String wayrepoTreeLoc;
-
-
-
-    private Uri wayrepoTreeUri; // init in precount()
 
 
 
     /** @return Well formed identifier of voted candidate, or null if no candidate is voted.
       * @throws CountFailure if identifier is malformed, or identifies self.
       */
-    private VotingID parsePosition( final VotingID voterID, final String docID,
-      final ContentProviderClient provider ) throws CountFailure, MalformedID
+    private VotingID parsePosition( final VotingID voterID, final String docID, final WayrepoReader inWr )
+      throws CountFailure, MalformedID
     {
         VotingID candidateID = null; // thus far
-        final Uri fileUri = DocumentsContract.buildDocumentUriUsingTree( wayrepoTreeUri, docID );
+        final Uri fileUri = DocumentsContract.buildDocumentUriUsingTree( inWr.wayrepoTreeUri(), docID );
         try
         (
-            final AssetFileDescriptor aFD = provider.openTypedAssetFileDescriptor( fileUri, /*type, any*/"*/*",
-              /*options*/null );
+            final AssetFileDescriptor aFD = inWr.provider().
+              openTypedAssetFileDescriptor( fileUri, /*type, any*/"*/*", /*options*/null );
             final InputStream in = new BufferedInputStream( aFD.createInputStream() );
         ){
             final XmlPullParser p = xhtmlParserFactory.newPullParser();
@@ -378,122 +312,17 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
 
 
-    private static final String[] proID_NAME_TYPE = new String[] { COLUMN_DOCUMENT_ID, COLUMN_DISPLAY_NAME,
-      COLUMN_MIME_TYPE }; // formal projection of results for directory search
-
-
-
     private static final String[] proNAME = new String[] { COLUMN_DISPLAY_NAME };
-      // formal projection of results for name of document
+      // query projection of one formal parameter: display name
 
 
 
-    /** @return A proID_NAME_TYPE cursor over the children.  Be sure to close it when finished with it.
-      */
-    private Cursor queryChildIDs( String _parentID, final ContentProviderClient provider )
-      throws CountFailure, InterruptedException
-    {
-        return queryChildIDs( _parentID, provider, false );
-    }
-
-
-
-    private Cursor queryChildIDs( final String parentID, final ContentProviderClient provider,
-      final boolean isRetry ) throws CountFailure, InterruptedException
-    {
-        final Cursor c;
-        try
-        {
-            c = provider.query( DocumentsContract.buildChildDocumentsUriUsingTree(wayrepoTreeUri,parentID),
-              proID_NAME_TYPE, /*selector, unsupported*/null, /*selectorArgs*/null, /*order*/null );
-              // selector unsupported in base impl (DocumentsProvider.queryChildDocuments)
-        }
-        catch( final RemoteException x ) { throw new CountFailure( x ); }
-
-        if( c == null ) throw new CountFailure( "Cannot read wayrepo directory: " + parentID );
-
-      // Return response if fully loaded.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        if( !c.getExtras().getBoolean( DocumentsContract.EXTRA_LOADING )) return c;
-
-        if( isRetry ) { throw new CountFailure( "Incomplete response from documents provider after retry" ); }
-
-      // Else wait for response to fully load.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        Uri nUri = c.getNotificationUri();
-        final boolean nUriDescendentsToo;
-        if( nUri == null ) // probable bug, https://code.google.com/p/android/issues/detail?id=182258
-        {
-            nUri = wayrepoTopmostUri(); // default
-            nUriDescendentsToo = true;
-        }
-        else nUriDescendentsToo = false;
-        final Observer o = new Observer();
-        contentResolver.registerContentObserver( nUri, nUriDescendentsToo, o );
-          // should eventually set o.isFullyLoaded, then call Precounter.this.notify()
-        try
-        {
-            final long msStart = System.currentTimeMillis();
-            synchronized( Precounter.this )
-            {
-                Precounter.this.wait( MS_TIMEOUT_MIN + MS_TIMEOUT_INTERVAL );
-                while( !o.isFullyLoaded )
-                {
-                    final long msElapsed = System.currentTimeMillis() - msStart;
-                    if( msElapsed > MS_TIMEOUT_MIN )
-                    {
-                        throw new CountFailure( "Wayrepo timeout after " + msElapsed + " ms" );
-                    }
-
-                    Precounter.this.wait( MS_TIMEOUT_INTERVAL );
-                }
-            }
-        }
-        finally{ contentResolver.unregisterContentObserver( o ); }
-
-      // Retry query now that response is fully loaded.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        return queryChildIDs( parentID, provider, true );
-    }
-
-
-
-    private Uri.Builder uriBuilderSA() // scheme + authority only; cannot clear Uri.Builder
-    {
-        if( uriBuilderSA == null ) uriBuilderSA = new Uri.Builder();
-
-        return uriBuilderSA;
-    }
-
-
-        private Uri.Builder uriBuilderSA;
+    private final String wayrepoTreeLoc;
 
 
 
     private final XmlPullParserFactory xhtmlParserFactory; /* for Waymaker XHTML documents because
       parser cannot be reused, https://code.google.com/p/android/issues/detail?id=182605 */
-
-
-
-   // ==================================================================================================
-
-
-    private final class Observer extends ContentObserver
-    {
-
-        Observer() { super( Application.i().handler() ); }
-
-
-        volatile boolean isFullyLoaded;
-
-
-        public @Override void onChange( boolean _selfChange, Uri _n )
-        {
-            isFullyLoaded = true;
-            synchronized( Precounter.this ) { Precounter.this.notify(); }
-        }
-
-    }
 
 
 }

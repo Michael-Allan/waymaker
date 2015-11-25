@@ -13,7 +13,7 @@ public @ThreadSafe final class ObjectX
     /** Answers whether both objects are equal in the sense of
       * o1.{@linkplain Object#equals(Object) equals}(o2), or both are null.
       */
-    public static @ThreadRestricted("as for o1.equals") boolean equals( final Object o1, final Object o2 )
+    public static boolean equals( final Object o1, final Object o2 )
     {
         if( o1 == null ) return o2 == null;
 

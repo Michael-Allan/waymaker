@@ -91,8 +91,7 @@ public @ThreadRestricted("app main") final class Application extends android.app
       *
       *     @return The same parser factory.
       */
-    @ThreadSafe XmlPullParserFactory xhtmlConfigured( XmlPullParserFactory f )
-      throws XmlPullParserException
+    @ThreadSafe XmlPullParserFactory xhtmlConfigured( XmlPullParserFactory f ) throws XmlPullParserException
     {
         f.setFeature( XmlPullParser.FEATURE_PROCESS_NAMESPACES, true );
         f.setFeature( XmlPullParser.FEATURE_PROCESS_DOCDECL, true );

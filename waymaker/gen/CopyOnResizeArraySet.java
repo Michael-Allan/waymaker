@@ -10,13 +10,6 @@ public abstract class CopyOnResizeArraySet<E> extends CopyOnResizeArrayList<E> i
 {
 
 
-    public @ThreadSafe CopyOnResizeArraySet() {}
-
-
-
-   // --------------------------------------------------------------------------------------------------
-
-
     public final @Override void array( E[] _array )
     {
         throw new UnsupportedOperationException( "Not yet coded" );

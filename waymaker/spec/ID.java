@@ -1,11 +1,12 @@
 package waymaker.spec; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
 import java.util.Arrays;
+import waymaker.gen.ThreadSafe;
 
 
 /** The implementation of a tri-serial identifier.
   */
-public class ID implements TriSerialID
+public @ThreadSafe class ID implements TriSerialID
 {
 
     private static final long serialVersionUID = 0L;
@@ -198,6 +199,42 @@ public class ID implements TriSerialID
 
 
 
+    /** Answers whether the given string is a well formed serial number.  It must have a non-zero
+      * length, a non-zero leading character, and each character must be one of the following radix 62
+      * digits: {@value #RADIX_62_STRING}.
+      */
+    public static boolean isSerialForm( final String string ) // cf. digit(ch)
+    {
+        final int cN = string.length();
+        if( cN == 0 ) return false; // empty string
+
+        int c = 0;
+        char ch = string.charAt( 0 );
+        if( ch == '0' ) return false; // zero leader
+
+        for( ;; )
+        {
+            if( ch < '0' ) return false;
+
+            if( ch > '9' )
+            {
+                if( ch < 'A' ) return false;
+
+                if( ch > 'Z' )
+                {
+                    if( ch < 'a' || ch > 'z' ) return false;
+                }
+            }
+
+            ++c;
+            if( c == cN ) return true;
+
+            ch = string.charAt( c );
+        }
+    }
+
+
+
     /** The serial numbers of this identifier together encoded as a byte array.  Do not modify it.
       */
     byte[] numericBytes() { return numericBytes; }
@@ -361,7 +398,7 @@ public class ID implements TriSerialID
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private static byte digit( final char ch ) throws BadCharacter
+    private static byte digit( final char ch ) throws BadCharacter // cf. isSerialNumber(String)
     {
         final int digit;
         if( ch >= 'A' )

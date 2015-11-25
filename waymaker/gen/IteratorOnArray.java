@@ -15,7 +15,8 @@ public final class IteratorOnArray<E> implements ListIterator<E>
       *
       *     @param elements The elements of the backing array, or the backing array itself.
       */
-    public @SafeVarargs @SuppressWarnings("varargs") IteratorOnArray( final E... elements )
+      @SafeVarargs @SuppressWarnings("varargs") @ThreadSafe/*grep FreezeSync*/
+    public IteratorOnArray( final E... elements )
     {
         if( elements == null ) throw new NullPointerException(); // fail fast
 

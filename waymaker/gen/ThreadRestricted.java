@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2006-2009, 2013, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2006-2009, 2013, 2015, Michael Allan.  Licence MIT-Waymaker.
 
 import java.lang.annotation.*;
 
@@ -16,12 +16,13 @@ import java.lang.annotation.*;
   * Warning}("thread restricted object") and &#064;{@linkplain Warning Warning}( "thread
   * restricted elements")].</p>
   *
-  * <h3>Default restriction for constructors and methods</h3>
+  * <h3>Restriction for constructors and methods defaults to type</h3>
   *
-  * <p>When applied to a type (class or interface), the ThreadRestricted annotation
-  * specifies the default restriction for all non-private constructors and methods.  Any
-  * such member that lacks its own restriction is bound by the default.  See the <a
+  * <p>Any non-private constructor or method that lacks a ThreadRestricted or ThreadSafe annotation is
+  * instead bound by the restriction of its declaring type (class or interface). See the <a
   * href='ThreadSafe.html#ctor-method-test'>step-by-step rules</a> in this case.
+  *
+  * <p>If the type lacks annotation, then the restriction is <a href='#unspecified'>unspecified</a>.</p>
   *
   * <h3>Restriction to a particular thread</h3>
   *
@@ -56,7 +57,7 @@ import java.lang.annotation.*;
   *     assert Thread.holdsLock( <em>object</em> );
   *     assert <em>lock</em>.isHeldByCurrentThread();</pre>
   *
-  * <h3>Restriction to touch-synchronizing threads</h3>
+  * <h3 id='touch'>Restriction to touch-synchronizing threads</h3>
   *
   * <p>The restriction may specify that threads must touch-synchronize.  For example:</p>
   *
@@ -79,10 +80,11 @@ import java.lang.annotation.*;
   * is released are the state changes guaranteed to reach main memory and become readable
   * by other threads that touch-synchronize.</p>
   *
-  * <p>If the thread is both reading and writing, then it must do both: grab the lock
-  * before reading and release it after writing.  It need not hold the lock in the
-  * meantime unless it wants exclusive access, but may instead grab and immediately
-  * release the lock once beforehand, then once again afterward.</p>
+  * <p>If the thread is both reading and writing, then it must touch-synchronize twice, grabbing the
+  * lock before reading, and releasing it after writing.  It need not hold the lock in the meantime
+  * unless it wants exclusive access, but may instead grab and immediately release the lock once
+  * beforehand, then once again afterward.  In the case of a monitor lock, each such immediate
+  * grab-and-release (each touch per se) is formed as an empty <code>synchronized</code> block.</p>
   *
   * <p>If no particular lock is specified, then any lock will suffice.  Visibility is guaranteed
   * only among threads that touch-synchronize on the same lock.  This guarantee rests on the
@@ -104,21 +106,14 @@ import java.lang.annotation.*;
   *     <em>no annotation, neither &#064;ThreadRestricted nor &#064;ThreadSafe</em></pre>
   *
   * <p>An unspecified restriction simply means “not thread safe” without specifying a particular means
-  * of synchronization.  In the case of an instance method, the means of synchronization is instead
-  * specified or otherwise ruled by the code that constructs the instance.  Any of the usual,
-  * general-purpose means will suffice.</p>
+  * of synchronization.  Any general means will suffice.  The choice may vary from instance to instance,
+  * with the decision falling to the code that accesses each instance.</p>
   *
-  * <p>In the case of a parametized constructor or static method that is likewise “not thread safe”, the
-  * means of synchronization is ruled by the code that constructs the actual parameters.  If the given
-  * parameters are actually thread safe, then so is the constructor.</p>
-  *
-  * <p>In the case of an <em>unparametized</em> constructor or static method, the only valid means of
-  * synchronization is single threading.  Such a member is unsafe for use in multi-threaded programs.
-  * Multi-threaded programs and libraries will therefore commonly annotate unparametized constructors
-  * and static methods as thread safe, while letting other members default to unsafe.  This pattern is
-  * especially common for constructors and factory methods, where it means that any thread may safely
-  * construct an instance of the class and then access it, but access by other threads requires some
-  * means of synchronization, the choice of which is left to the programmer.</p>
+  * <p>A common pattern is a constructor or factory method annotated as thread safe, while other members
+  * default to unsafe.  This means that any thread may safely construct an instance of the type, and any
+  * thread may first access it.  No synchronization is required between initial construction and access
+  * (A1).  Only between A1 and each subsequent access (A2, A3, ...) is synchronization required, the
+  * means of which is left to the programmer.</p>
   *
   *     @see ThreadSafe
   */

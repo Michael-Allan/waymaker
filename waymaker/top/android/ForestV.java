@@ -35,13 +35,13 @@ import waymaker.gen.*;
     ForestV( Forester _forester )
     {
         forester = _forester;
-        groundWidth = forester.cache().ground().voters().size();
+        groundWidth = forester.nodeCache().ground().voters().size();
         forester.bell().register( new Auditor<Changed>() // TEST
         {
-            private NodeCache cache = forester.cache();
+            private NodeCache cache = forester.nodeCache();
             public void hear( Changed _ding )
             {
-                final NodeCache cacheNow = forester.cache();
+                final NodeCache cacheNow = forester.nodeCache();
                 if( cacheNow == cache ) return;
 
                 cache = cacheNow;
@@ -50,11 +50,11 @@ import waymaker.gen.*;
                 show();
             }
         });
-        forester.forest().voterListingBell().register( new Auditor<Changed>() // TEST
+        forester.forestCache().voterListingBell().register( new Auditor<Changed>() // TEST
         {
             public void hear( Changed _ding )
             {
-                final int groundWidthNow = forester.cache().ground().voters().size();
+                final int groundWidthNow = forester.nodeCache().ground().voters().size();
                 if( groundWidthNow == groundWidth ) return;
 
                 groundWidth = groundWidthNow;
@@ -73,7 +73,7 @@ import waymaker.gen.*;
 
     final @Warning("init call") void show() // TEST
     {
-        final List<? extends Node> roots = forester.cache().ground().voters();
+        final List<? extends Node> roots = forester.nodeCache().ground().voters();
         System.err.println( " --- root list size=" + roots.size() );
         for( final Node root: roots ) System.err.println( "     root=" + root );
     }

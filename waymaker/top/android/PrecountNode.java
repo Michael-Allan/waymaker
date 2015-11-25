@@ -540,7 +540,7 @@ abstract class PrecountNode implements Node
                 if( is0 )
                 {
                     una = new UnadjustedNode0( id, kit.groundUna() );
-                    kit.cache( una );
+                    kit.encache( una );
                 }
                 else una = kit.certainlyCached( id );
                 return una;
@@ -575,17 +575,17 @@ abstract class PrecountNode implements Node
 
        // - P r e c o u n t - N o d e . R - K i t ------------------------------------------------------
 
-        /** Stores a restored node in the {@linkplain Forest#cache() forest cache}.
-          */
-        public void cache( final UnadjustedNode node ); // actually an UnadjustedNode0 placeholder in this case
-
-
-        /** Retrieves a node from the {@linkplain Forest#cache() forest cache} that is certainly there.
+        /** Retrieves a node from the {@linkplain Forest#nodeCache() node cache} that is certainly there.
           *
           *     @throws IllegalStateException if the node is not actually cached.
           */
         public UnadjustedNode certainlyCached( VotingID id );
           // cached by the time of original saving, it should also be cached by now, the time of restoration
+
+
+        /** Stores a restored node in the {@linkplain Forest#nodeCache() node cache}.
+          */
+        public void encache( final UnadjustedNode node ); // really an UnadjustedNode0 placeholder in this case
 
 
         /** Adds a restored node to the list of {@linkplain SKit#outlyingVotersPre() outlying

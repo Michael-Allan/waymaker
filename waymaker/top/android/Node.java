@@ -88,8 +88,8 @@ interface Node
     /** An {@linkplain #peersComparator ordered}, extensible listing of the peer group directly leafward
       * of this node.  Its members are either the immediate voters of this node (a proper node) or the
       * roots of the forest (if this node is the ground node).  Any change to the list will be signalled
-      * by the {@linkplain Forest#voterListingBell() listing bell}.  All changes will be pure extensions
-      * that leave the number and order of previously listed members unchanged.
+      * by the {@linkplain ForestCache#voterListingBell() listing bell}.  All changes will be pure
+      * extensions that leave the number and order of previously listed members unchanged.
       *
       *     @see <a href='../../../../peer' target='_top'>‘peer’</a>
       */
@@ -105,8 +105,8 @@ interface Node
 
 
     /** Answers whether the {@linkplain #voters() voter list} might be incomplete.  A change from true
-      * to false will be signalled by the {@linkplain Forest#voterListingBell() listing bell}.  No other
-      * change is possible.
+      * to false will be signalled by the {@linkplain ForestCache#voterListingBell() listing bell}.  No
+      * other change is possible.
       */
     public boolean votersMaybeIncomplete();
 

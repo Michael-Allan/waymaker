@@ -1,7 +1,7 @@
 package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
-import waymaker.gen.ThreadSafe;
+import waymaker.gen.*;
 import waymaker.spec.*;
 
 
@@ -43,6 +43,25 @@ final class UnadjustedGround extends UnadjustedNodeV
 
 
 
+    /** Restores state to this ground.
+      *
+      *     @param state The state as marshalled from the {@linkplain stators stators}.
+      */
+      @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per stators.restore
+    void restore( final byte[] state, final UnadjustedNodeV.RKit kit )
+    {
+        final Parcel in = Parcel.obtain(); // grep Parcel-TS
+        try
+        {
+            in.unmarshall( state, 0, state.length ); // sic
+            in.setDataPosition( 0 ); // undocumented requirement
+            stators.restore( this, in, kit );
+        }
+        finally { in.recycle(); } // grep ParcelReuse
+    }
+
+
+
     @Override UnadjustedNode1 restoreVoter( final VotingID id, final Parcel in, final RKit kit,
       final RootwardCast<UnadjustedNode> rootwardHither )
     {
@@ -60,7 +79,7 @@ final class UnadjustedGround extends UnadjustedNodeV
       // d.
       // - - -
         final UnadjustedNode1 voter = new UnadjustedNode1( id, peerOrdinal, cast );
-        kit.cache( voter );
+        kit.encache( voter );
         UnadjustedNode1.stators.restore( voter, in, kit );
         return voter;
     }

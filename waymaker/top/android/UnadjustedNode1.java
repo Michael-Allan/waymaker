@@ -30,7 +30,7 @@ class UnadjustedNode1 extends UnadjustedNodeV
       *     @see #id()
       *     @see #peerOrdinal()
       */
-    UnadjustedNode1( final VotingID id, final int peerOrdinal, final UnadjustedNode candidate )
+    @ThreadSafe UnadjustedNode1( final VotingID id, final int peerOrdinal, final UnadjustedNode candidate )
     {
         super( id, peerOrdinal, candidate.rootwardHither_getOrMake() );
         assert id != null; // not ground
