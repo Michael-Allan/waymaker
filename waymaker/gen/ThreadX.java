@@ -3,7 +3,7 @@ package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
 /** Utilities for working with {@linkplain Thread threads}.
   */
-public @ThreadSafe final class ThreadX
+public @ThreadSafe final @Warning("unused code") class ThreadX
 {
 
     private ThreadX() {}
