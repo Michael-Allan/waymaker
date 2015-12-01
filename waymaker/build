@@ -2,38 +2,135 @@
 /**
   * build - Build the Waymaker software
   *********
-  * This build script runs under the Nashorn JavaScript engine (jjs) which is bundled with
-  * Oracle JDK 1.8 and later.  Invoke it like this:
   *
-  *     $ JDK/bin/jjs waymaker/build [-- TARGET...]
+  *   This build script runs under the Nashorn JavaScript engine (jjs) which is bundled with Oracle JDK
+  *   1.8 and later.  Invoke it like this:
   *
-  * On Windows, you must use backslashes (\) not slashes (/).  On any platform, if your
-  * shell recognizes the shebang at top (#!) and the execution PATH includes jjs, or a
-  * link to it, then you may directly invoke the script, like this:
+  *       $ JDK/bin/jjs waymaker/build [NASHORN-OPTIONS] [-- ARGUMENTS]
   *
-  *     $ waymaker/build [-- TARGET...]
+  *   On Windows use backslashes (\) not slashes (/).  On any platform, if your shell recognizes the
+  *   shebang at top (#!) and the execution PATH includes jjs, or a link to jjs, then you may directly
+  *   invoke the script like this:
   *
-  * Here are some concrete examples: [DD]
+  *       $ waymaker/build
   *
-  *     $ waymaker/build
-  *     $ waymaker/build -- clean
-  *     $ waymaker/build -- android source
   *
-  * The default target is 'release', which builds a full release.  For more information,
-  * see these files under installation directory waymaker/spec/build/:
+  * Target arguments
+  * ----------------
+  *   Specify any number of target arguments for the build.  The default target is ‘whole’, which means
+  *   all targets required for a release.  For example: [DD]
   *
-  *     TARGET/Target.js        Definition of build targets
-  *     BuildConfig.js          Instructions on configuring the build
-  *     BuildConfig_default.js  Catalogue of configuration variables
+  *       $ waymaker/build
+  *       $ waymaker/build -- javadoc
+  *       $ waymaker/build -- clean whole
   *
-  * Note:
+  *   For more information, see the target definition files in the installation directory:
   *
-  *     [DD] The double-dash delimiter for targets (--) is unfortunately required by jjs.
-  *         http://mail.openjdk.java.net/pipermail/nashorn-dev/2013-October/002265.html
+  *       waymaker/spec/build/TARGET/Target.js
+  *
+  *
+  * Configuration variant argument
+  * ------------------------------
+  *   Specify a configuration variant using a leading argument in this form:
+  *
+  *       $ waymaker/build -- ConfigVARIANT [TARGETS]
+  *
+  *   Two variants are supported at present.  The first is ‘’, which is the default and does nothing.
+  *   Therefore these two commands are effectively the same:
+  *
+  *       $ waymaker/build -- Config android
+  *       $ waymaker/build -- android
+  *
+  *   The other supported variant is ‘Release’, which alters the configuration variables for the purpose
+  *   of building a public release.  For example:
+  *
+  *       $ waymaker/build -- ConfigRelease clean whole
+  *
+  *   For more information on configuration, see these files in the installation directory:
+  *
+  *       waymaker/spec/build/Config.js                Instructions on configuring the build
+  *       waymaker/spec/build/ConfigDefault.js         Catalogue of configuration variables
+  *       waymaker/spec/build/ConfigReleaseDefault.js  Definition of configuration variant ‘Release’
+  *
+  *
+  * Configuration override options
+  * ------------------------------
+  *   Most configuration variables can be overridden from the command line.  Override each variable
+  *   using a Nashorn property-assignment option in the following form.  This works reliably only for
+  *   variables that have string-form values.
+  *
+  *       $ waymaker/build -Dwaymaker.spec.build.Config.NAME=VALUE
+  *
+  *   For more information on Nashorn options, see:
+  *   https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jjs.html
+  *
+  *
+  * Notes
+  * -----
+  *   [DD] The double dash (--) before the arguments is a Nashorn requirement.
+  *       http://mail.openjdk.java.net/pipermail/nashorn-dev/2013-October/002265.html
+  *   [... more notes below
   */
 this.waymaker = {}; // preliminary boilerplate required in all executable scripts
-load( Java.type('java.nio.file.Paths').get(__DIR__).toUri().resolve(
-  'Waymaker.js' ).toASCIIString() );
+load( Java.type('java.nio.file.Paths').get(__DIR__).toUri().resolve( 'Waymaker.js' ).toASCIIString() );
+( function()
+{
+    var Files = Java.type( 'java.nio.file.Files' );
+    var Paths = Java.type( 'java.nio.file.Paths' );
+    var System = Java.type( 'java.lang.System' );
+    var Waymaker = waymaker.Waymaker;
 
-load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
-waymaker.spec.build.Build.run();
+  // Make a namespace for the build configuration.
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    var Config = waymaker.spec.build.Config = {};
+
+  // Load the default configuration.
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    var relLoc = 'waymaker/spec/build/ConfigDefault.js'; // location relative to installation base
+    if( $ARG.length > 0 )
+    {
+        var arg = $ARG[0];
+        if( arg.startsWith( 'Config' ))
+        {
+            $ARG.shift();
+            if( arg === 'ConfigRelease' ) relLoc = 'waymaker/spec/build/ConfigReleaseDefault.js';
+            else if( arg !== 'Config'/*default*/ )
+            {
+                Waymaker.exit( "Unrecognized configuration variant argument '" + arg + "'" );
+            }
+        }
+    }
+    loadWithNewGlobal( Waymaker.ulocTo(relLoc), waymaker ); // [CNG]
+
+  // Load the user's configuration.
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    var f = Paths.get( Waymaker.userConfigLoc(), 'Config.js' );
+    if( Files.exists( f )) loadWithNewGlobal( f.toString(), waymaker ); // [CNG]
+
+  // Apply any configuration overrides requested on the command line.
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    var properties = System.getProperties();
+    var keyPrefix = 'waymaker.spec.build.Config.';
+    for each( var key in properties.keySet() ) // a plain 'for' fails because keySet is not an array
+    {
+        if( !key.startsWith( keyPrefix )) continue;
+
+        var name = key.slice( keyPrefix.length );
+        Config[name] = properties.get( key ); // override
+    }
+
+  // Load the necessary scripts and build the software.
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    load( Waymaker.ulocTo( 'waymaker/spec/build/Build.js' )); // grep NashornLoadedContext
+    waymaker.spec.build.Build.run();
+}() );
+
+
+// Notes (continued)
+// -----
+//  [CNG] Load each configuration file in its own global context (loadWithNewGlobal) in order to prevent
+//      its global declarations from polluting this script.  An alternative would be to depend on the
+//      user wrapping his configuration script in a closure, but that would be less reliable.
+
+
+// Copyright 2015, Michael Allan.  Licence MIT-Waymaker.

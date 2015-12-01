@@ -9,7 +9,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
     var our = waymaker.spec.build.android.Android; // public as waymaker.spec.build.android.Android
 
     var Build = waymaker.spec.build.Build;
-    var BuildConfig = waymaker.spec.build.BuildConfig;
+    var Config = waymaker.spec.build.Config;
     var Files = Java.type( 'java.nio.file.Files' );
     var Waymaker = waymaker.Waymaker;
     var Paths = Java.type( 'java.nio.file.Paths' );
@@ -48,12 +48,12 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
         var jar = androidJar;
         if( !jar )
         {
-            jar = Paths.get( BuildConfig.androidSDKLoc, 'platforms',
-              'android-' + BuildConfig.androidVersion, 'android.jar' );
+            jar = Paths.get( Config.androidSDKLoc, 'platforms',
+              'android-' + Config.androidVersion, 'android.jar' );
             if( !Files.exists( jar ))
             {
                 Waymaker.exit( L + 'Missing SDK file: ' + jar + L
-                  + 'Does your BuildConfig.js correctly set androidSDKLoc and androidVersion?' );
+                  + 'Does your Config.js correctly set androidSDKLoc and androidVersion?' );
             }
             androidJar = jar; // cache
         }
@@ -115,11 +115,11 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
         var jar = sdkLibJar;
         if( !jar )
         {
-            jar = Paths.get( BuildConfig.androidSDKLoc, 'tools', 'lib', 'sdklib.jar' );
+            jar = Paths.get( Config.androidSDKLoc, 'tools', 'lib', 'sdklib.jar' );
             if( !Files.exists( jar ))
             {
                 Waymaker.exit( L + 'Missing SDK file: ' + jar + L
-                  + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
+                  + 'Does your Config.js correctly set androidSDKLoc?' );
             }
             sdkLibJar = jar; // cache
         }
@@ -154,7 +154,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
       */
     function androidBuildToolTested( name, arg )
     {
-        var command = Waymaker.slashed(BuildConfig.androidBuildToolsLoc) + name;
+        var command = Waymaker.slashed(Config.androidBuildToolsLoc) + name;
         var testedSet = Build.testedSet();
         if( !testedSet.contains( 'androidBuildToolsLoc' ))
         {
@@ -164,7 +164,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             catch( x )
             {
                 Waymaker.exit( L + x + L +
-                  'Does your BuildConfig.js correctly set androidBuildToolsLoc?' );
+                  'Does your Config.js correctly set androidBuildToolsLoc?' );
             }
             Waymaker.logCommandResult();
             testedSet.add( 'androidBuildToolsLoc' );
@@ -184,12 +184,12 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
  //     var jar = support4Jar;
  //     if( !jar )
  //     {
- //         jar = Paths.get( BuildConfig.androidSDKLoc, 'extras', 'android', 'support', 'v4',
+ //         jar = Paths.get( Config.androidSDKLoc, 'extras', 'android', 'support', 'v4',
  //           'android-support-v4.jar' );
  //         if( !Files.exists( jar ))
  //         {
  //             Waymaker.exit( L + 'Missing SDK file: ' + jar + L
- //               + 'Does your BuildConfig.js correctly set androidSDKLoc?' );
+ //               + 'Does your Config.js correctly set androidSDKLoc?' );
  //         }
  //         support4Jar = jar; // cache
  //     }

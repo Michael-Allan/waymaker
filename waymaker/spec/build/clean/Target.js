@@ -31,7 +31,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
     our.build = function()
     {
         var outS = System.out;
-        var locs = { tmp: Build.tmpLoc(), release: waymaker.spec.build.BuildConfig.productLoc };
+        var locs = { tmp: Build.tmpLoc(), product: waymaker.spec.build.Config.productLoc };
         for( var l in locs )
         {
             var dir = Paths.get( locs[l] );

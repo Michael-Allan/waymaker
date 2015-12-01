@@ -4,14 +4,13 @@
   *
   *     $ waymaker/build -- android
   *
-  * The product is an APK file (app.apk) ready to install and run on an Android device.  The relevant
-  * commands, assuming default configuration for productLoc (waymaker-0.0) and appPackageName
-  * (com.example.waymaker), are:
+  * The product is an APK file (app.apk) ready to install and run on an Android device.  For example:
   *
   *     $ adb install -r waymaker-0.0/app.apk
   *     $ adb shell am start -n com.example.waymaker/waymaker.top.android.Wayranging
   *
-  * To uninstall it:
+  * This assumes a default configuration for productLoc (waymaker-0.0) and appPackageName
+  * (com.example.waymaker).  To uninstall the product:
   *
   *     $ adb uninstall com.example.waymaker
   */
@@ -26,12 +25,19 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
     var Android = waymaker.spec.build.android.Android;
     var ArrayList = Java.type( 'java.util.ArrayList' );
     var Build = waymaker.spec.build.Build;
-    var BuildConfig = waymaker.spec.build.BuildConfig;
+    var Config = waymaker.spec.build.Config;
     var Files = Java.type( 'java.nio.file.Files' );
-    var Waymaker = waymaker.Waymaker;
+    var FileVisitResult = Java.type( 'java.nio.file.FileVisitResult' );
     var Paths = Java.type( 'java.nio.file.Paths' );
+    var Pattern = Java.type( 'java.util.regex.Pattern' );
     var PrintWriter = Java.type( 'java.io.PrintWriter' );
+    var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
+    var StandardCopyOption = Java.type( 'java.nio.file.StandardCopyOption' );
     var System = Java.type( 'java.lang.System' );
+    var Waymaker = waymaker.Waymaker;
+
+    var CONTINUE = FileVisitResult.CONTINUE;
+    var REPLACE_EXISTING = StandardCopyOption.REPLACE_EXISTING;
 
 
 
@@ -44,42 +50,212 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
     {
         var outS = System.out;
         var compileTimeJarArray = Android.compileTimeJarArray();
+        var waymakerLoc = Waymaker.loc();
 
-      // Compile the source code to Java bytecode (.class files).
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         var tmpDir = Paths.get( Build.tmpLoc(), 'android' );
-        var javacOutDir = Waymaker.ensureDir( tmpDir.resolve( 'javacOut' ));
-        var javacArgInFile = tmpDir.resolve( 'javacArgIn' );
-        {
-            Files.deleteIfExists( javacArgInFile );
-            var out = new PrintWriter( javacArgInFile );
-            out.append( '-classpath ' );
-            out.append( javacOutDir.toString() );
-            var P = Waymaker.P;
-            for each( var jar in compileTimeJarArray )
-            {
-                out.append( P );
-                out.append( jar.toString() );
-            }
-            out.println();
-            out.close();
-        }
-
         var F = Waymaker.F;
         var relInLoc = 'waymaker' + F + 'top' + F + 'android';
-        var javaInFile = tmpDir.resolve( 'javaIn' );
-        Build.writeSourceArgs( [relInLoc + F + 'Wayranging'], javaInFile, javacOutDir );
-
-        if( Files.exists( javaInFile ))
+        var javacOutDir = Waymaker.ensureDir( tmpDir.resolve( 'javacOut' ));
+        var javaInArray = Build.arraySourceArguments( [relInLoc + F + 'Wayranging'], javacOutDir );
+        if( javaInArray.length > 0 )
         {
+          // 1. Translate the source code to Android form.
+          // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+            outS.append( Build.indentation() ).append( '(source.. ' );
+            var originalSourceRoot = Paths.get( waymakerLoc, 'waymaker' );
+            var javacSourceInDir = Waymaker.ensureDir( tmpDir.resolve( 'javacSourceIn' ));
+              // temporary build directory for translated source (input for javac)
+            var translatedlSourceRoot = javacSourceInDir.resolve( 'waymaker' );
+            var count = 0;
+            var translator = new (Java.extend( SimpleFileVisitor ))
+            {
+                assertionMatcher: Pattern.compile(
+                   '((?:else )?)assert ([^;:]+)(?:: ([^;]+))?;(.*)' ).matcher( '' ),
+                  // ----------         ------       -----     --
+                  //     1                2            3       4
+                  //
+                  // Matches a region of a line (Matcher.match) from the first non-whitespace character
+                  // to the end (exclusive), provided it contains an assert statement.  Groups portions
+                  // 1) prior to the statement; 2) boolean expression; 3) string expression, or null if
+                  // omitted; and 4) after the statement.
+
+                bufferFile: tmpDir.resolve( 'javacSourceInBuffer' ),
+
+                isDirEnsured: false,
+
+                sourceMatcher: Config.sourceMatcher,
+
+                translateMatchedAssertion: ( function()
+                {
+                    function toEmptyStatement()
+                    {
+                        var m = this.assertionMatcher;
+                        return m.group(1) + '; /*androidAssertTranslation*/' + m.group(4);
+                    }
+                    function toIfStatement()
+                    {
+                        var m = this.assertionMatcher;
+                        var stringExpression = m.group( 3 );
+                        var trans = m.group(1);
+                        trans += '{ '; /* Wrapping in block {} to isolate.  Otherwise a bare 'if' might
+                          (not sure) wreck a surrounding if-else statement in some cases. */
+                        trans += 'if( !( ' + m.group(2) + ' )) ';
+                        if( stringExpression == null ) trans += 'throw new AssertionError();'
+                        else trans += 'throw new AssertionError( ' + stringExpression + ' );'
+                        trans += ' }/*androidAssertTranslation*/';
+                        trans += m.group(4);
+                        return trans;
+                    }
+                    var t = Config.androidAssertTranslation;
+                    if( t == 'empty' ) return toEmptyStatement;
+                    else if( t == 'if' ) return toIfStatement;
+                    else Waymaker.exit( Build.badConfigNote( 'androidAssertTranslation', t ));
+                }() ),
+
+               // ---
+                preVisitDirectory: function( inDir, inAtt )
+                {
+                    if( !this.sourceMatcher.matches( inDir )) return FileVisitResult.SKIP_SUBTREE;
+
+                    this.isDirEnsured = false; // its existence not yet being tested
+                    return CONTINUE;
+                },
+
+                visitFile: function( inFile, inAtt )
+                {
+                    file:
+                    {
+                        var fileName = inFile.getFileName().toString();
+                        if( !fileName.endsWith( '.java' )) break file;
+
+                        if( fileName.startsWith( 'package-' )) break file; // package-info.java
+
+                        if( !this.sourceMatcher.matches( inFile )) break file;
+
+                        var t = inAtt.lastModifiedTime();
+                        var toFile = translatedlSourceRoot.resolve( originalSourceRoot.relativize( inFile ));
+                        if( Files.exists(toFile) && t.compareTo(Files.getLastModifiedTime(toFile)) < 0 )
+                        {
+                            break file; // original source unchanged
+                        }
+
+                        if( !this.isDirEnsured )
+                        {
+                            Waymaker.ensureDir( toFile.getParent() );
+                            this.isDirEnsured = true;
+                        }
+                        var _in = Files.newBufferedReader( inFile );
+                        var out = Files.newBufferedWriter( this.bufferFile );
+                        var line;
+                        function lineHasAssert( cStart ) { return line.indexOf('assert',cStart) != -1; }
+                        try
+                        {
+                            for( var lineNumber = 1;; ++lineNumber )
+                            {
+                                function assertionMismatchNote()
+                                {
+                                    return 'Unrecognized pattern of assert statement: ' + inFile +
+                                      ', line ' + lineNumber;
+                                }
+                                line = _in.readLine();
+                                if( line === null ) break;
+
+                                tr: // translate the line if necessary
+                                {
+                                    var cN = line.length();
+                                    var chFirst; // first non-whitespace character
+                                    var cFirst; // index of chFirst
+                                    for( var c = 0;; ++c )
+                                    {
+                                        if( c >= cN ) break tr; // only whitespace
+
+                                        ch = line.charAt( c );
+                                        if( ch != ' ' && ch != '\t' )
+                                        {
+                                            chFirst = ch;
+                                            cFirst = c;
+                                            break;
+                                        }
+                                    }
+
+                                    if( chFirst == '/' )
+                                    {
+                                        var ch = line.charAt( cFirst + 1 );
+                                        if( ch == '/' || ch == '*' ) break tr; // likely a comment
+                                    }
+                                    else if( chFirst == '*' ) break tr; // likely within a document comment
+
+                                    if( !lineHasAssert(cFirst) ) break tr;
+
+                                    var m = this.assertionMatcher.reset( line ).region( cFirst, cN );
+                                    if( !m.matches() ) Waymaker.exit( assertionMismatchNote() );
+
+                                    line = line.substring( 0, cFirst );
+                                    line += this.translateMatchedAssertion();
+                                    if( lineHasAssert(0) ) Waymaker.exit( assertionMismatchNote() );
+                                      // an untranslated assertion remains, maybe the line had two
+                                }
+                                out.append( line );
+                                out.newLine();
+                            }
+                        }
+                        finally
+                        {
+                            out.close();
+                            _in.close();
+                        }
+                        Files.move( this.bufferFile, toFile, REPLACE_EXISTING ); // now that it's complete
+                        ++count;
+                    }
+                    return CONTINUE;
+                }
+            };
+
+            Files.walkFileTree( originalSourceRoot, translator );
+            count = count.intValue(); // [IV]
+            outS.append( '\b\b\b ' ).println( count );
+
+          // 2. Write the compilation arguments for javac.
+          // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
             outS.append( Build.indentation() ).append( '(javac.. ' );
+            var javacArgInFile = tmpDir.resolve( 'javacArgIn' );
+            {
+                var out = new PrintWriter( javacArgInFile ); // truncates file if it exists
+                out.append( '-classpath ' );
+                out.append( javacOutDir.toString() );
+                var P = Waymaker.P;
+                for each( var jar in compileTimeJarArray )
+                {
+                    out.append( P );
+                    out.append( jar.toString() );
+                }
+                out.println();
+                out.close();
+            }
+
+          // 3. Write the source arguments for javac.
+          // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+            var javaInFile = tmpDir.resolve( 'javaIn' );
+            {
+                var out = new PrintWriter( javaInFile ); // truncates file if it exists
+                for each( var f in javaInArray )
+                {
+                    f = translatedlSourceRoot.resolve( originalSourceRoot.relativize( f ));
+                      // use the translated version of the source file
+                    out.append( f.toString() ).println();
+                }
+                out.close();
+            }
+
+          // 4. Compile the source code to Java bytecode (.class files).
+          // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
             var command = Build.javacTested()
               + ' -bootclasspath ' + Android.androidJarTested()
               + ' -d ' + javacOutDir
               + ' -encoding UTF-8' // of source; instead of platform default, whatever that might be
               + ' -source 1.7' // Java API version, cannot exceed -target
-              + ' -sourcepath ' + Waymaker.loc()
-              + ' -target 1.7' // JVM version, currently limited by Android build tools to 1.7
+              + ' -sourcepath ' + waymakerLoc
+              + ' -target 1.7' // JVM version, currently limited by Android to 1.7
               + ' -Werror' // terminate compilation when a warning occurs
               + ' -Xdoclint:all,-missing' /* verify all javadoc comments, but allow their omission;
                     changing? change also in ../javadoc/Target.js */
@@ -91,12 +267,12 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             Waymaker.logCommandResult();
             if( $EXIT ) Waymaker.exit( $ERR );
 
-            var count = Build.countCompiled( javacOutDir, compileTime );
+            count = Build.countCompiled( javacOutDir, compileTime );
             outS.append( '\b\b\b ' ).println( count );
         }
 
-      // Translate the output from Java to Android bytecode.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // 5. Translate the output from Java to Android bytecode.
+      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         count = ' '; // skipped, till proven otherwise
         var dexFile = tmpDir.resolve( 'classes.dex' );
         var args =
@@ -118,8 +294,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
                 outS.append( Build.indentation() ).append( '(dx.. ' );
                 var classesInFile = tmpDir.resolve( 'classesIn' );
-                Files.deleteIfExists( classesInFile );
-                var out = new PrintWriter( classesInFile );
+                var out = new PrintWriter( classesInFile ); // truncates file if it exists
                 for( var c = 0; c < cN; ++c )
                 {
                     var classFile = classesInArray[c];
@@ -145,8 +320,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
                 outS.append( Build.indentation() ).append( '(dx.. ' );
                 var dxInFile = tmpDir.resolve( 'dxIn' );
                 {
-                    Files.deleteIfExists( dxInFile );
-                    var out = new PrintWriter( dxInFile );
+                    var out = new PrintWriter( dxInFile ); // truncates file if it exists
                     out.println( javacOutDir.toString() );
                     for each( var jar in compileTimeJarArray ) out.println( jar.toString() );
                     out.close();
@@ -164,9 +338,9 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             outS.append( '\b\b\b ' ).println( count );
         }
 
-      // Package up the resource files alone, making a partial APK.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        var manifestTemplate = Paths.get( Waymaker.loc(), relInLoc, 'AndroidManifest.xml' );
+      // 6. Package up the resource files alone, making a partial APK.
+      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+        var manifestTemplate = Paths.get( waymakerLoc, relInLoc, 'AndroidManifest.xml' );
         var apkPartFile = tmpDir.resolve( 'app.apkPart' );
         if( !Files.exists( apkPartFile )
           || Files.getLastModifiedTime( apkPartFile ).compareTo(
@@ -206,7 +380,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
                             var aa = xml.getAttributes();
                             while( aa.hasNext() ) attList.add( aa.next() );
                             attList.add( xmlEventFactory.createAttribute( 'package',
-                              BuildConfig.appPackageName ));
+                              Config.appPackageName ));
                             xml = xmlEventFactory.createStartElement( name, attList.iterator(),
                               xml.getNamespaces() );
                         }
@@ -239,8 +413,8 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             outS.append( '\b\b\b ' ).println( count );
         }
 
-      // Make the full APK.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // 7. Make the full APK.
+      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         var apkFullFile = tmpDir.resolve( 'app.apkUnalign' );
         var toDo = true; // till proven otherwise
         skip:
@@ -271,9 +445,9 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             outS.append( '\b\b\b ' ).println( ' ' ); // done
         }
 
-      // Optimize the data alignment of the APK.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        var apkAlignedFile = Waymaker.ensureDir(Paths.get(BuildConfig.productLoc))
+      // 8. Optimize the data alignment of the APK.
+      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+        var apkAlignedFile = Waymaker.ensureDir(Paths.get(Config.productLoc))
           .resolve( 'app.apk' );
         if( !Files.exists( apkAlignedFile )
           || Files.getLastModifiedTime( apkAlignedFile ).compareTo(
@@ -293,6 +467,13 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             outS.append( '\b\b\b ' ).println( ' ' ); // done
         }
     };
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    var ttt = function() { return 'TESTTEST'; };
 
 
 

@@ -1,19 +1,21 @@
-/** Target.js - Definition of the 'release' build target
+/** Target.js - Definition of the 'whole' build target
   *************
-  * Builds a full release of the Waymaker software.  This is the default target.
+  * Builds all targets required for a release of the Waymaker software.  This is the default target.
+  * These commands have the same effect:
   *
   *     $ waymaker/build
-  *     $ waymaker/build -- release # the same thing
+  *     $ waymaker/build -- whole
+  #
   */
-if( !waymaker.spec.build.release.Target ) {
-     waymaker.spec.build.release.Target = {};
+if( !waymaker.spec.build.whole.Target ) {
+     waymaker.spec.build.whole.Target = {};
 load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/android/Target.js' ));
 load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/javadoc/Target.js' ));
 load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/source/Target.js' ));
 load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 ( function()
 {
-    var our = waymaker.spec.build.release.Target; // public as waymaker.spec.build.release.Target
+    var our = waymaker.spec.build.whole.Target; // public as waymaker.spec.build.whole.Target
 
     var Build = waymaker.spec.build.Build;
 

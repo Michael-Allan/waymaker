@@ -18,7 +18,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
     var Android = waymaker.spec.build.android.Android;
     var Build = waymaker.spec.build.Build;
-    var BuildConfig = waymaker.spec.build.BuildConfig;
+    var Config = waymaker.spec.build.Config;
     var Files = Java.type( 'java.nio.file.Files' );
     var Waymaker = waymaker.Waymaker;
     var Paths = Java.type( 'java.nio.file.Paths' );
@@ -38,12 +38,12 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
     our.build = function()
     {
         var tmpDir = Waymaker.ensureDir( Paths.get( Build.tmpLoc(), 'javadoc' ));
-        var outDir = Waymaker.ensureDir( Paths.get( BuildConfig.productLoc, 'waymaker', 'spec',
+        var outDir = Waymaker.ensureDir( Paths.get( Config.productLoc, 'waymaker', 'spec',
           'javadoc' ));
 
         var argInFile = tmpDir.resolve( 'argIn' );
-        Files.deleteIfExists( argInFile );
-        var out = new PrintWriter( argInFile );
+//      Files.deleteIfExists( argInFile );
+        var out = new PrintWriter( argInFile ); // truncates file if it exists
         {
             var P = Waymaker.P;
          // out.append( '-bootclasspath ' ).println( Android.androidJarTested() );
@@ -79,7 +79,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             out.append( '-link http://download.oracle.com/javase/' )
               .append( String(Build.jdkSimpleVersion()) ).println( '/docs/api/' );
          // out.append( '-linkoffline http://developer.android.com/reference/ ' )
-         //   .println( Paths.get(BuildConfig.androidSDKLoc,'docs','reference') );
+         //   .println( Paths.get(Config.androidSDKLoc,'docs','reference') );
          /// But the resulting links often have broken IDs, because doclets are incompatible.
           // E.g. "@see Activity#runOnUiThread(Runnable)" generates JDK-1.8-style IDs:
           // http://developer.android.com/reference/android/app/Activity.html#runOnUiThread-java.lang.Runnable-

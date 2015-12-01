@@ -3,16 +3,15 @@
   */
 if( !waymaker.spec.build.Build ) {
      waymaker.spec.build.Build = {};
-     waymaker.spec.build.BuildConfig = {}; // predefine in order to simplify config file
 ( function()
 {
     var our = waymaker.spec.build.Build; // public as waymaker.spec.build.Build
 
-    var BuildConfig = waymaker.spec.build.BuildConfig;
+    var Config = waymaker.spec.build.Config;
     var Files = Java.type( 'java.nio.file.Files' );
-    var Waymaker = waymaker.Waymaker;
     var Paths = Java.type( 'java.nio.file.Paths' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
+    var Waymaker = waymaker.Waymaker;
 
     var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
     var L = Waymaker.L;
@@ -42,8 +41,8 @@ if( !waymaker.spec.build.Build ) {
             {
                 test:
                 {
-                    if( !att.isRegularFile() ) break test;
-
+                  //if( !att.isRegularFile() ) break test;
+                 /// visitFile visits no directories
                     if( att.lastModifiedTime().toMillis() < msCompileTime ) break test;
                       // compiled on previous invocation of compiler, not this one
 
@@ -54,6 +53,70 @@ if( !waymaker.spec.build.Build ) {
         });
         return array;
     };
+
+
+
+    /** Arrays the necessary source arguments for the javac compiler, each the absolute path of a Java
+      * source file that needs compiling or recompiling.  Explicit, comprehensive source arguments are
+      * necessary when recompiling as opposed to compiling from scratch, because javac's implicit
+      * recompilation is unreliable in the case of indirect dependencies.
+      *
+      *     @param indiClasses (JS Array of String) An array containing the relative path to the source
+      *       file of each independent class in the compilation.  These are exactly the minimal source
+      *       paths you would pass to javac for a clean compilation, knowing that javac's default
+      *       '-implicit:class' option would pull in the rest, except here you specify the paths without
+      *       a .java extension.  For example: [waymaker/blah/One, waymaker/blah/Two].
+      *     @param javacOutDir (java.nio.file.Path) The directory in which the javac compiler outputs
+      *       the class files.
+      *
+      *     @return (JS Array of java.nio.file.Path)
+      */
+    our.arraySourceArguments = function( indiClasses, javacOutDir )
+    {
+        var args = [];
+        var F = Waymaker.F;
+        var waymakerDir = Paths.get( Waymaker.loc() );
+        for( var i = indiClasses.length - 1; i >= 0; --i )
+        {
+            var indiClass = indiClasses[i];
+            var indiClassFile = javacOutDir.resolve( indiClass + '.class' );
+            if( !Files.exists( indiClassFile )) args.push( waymakerDir.resolve( indiClass + '.java' ));
+        }
+        Files.walkFileTree( javacOutDir, new (Java.extend( SimpleFileVisitor ))
+        {
+            visitFile: function( classFile, classAtt )
+            {
+                test:
+                {
+                 // if( !classAtt.isRegularFile() ) break test;
+                 /// visitFile visits no directories
+                    var fileName = classFile.getFileName().toString();
+                    if( !our.isTopClass( fileName )) break test;
+
+                    fileName = fileName.slice(0,-'.class'.length) + '.java'; // change extension
+                    var sourceFile = classFile.resolveSibling( fileName );
+                    sourceFile = waymakerDir.resolve( javacOutDir.relativize( sourceFile ));
+                    if( !Files.exists( sourceFile )) break test; // source file was deleted
+
+                    var t = Files.getLastModifiedTime( sourceFile );
+                    if( t.compareTo(classAtt.lastModifiedTime()) < 0 ) break test; // source unchanged
+
+                    args.push( sourceFile );
+                }
+                return CONTINUE;
+            }
+        });
+        return args;
+    };
+
+
+
+    /** Returns a message to inform the user of a bad value in a configuration variable.
+      *
+      *     @param name (String) The name of the configuration variable.
+      *     @param value (String)
+      */
+    our.badConfigNote = function( name, value ) { return 'Bad config value for ' + name + ': ' + value; };
 
 
 
@@ -77,8 +140,8 @@ if( !waymaker.spec.build.Build ) {
             {
                 test:
                 {
-                    if( !att.isRegularFile() ) break test;
-
+                 // if( !att.isRegularFile() ) break test;
+                 /// visitFile visits no directories
                     if( !our.isTopClass( file.getFileName().toString() )) break test;
                       // not a top-level class file
 
@@ -136,8 +199,8 @@ if( !waymaker.spec.build.Build ) {
 
 
 
-    /** Answers whether the specified short name (File.getName) is correct for a top-level
-      * class file, as opposed to a member class.
+    /** Answers whether the given file name (Path.getFileName.toString) is correct for the class file of
+      * a top-level class, as opposed to a member class.
       */
     our.isTopClass = function( name )
     {
@@ -158,13 +221,13 @@ if( !waymaker.spec.build.Build ) {
       */
     our.javaTested = function()
     {
-        var command = Waymaker.slashed(BuildConfig.jdkBinLoc) + 'java';
+        var command = Waymaker.slashed(Config.jdkBinLoc) + 'java';
         if( !testedSet.contains( 'jdkBinLoc' ))
         {
             try { $EXEC( Waymaker.logCommand( command + ' -version' )); }
             catch( x )
             {
-                Waymaker.exit( L + x + L + 'Does your BuildConfig.js correctly set jdkBinLoc?' );
+                Waymaker.exit( L + x + L + 'Does your Config.js correctly set jdkBinLoc?' );
             }
             Waymaker.logCommandResult();
             testedSet.add( 'jdkBinLoc' );
@@ -181,12 +244,12 @@ if( !waymaker.spec.build.Build ) {
       */
     our.javacTested = function()
     {
-        var command = Waymaker.slashed(BuildConfig.jdkBinLoc) + 'javac';
+        var command = Waymaker.slashed(Config.jdkBinLoc) + 'javac';
         if( !testedSet.contains('jdkBinLoc') || !testedSet.contains('jdkVersion') )
         {
             try
             {
-                $EXEC( Waymaker.logCommand( command + ' -target ' + BuildConfig.jdkVersion
+                $EXEC( Waymaker.logCommand( command + ' -target ' + Config.jdkVersion
                   + ' -version' ));
                 Waymaker.logCommandResult();
                 if( $EXIT ) throw $ERR; // probably an older javac rejecting the -target option
@@ -194,8 +257,8 @@ if( !waymaker.spec.build.Build ) {
             catch( x )
             {
                 Waymaker.exit( L + x + L +
-                  'Does your BuildConfig.js correctly set jdkBinLoc?  Is your JDK version '
-                  + BuildConfig.jdkVersion + ' or later?' );
+                  'Does your Config.js correctly set jdkBinLoc?  Is your JDK version '
+                  + Config.jdkVersion + ' or later?' );
             }
             testedSet.add( 'jdkBinLoc' );
             testedSet.add( 'jdkVersion' );
@@ -212,13 +275,13 @@ if( !waymaker.spec.build.Build ) {
       */
     our.javadocTested = function()
     {
-        var command = Waymaker.slashed(BuildConfig.jdkBinLoc) + 'javadoc';
+        var command = Waymaker.slashed(Config.jdkBinLoc) + 'javadoc';
         if( !testedSet.contains( 'jdkBinLoc' ))
         {
             try { $EXEC( Waymaker.logCommand( command + ' -help' )); }
             catch( x )
             {
-                Waymaker.exit( L + x + L + 'Does your BuildConfig.js correctly set jdkBinLoc?' );
+                Waymaker.exit( L + x + L + 'Does your Config.js correctly set jdkBinLoc?' );
             }
             Waymaker.logCommandResult();
             testedSet.add( 'jdkBinLoc' );
@@ -234,9 +297,9 @@ if( !waymaker.spec.build.Build ) {
       */
     our.jdkSimpleVersion = function()
     {
-        if( BuildConfig.jdkVersion == '1.8' ) return 8;
+        if( Config.jdkVersion == '1.8' ) return 8;
 
-        throw( 'Unable to determine simple form of JDK version: ' + BuildConfig.jdkVersion );
+        throw( 'Unable to determine simple form of JDK version: ' + Config.jdkVersion );
     };
 
 
@@ -250,12 +313,12 @@ if( !waymaker.spec.build.Build ) {
         var jar = rtJar;
         if( !jar )
         {
-            jar = Paths.get( BuildConfig.jdkBinLoc, '..', 'jre', 'lib', 'rt.jar' ).normalize();
+            jar = Paths.get( Config.jdkBinLoc, '..', 'jre', 'lib', 'rt.jar' ).normalize();
               // this abuse of jdkBinLoc (along with need of rt.jar) is expected to be temporary
             if( !Files.exists( jar ))
             {
                 Waymaker.exit( L + 'Missing JDK file: ' + jar + L
-                  + 'Does your BuildConfig.js correctly set jdkBinLoc?' + L
+                  + 'Does your Config.js correctly set jdkBinLoc?' + L
                   + 'It must explicitly be set in this (hopefully temporary) case.' );
             }
             rtJar = jar; // cache
@@ -273,6 +336,26 @@ if( !waymaker.spec.build.Build ) {
     our.run = function()
     {
         delete our.run; // singleton
+
+      // Load each requested target module.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        if( $ARG.length === 0 ) $ARG.unshift( 'whole' ); // default target
+        for( var t = $ARG.length - 1; t >= 0; --t )
+        {
+            var arg = $ARG[t];
+            if( arg.startsWith( 'Config' ))
+            {
+                Waymaker.exit( "Misplaced configuration variant argument: " + arg );
+                  // should be leading argument, shifted off earlier
+            }
+
+            var moduleFile = Paths.get( Waymaker.loc(), 'waymaker', 'spec', 'build', arg, 'Target.js' );
+            if( Files.exists(moduleFile) ) load( moduleFile.toString() ); // grep NashornLoadedContext
+            // else assume it's a custom target, already loaded in user configuration
+        }
+
+      // Build each requested target.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         var tN = $ARG.length;
         for( var t = 0; t < tN; ++t ) our.indentAndBuild( $ARG[t] );
     };
@@ -303,112 +386,8 @@ if( !waymaker.spec.build.Build ) {
 
 
 
-    /** Overwrites argFile with the path of each Java source file that needs compiling or
-      * recompiling.  If none needs compiling, then instead deletes argFile.  Explicit,
-      * comprehensive source arguments of this kind are necessary when recompiling, as
-      * opposed to compiling from scratch, because javac's implicit recompilation is
-      * unreliable in the case of indirect dependencies.
-      *
-      *     @param indiClasses (JS Array of String) The relative path to the source file
-      *       of each independent class in the compilation.  These are exactly the minimal
-      *       set of source paths you would pass to javac during a clean compile (knowing
-      *       that javac's default -implicit:class option would pull in the rest) except
-      *       here you specify no .java extension.  For example: [fu/bar/One, fu/bar/Two].
-      *     @param argFile (java.nio.file.Path) Wherein to write the source arguments.
-      *     @param outDir (java.nio.file.Path) The directory in which the javac compiler
-      *       outputs the class files.
-      */
-    our.writeSourceArgs = function( indiClasses, argFile, outDir )
-    {
-        Files.deleteIfExists( argFile );
-        var F = Waymaker.F;
-        var args = []; // each without the '.java' extension
-        for( var i = indiClasses.length - 1; i >= 0; --i )
-        {
-            var indiClass = indiClasses[i];
-            var indiClassFile = outDir.resolve( indiClass + '.class' );
-            if( !Files.exists( indiClassFile ))
-            {
-                args.push( Waymaker.loc() + F + indiClass + '.java' );
-            }
-        }
-        var outPrefix = outDir.toString() + F;
-        Files.walkFileTree( outDir, new (Java.extend( SimpleFileVisitor ))
-        {
-            visitFile: function( outFile, att )
-            {
-                test:
-                {
-                    if( !att.isRegularFile() ) break test;
-
-                    if( !our.isTopClass( outFile.getFileName().toString() )) break test;
-                      // not a top-level class file
-
-                    var arg = outFile.toString();
-                    if( !arg.startsWith( outPrefix )) throw 'Impossible state';
-
-                    arg = arg.slice( outPrefix.length, -'.class'.length );
-                      // relativized to outDir and relieved of .class extension
-                    var inFile = Paths.get( Waymaker.loc(), arg + '.java' );
-                    if( !Files.exists( inFile )) break test; // source file was deleted
-
-                    if( Files.getLastModifiedTime( inFile ).compareTo(
-                        Files.getLastModifiedTime( outFile )) < 0 ) break test; // source unchanged
-
-                    args.push( inFile.toString() );
-                }
-                return CONTINUE;
-            }
-        });
-        var aN = args.length;
-        if( aN == 0 ) return;
-
-        var out = new (Java.type('java.io.PrintWriter'))( argFile );
-        for( var a = 0; a < aN; ++a ) out.append( args[a] ).println();
-        out.close();
-    };
-
-
-
 }() );
     // still under this module's load guard at top
-    ( function()
-    {
-        load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/BuildConfig_default.js' ));
-    }() );
-    ( function()
-    {
-        // Load user's build configuration, if any
-        var f = Java.type('java.nio.file.Paths').get( waymaker.Waymaker.userConfigLoc(),
-          'BuildConfig.js' );
-        if( Java.type('java.nio.file.Files').exists( f )) load( f.toString() );
-
-        // Apply any command-line overrides
-        var BuildConfig = waymaker.spec.build.BuildConfig;
-        var properties = Java.type('java.lang.System').getProperties();
-        var keyPrefix = 'waymaker.spec.build.BuildConfig.';
-        for each( var key in properties.keySet() ) // plain 'for' fails, not an array
-        {
-            if( !key.startsWith( keyPrefix )) continue;
-
-            var name = key.slice( keyPrefix.length );
-            BuildConfig[name] = properties.get( key ); // override
-        }
-    }() );
-    ( function()
-    {
-        // Load the requested standard target modules
-        var Files = Java.type( 'java.nio.file.Files' );
-        var Paths = Java.type( 'java.nio.file.Paths' );
-        if( $ARG.length === 0 ) $ARG.unshift( 'release' ); // default target
-        for( var t = $ARG.length - 1; t >= 0; --t )
-        {
-            var moduleFile = Paths.get( waymaker.Waymaker.loc(), 'waymaker', 'spec', 'build',
-              $ARG[t], 'Target.js' );
-            if( Files.exists(moduleFile) ) load( moduleFile.toString() );
-            // else assume a custom target defined by the user
-        }
-    }() );
 }
 
 

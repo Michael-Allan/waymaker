@@ -46,21 +46,21 @@ if( !waymaker.Waymaker ) {
         if( v === 'Win' )
         {
             osTag = 'win';
-            userConfigLoc = our.slashed(userHomeLoc) + 'AppData' + our.F + 'Local' + our.F
-              + 'Waymaker';
+            userConfigLoc = our.slashed(userHomeLoc) + 'AppData' + our.F + 'Local' + our.F + 'Waymaker'
+              + our.F + 'Build';
         }
         else if( v === 'Mac' )
         {
             osTag = 'mac';
-            userConfigLoc = our.slashed(userHomeLoc) + 'Library' + our.F
-              + 'Application Support' + our.F + 'Waymaker';
+            userConfigLoc = our.slashed(userHomeLoc) + 'Library' + our.F + 'Application Support'
+              + our.F + 'Waymaker' + our.F + 'Build';
         }
         else
         {
             osTag = 'nix';;
             v = $ENV.XDG_CONFIG_HOME;
-            userConfigLoc = v? our.slashed(v) + 'waymaker':
-              our.slashed(userHomeLoc) + '.config' + our.F + 'waymaker';
+            userConfigLoc = v? our.slashed(v) + 'waymaker' + our.F + 'build':
+              our.slashed(userHomeLoc) + '.config' + our.F + 'waymaker' + our.F + 'build';
         }
 
       // Predefine all namespaces eagerly.  Simpler than defining them lazily, ad hoc.
@@ -70,7 +70,7 @@ if( !waymaker.Waymaker ) {
         waymaker.spec.build.android = {};
         waymaker.spec.build.clean = {};
         waymaker.spec.build.javadoc = {};
-        waymaker.spec.build.release = {};
+        waymaker.spec.build.whole = {};
         waymaker.spec.build.source = {};
     };
 
@@ -119,8 +119,8 @@ if( !waymaker.Waymaker ) {
 
 
 
-    /** The absolute filepath of the real Waymaker installation directory.  Most of its
-      * files are located within a subdirectory called 'waymaker'.
+    /** The absolute filepath of the real Waymaker installation directory.  Most of its files are
+      * located in a subdirectory called 'waymaker'.
       *
       *     @return (String)
       *     @see #ulocTo

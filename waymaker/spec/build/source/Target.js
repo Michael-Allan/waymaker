@@ -5,7 +5,7 @@
   *     $ waymaker/build -- source
   *
   * The product is a directory named 'waymaker' which contains a copy of the code.
-  * You can filter the content by defining sourceMatcher in your BuildConfig.js.
+  * You can filter the content by defining sourceMatcher in your Config.js.
   */
 if( !waymaker.spec.build.source.Target ) {
      waymaker.spec.build.source.Target = {};
@@ -15,13 +15,14 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
     var our = waymaker.spec.build.source.Target; // public as waymaker.spec.build.source.Target
 
     var Build = waymaker.spec.build.Build;
-    var BuildConfig = waymaker.spec.build.BuildConfig;
+    var Config = waymaker.spec.build.Config;
     var Files = Java.type( 'java.nio.file.Files' );
     var FileVisitResult = Java.type( 'java.nio.file.FileVisitResult' );
     var Paths = Java.type( 'java.nio.file.Paths' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
     var StandardCopyOption = Java.type( 'java.nio.file.StandardCopyOption' );
     var System = Java.type( 'java.lang.System' );
+    var Waymaker = waymaker.Waymaker;
 
     var CONTINUE = FileVisitResult.CONTINUE;
     var COPY_ATTRIBUTES = StandardCopyOption.COPY_ATTRIBUTES;
@@ -37,35 +38,34 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
     {
         var outS = System.out;
         outS.append( Build.indentation() ).append( '(.. ' );
-        var sourceMatcher = BuildConfig.sourceMatcher;
-        var fromRoot = Paths.get( Waymaker.loc(), 'waymaker' );
-        var toRoot = Waymaker.ensureDir(Paths.get(BuildConfig.productLoc)).resolve( 'waymaker' );
+        var inRoot = Paths.get( Waymaker.loc(), 'waymaker' );
+        var sourceMatcher = Config.sourceMatcher;
+        var outRoot = Waymaker.ensureDir(Paths.get(Config.productLoc)).resolve( 'waymaker' );
         var count = 0;
-        Files.walkFileTree( fromRoot, new (Java.extend( SimpleFileVisitor ))
+        Files.walkFileTree( inRoot, new (Java.extend( SimpleFileVisitor ))
         {
-            preVisitDirectory: function( fromDir, fromAtt )
+            preVisitDirectory: function( inDir, inAtt )
             {
-                if( !sourceMatcher.matches( fromDir )) return FileVisitResult.SKIP_SUBTREE;
+                if( !sourceMatcher.matches( inDir )) return FileVisitResult.SKIP_SUBTREE;
 
-                var toDir = toRoot.resolve( fromRoot.relativize( fromDir ));
-                if( !Files.isDirectory( toDir )) // assume uniprocess for atomic test/act
+                var outDir = outRoot.resolve( inRoot.relativize( inDir ));
+                if( !Files.isDirectory( outDir )) // assume uniprocess for atomic test/act
                 {
-                    Files.copy( fromDir, toDir, COPY_ATTRIBUTES );
+                    Files.copy( inDir, outDir, COPY_ATTRIBUTES );
                     ++count;
                 }
                 return CONTINUE;
             },
 
-            visitFile: function( fromFile, fromAtt )
+            visitFile: function( inFile, inAtt )
             {
-                if( sourceMatcher.matches( fromFile ))
+                if( sourceMatcher.matches( inFile ))
                 {
-                    var toFile = toRoot.resolve( fromRoot.relativize( fromFile ));
-                    if( !Files.isRegularFile(toFile) ||
-                      fromAtt.lastModifiedTime().compareTo(Files.getLastModifiedTime(toFile)) > 0 )
+                    var outFile = outRoot.resolve( inRoot.relativize( inFile ));
+                    if( !Files.exists(outFile) ||
+                      inAtt.lastModifiedTime().compareTo(Files.getLastModifiedTime(outFile)) > 0 )
                     {
-                        Files.copy( fromFile, toFile, COPY_ATTRIBUTES,
-                          StandardCopyOption.REPLACE_EXISTING );
+                        Files.copy( inFile, outFile, COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING );
                         ++count;
                     }
                 }
