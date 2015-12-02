@@ -65,7 +65,7 @@ var waymaker = arguments[0];
  //
  //     {androidSDKLoc} / platforms / android-{androidVersion}
 
-    c.androidVersion = 22;
+    c.androidVersion = 23; // changing default? change also in top/android/AndroidManifest.xml
 
 
 

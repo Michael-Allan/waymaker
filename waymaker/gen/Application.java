@@ -81,7 +81,7 @@ public @ThreadRestricted("app main") class Application extends android.app.Appli
     public final boolean isMainThread()
     {
      // return mainLooper.isCurrentThread();
-     /// requires SDK 23
+     /// requires API 23
         return Thread.currentThread() == mainLooper.getThread();
 
     }
