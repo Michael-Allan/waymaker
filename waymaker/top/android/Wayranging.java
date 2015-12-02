@@ -25,7 +25,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
     { lifeStage = INITIALIZING; }
-{ System.err.println( " --- init activity on thread " + Thread.currentThread() ); } // TEST, esp. for stators
 
 
 
@@ -121,7 +120,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         final LinearLayout y = new LinearLayout( this );
         setContentView( y );
         y.setOrientation( LinearLayout.VERTICAL );
-        final SharedPreferences preferences = Application.i().preferences();
+        final SharedPreferences preferences = app.preferences();
         {
           // Wayrepo location view.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -136,7 +135,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 }
                 private void relay()
                 {
-                    String text = wayrepoTreeLoc();
+                    String text = app.wayrepoTreeLoc();
                     if( text == null ) text = "location unspecified";
                     view.setText( text );
                 }
@@ -199,7 +198,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 button.setText( "Refresh from wayrepo" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { forests.startRefreshFromWayrepo( wayrepoTreeLoc() ); }
+                    public void onClick( View _v ) { forests.startRefreshFromWayrepo( app.wayrepoTreeLoc() ); }
                 });
                 preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
                 {
@@ -208,7 +207,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                         Object unregistrationAgent = preferencesUnregisterOnDestruction( this );
                           // no need to unregister the agent itself, its registry does not outlive it
                     }
-                    private void relay() { button.setEnabled( wayrepoTreeLoc() != null ); }
+                    private void relay() { button.setEnabled( app.wayrepoTreeLoc() != null ); }
                       // hint to user that refresh without a wayrepo is pointless
                     public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
                 });
@@ -221,7 +220,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 button.setText( "from all" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { forests.startRefresh( wayrepoTreeLoc() ); }
+                    public void onClick( View _v ) { forests.startRefresh( app.wayrepoTreeLoc() ); }
                 });
             }
         }
@@ -295,7 +294,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             private void relay() { noteView.setText( forests.refreshNote() ); }
             public void hear( Changed _ding ) { relay(); }
         });
-        if( isFirstConstruction ) forests.startRefreshFromWayrepo( wayrepoTreeLoc() );
+        if( isFirstConstruction ) forests.startRefreshFromWayrepo( app.wayrepoTreeLoc() );
 
       // Forester.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -361,67 +360,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
         private final ReRinger<Changed> lifeStageBell = Changed.newReRinger();
-
-
-
-    /** The access location of the user’s wayrepo in the form of a "tree URI", or null if no location is
-      * known.  The return value is backed by the {@linkplain Application#preferences() general
-      * preference store}.
-      *
-      *     @see <a href='https://developer.android.com/about/versions/android-5.0.html#DirectorySelection'
-      *       target='_top'>Android 5.0 § Directory selection</a>
-      */
-    String wayrepoTreeLoc()
-    {
-        return Application.i().preferences().getString( "wayrepoTreeLoc", /*default*/null );
-    }
-
-
-        private void wayrepoTreeLoc( final Uri uri )
-        {
-            final ContentResolver r = getContentResolver();
-            final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-            final String locOld = wayrepoTreeLoc();
-            if( locOld != null )
-            {
-                try { r.releasePersistableUriPermission( Uri.parse(locOld), flags ); }
-                catch( final SecurityException x ) { logger.info( x.toString() ); }
-            }
-            final SharedPreferences.Editor e = Application.i().preferences().edit();
-            if( uri == null ) e.remove( "wayrepoTreeLoc" );
-            else
-            {
-                e.putString( "wayrepoTreeLoc", uri.toString() );
-                try { r.takePersistableUriPermission( uri, flags ); } // persist permissions too
-                    /* * *
-                  / ! takePersistableUriPermission throws SecurityException
-                  /     " java.lang.SecurityException:
-                  /       No persistable permission grants found for UID 10058 and Uri 0
-                  /       @ content://de.hahnjo.android.smbprovider/tree/havoc/100-0/
-                  /     - new FLAG_GRANT_PERSISTABLE_URI_PERMISSION | FLAG_GRANT_PREFIX_URI_PERMISSION
-                  /         ? might those help
-                  // recompiled and it took this time
-                      */
-                catch( final SecurityException x )
-                {
-                    logger.log( WARNING, "Cannot persist permissions to access URI " + uri, x );
-                }
-            }
-            e.apply();
-        }
-
-
-        /** Returns a message for the user stating that access via the given wayrepo treeLoc is denied
-          * by a SecurityException.  How this might happen in normal operation is unclear; maybe after
-          * uninstalling the document provider that formed the treeLoc.
-          *
-          *     @see #wayrepoTreeLoc()
-          */
-        static @ThreadSafe String wayrepoTreeLoc_message( final String treeLoc )
-        {
-            return "Cannot access wayrepo via " + treeLoc
-              + "\nTry using the wayrepo preview to reselect its location";
-        }
 
 
 
@@ -495,6 +433,10 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
+    private final Waykit app = Waykit.i();
+
+
+
     private ForestCache forests; // final after create, which adds stator
 
 
@@ -514,7 +456,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
  //   */
  // private void preferencesRegisterStrongly( final OnSharedPreferenceChangeListener l )
  // {
- //     Application.i().preferences().registerOnSharedPreferenceChangeListener( l );
+ //     app.preferences().registerOnSharedPreferenceChangeListener( l );
  //     preferencesStrongRegister.add( l );
  // }
  //
@@ -528,7 +470,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
  //       */
  //     private void preferencesUnregisterStrongly( final OnSharedPreferenceChangeListener l )
  //     {
- //         Application.i().preferences().unregisterOnSharedPreferenceChangeListener( l );
+ //         app.preferences().unregisterOnSharedPreferenceChangeListener( l );
  //         preferencesStrongRegister.remove( l );
  //     }
  //
@@ -554,7 +496,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             {
                 if( lifeStage != DESTROYING ) return;
 
-                Application.i().preferences().unregisterOnSharedPreferenceChangeListener( l );
+                app.preferences().unregisterOnSharedPreferenceChangeListener( l );
             }
         };
         lifeStageBell.register( auditor );
@@ -567,6 +509,40 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
     private static final int REQ_DOCUMENT = 1; /* using SAF [SAF] ACTION_OPEN_DOCUMENT (single,
       isolated doc) for regression testing of this action in external Android SMBProvider app */
+
+
+    private void wayrepoTreeLoc( final Uri uri )
+    {
+        final ContentResolver r = getContentResolver();
+        final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+        final String locOld = Waykit.i().wayrepoTreeLoc();
+        if( locOld != null )
+        {
+            try { r.releasePersistableUriPermission( Uri.parse(locOld), flags ); }
+            catch( final SecurityException x ) { logger.info( x.toString() ); }
+        }
+        final SharedPreferences.Editor e = app.preferences().edit();
+        if( uri == null ) e.remove( "wayrepoTreeLoc" );
+        else
+        {
+            e.putString( "wayrepoTreeLoc", uri.toString() );
+            try { r.takePersistableUriPermission( uri, flags ); } // persist permissions too
+                /* * *
+              / ! takePersistableUriPermission throws SecurityException
+              /     " java.lang.SecurityException:
+              /       No persistable permission grants found for UID 10058 and Uri 0
+              /       @ content://de.hahnjo.android.smbprovider/tree/havoc/100-0/
+              /     - new FLAG_GRANT_PERSISTABLE_URI_PERMISSION | FLAG_GRANT_PREFIX_URI_PERMISSION
+              /         ? might those help
+              // recompiled and it took this time
+                  */
+            catch( final SecurityException x )
+            {
+                logger.log( WARNING, "Cannot persist permissions to access URI " + uri, x );
+            }
+        }
+        e.apply();
+    }
 
 
 }

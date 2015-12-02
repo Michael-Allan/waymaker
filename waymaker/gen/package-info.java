@@ -3,8 +3,9 @@
   * <h3>Android</h3>
   *
   * <p>Code annotated &#064;{@linkplain waymaker.gen.ThreadRestricted ThreadRestricted}("app main") is
-  * restricted to the application’s main thread under the Android runtime.  Much of the library code for
-  * Android is likewise restricted, but with no annotation or other indication.</p>
+  * restricted to the application’s {@linkplain Application#isMainThread() main thread} under the
+  * Android runtime.  Much of the library code for Android is likewise restricted, but with no
+  * annotation or other indication.</p>
   *
   * <h3 id='ContentProviderClient-TS'>ContentProviderClient thread safety
   *  (ContentProviderClient-TS)</h3>

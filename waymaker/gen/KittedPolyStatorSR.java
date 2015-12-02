@@ -17,14 +17,18 @@ public @ThreadRestricted("app main") class KittedPolyStatorSR<T,S,R> implements 
 
     /** Constructs a KittedPolyStatorSR.  Seal it after adding all component stators, and before using it.
       */
-    public KittedPolyStatorSR() {}
+    public KittedPolyStatorSR() { assert Application.i().isMainThread(): "Running on app main"; }
 
 
 
     /** Constructs a KittedPolyStatorSR with the given stator as its initial component.  Seal it after
       * adding all component stators, and before using it.
       */
-    public KittedPolyStatorSR( final KittedStatorSR<? super T, ? super S, ? super R> stator ) { add( stator ); }
+    public KittedPolyStatorSR( final KittedStatorSR<? super T, ? super S, ? super R> stator )
+    {
+        this();
+        add( stator );
+    }
 
 
 
@@ -37,6 +41,7 @@ public @ThreadRestricted("app main") class KittedPolyStatorSR<T,S,R> implements 
       */
     public final void add( final KittedStatorSR<? super T, ? super S, ? super R> stator )
     {
+        assert Application.i().isMainThread(): "Running on app main";
         try { stators.add( stator ); }
         catch( final UnsupportedOperationException x )
         {
@@ -47,10 +52,10 @@ public @ThreadRestricted("app main") class KittedPolyStatorSR<T,S,R> implements 
 
 
 
-    /** The synchronization lock for the composition of all poly-stators.
-      * Threads other than "app main" that save or restore state via a poly-stator must first
-      * <a href='ThreadRestricted.html#touch'>touch-synchronize</a>
-      * on the intrinsic monitor lock of COMPOSITION_LOCK.
+    /** The synchronization lock for the composition of all poly-stators.  Threads other than
+      * “{@linkplain Application#isMainThread() app main}” that save or restore state via a poly-stator
+      * must first <a href='ThreadRestricted.html#touch'>touch-synchronize</a> on the intrinsic monitor
+      * lock of COMPOSITION_LOCK.
       */
     public static final Object COMPOSITION_LOCK = new Object(); /* so a single touch suffices for access
       to the poly-stator, any poly-stator nested as its component, and any other poly-stator indirectly
@@ -62,6 +67,7 @@ public @ThreadRestricted("app main") class KittedPolyStatorSR<T,S,R> implements 
       */
     public final void seal()
     {
+        assert Application.i().isMainThread(): "Running on app main";
         if( stators.getClass().equals( ListOnArray.class ))
         {
             throw new IllegalStateException( "Already sealed" );
@@ -80,8 +86,6 @@ public @ThreadRestricted("app main") class KittedPolyStatorSR<T,S,R> implements 
    // - K i t t e d - S t a t o r - S - R --------------------------------------------------------------
 
 
-    /** @throws AssertionError if assertions are enabled and this poly-stator is still unsealed.
-      */
       @ThreadRestricted("touch COMPOSITION_LOCK before") // as per stators
     public final void save( final T t, final Parcel out, S kit )
     {
@@ -91,8 +95,6 @@ public @ThreadRestricted("app main") class KittedPolyStatorSR<T,S,R> implements 
 
 
 
-    /** @throws AssertionError if assertions are enabled and this poly-stator is still unsealed.
-      */
       @ThreadRestricted("touch COMPOSITION_LOCK before") // as per stators
     public final void restore( final T t, final Parcel in, final R kit )
     {

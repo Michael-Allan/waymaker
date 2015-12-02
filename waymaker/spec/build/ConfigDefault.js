@@ -18,7 +18,7 @@ var waymaker = arguments[0];
  //     if     Translate each assert to an 'if' statement, so enabling assertions.
  //
  // This is a workaround for a deficiency in the Android runtime: it offers no reliable way to enable
- // assertions.  https://code.google.com/p/android/issues/detail?id=65183
+ // assertions.  http://stackoverflow.com/a/34027607/2402790
 
     c.androidAssertTranslation = 'if';
 

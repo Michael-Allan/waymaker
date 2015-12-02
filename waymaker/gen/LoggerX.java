@@ -14,7 +14,7 @@ public @ThreadSafe final class LoggerX
    /* * *
    - Android logging via "java.util.logging" is hard-filtered to level INFO and higher
        - cannot find an easy way to pass the lower levels
-       - the following (with TAG=wayWayranging) did not help
+       - the following (with TAG=wmWayranging) did not help
            > adb shell setprop log.tag.TAG VERBOSE
            > adb logcat TAG:V
      */
@@ -35,7 +35,7 @@ public @ThreadSafe final class LoggerX
 
 
     /** Finds or creates a logger for the given class.  The logger is named either by the concatenation
-      * of the class prefix and simple class name (e.g. "ovFoo"), or, if the class prefix is null, by
+      * of the class prefix and simple class name (e.g. "wmFoo"), or, if the class prefix is null, by
       * the full class name ("waymaker.bar.Foo").
       *
       *     @see Logger#getLogger(String)

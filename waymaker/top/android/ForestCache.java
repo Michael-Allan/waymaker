@@ -170,7 +170,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
       * the {@linkplain #nodeCacheBell() node cache bell}.  Posts user feedback as a single {@linkplain
       * #refreshNote() refresh note}.
       *
-      *     @see Wayranging#wayrepoTreeLoc()
+      *     @see Waykit#wayrepoTreeLoc()
       */
     void startRefresh( final String wayrepoTreeLoc ) { r1( /*toClear*/true, wayrepoTreeLoc ); }
 
@@ -181,7 +181,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
       * #nodeCacheBell() node cache bell}.  Skips the bell ringing if no forest was affected.  Posts
       * user feedback as a single {@linkplain #refreshNote() refresh note}.
       *
-      *     @see Wayranging#wayrepoTreeLoc()
+      *     @see Waykit#wayrepoTreeLoc()
       */
     void startRefreshFromWayrepo( final String wayrepoTreeLoc ) { r1( /*toClear*/false, wayrepoTreeLoc ); }
 

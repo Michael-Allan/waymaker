@@ -70,14 +70,26 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             var translator = new (Java.extend( SimpleFileVisitor ))
             {
                 assertionMatcher: Pattern.compile(
-                   '((?:else )?)assert ([^;:]+)(?:: ([^;]+))?;(.*)' ).matcher( '' ),
-                  // ----------         ------       -----     --
-                  //     1                2            3       4
+                  '((?:(?:(?:else\\s+)?if\\s*\\([^)]*\\)|else|.*[{;])\\s*)?)' // 1
+                      //  ------------------------------ ---- ------
+                      //                a                 b     c
+                      //
+                  + 'assert ([^;:]+)(?:: ([^;]+))?;(.*)' ).matcher( '' ),
+                      //     ------       -----     --
+                      //       2            3       4
                   //
-                  // Matches a region of a line (Matcher.match) from the first non-whitespace character
-                  // to the end (exclusive), provided it contains an assert statement.  Groups portions
-                  // 1) prior to the statement; 2) boolean expression; 3) string expression, or null if
-                  // omitted; and 4) after the statement.
+                  // A matcher of an assert line.  Takes all characters from the first non-whitespace to
+                  // the line terminator (exclusive) as input.  Matches the whole input (Matcher.match)
+                  // if it contains a recognizable form of assert statement.  Assumes (caller assures)
+                  // at most one assert statement, and the 'assert' is not part of a comment.
+                  //
+                  // The assert statement may lead the line.  Otherwise the leader must be either (a) an
+                  // 'if' or 'else if' clause in a recognizable form; (b) an 'else' clause; or (c) any
+                  // characters followed by a block opening '{' or semicolon ';'.  These restrictions
+                  // help to avoid false matches in string literals and comments.
+                  //
+                  // A successful match forms groups (1) prior to the assert statement; (2) boolean
+                  // expression; (3) string expression, or null if omitted; and (4) after the statement.
 
                 bufferFile: tmpDir.resolve( 'javacSourceInBuffer' ),
 
@@ -154,8 +166,8 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
                             {
                                 function assertionMismatchNote()
                                 {
-                                    return 'Unrecognized pattern of assert statement: ' + inFile +
-                                      ', line ' + lineNumber;
+                                    return inFile + '( ' + lineNumber +
+                                      ' )\n  Unrecognized pattern of assert statement:\n' + line;
                                 }
                                 line = _in.readLine();
                                 if( line === null ) break;

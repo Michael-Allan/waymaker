@@ -35,7 +35,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
       *     @param originalUnaCount The number of unadjusted nodes in the original groundUnaState cache,
       *        or zero if groundUnaState is null.  The value serves only to enlarge the initial capacity
       *        of the node map in order to avoid forseeable rehashes.
-      *     @see Wayranging#wayrepoTreeLoc()
+      *     @see Waykit#wayrepoTreeLoc()
       */
       @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per UnadjustedGround.restore
    Precounter( final String pollName, final byte[] groundUnaState, final int originalUnaCount,
@@ -47,7 +47,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
         nodeMap = new HashMap<>( MapX.hashCapacity(originalUnaCount + NodeCache.INITIAL_HEADROOM),
           MapX.HASH_LOAD_FACTOR );
         serverCount = new ServerCount( pollName );
-        try { xhtmlParserFactory = Application.i().xhtmlConfigured( XmlPullParserFactory.newInstance() ); }
+        try { xhtmlParserFactory = Waykit.xhtmlConfigured( XmlPullParserFactory.newInstance() ); }
         catch( final XmlPullParserException x ) { throw new RuntimeException( x ); }
 
         ground = new UnadjustedGround();
@@ -161,7 +161,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
             catch( final SecurityException x )
             {
                 // usually but not always thrown first by acquireContentProviderClient in WayrepoReader
-                throw new CountFailure( Wayranging.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
+                throw new CountFailure( Waykit.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
             }
 
             docID = inWr.findDirectory( "poll", docID );
