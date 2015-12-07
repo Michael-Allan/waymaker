@@ -1,20 +1,15 @@
 package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
-import android.content.*;
-import android.net.Uri;
+import android.content.Intent;
 import android.os.*;
-import android.view.View;
-import android.widget.*;
 import waymaker.gen.*;
 
-import static android.content.Intent.ACTION_OPEN_DOCUMENT;
-import static android.content.Intent.ACTION_OPEN_DOCUMENT_TREE;
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import static java.util.logging.Level.WARNING;
 import static waymaker.gen.ActivityLifeStage.*;
 
 
-/** The principle (and only) activity of this application.
+/** Exploring and elaborating an <a href='../../../../way' target='_top'>ultimate way</a>, which is the
+  * principle activity of this {@linkplain WaykitUI waykit UI}.
   */
 public @ThreadRestricted("app main") final class Wayranging extends android.app.Activity
 {
@@ -41,7 +36,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         if( isCreatedAnew ) create( null );
         else
         {
-            System.err.println( " --- onCreate from saved bundle: " + inB ); // TEST
+            logger.info( "Restoring activity state from bundle: " + inB );
             final byte[] state = inB.getByteArray( Wayranging.class.getName() ); // get state from bundle
             // Not following the Android convention of using the bundle to save and restore each complex
             // object as a whole Parcelable, complete with its references to external dependencies.  Rather
@@ -63,212 +58,10 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    /** @param _inP The parceled state to restore, or null to restore none.
+    /** @param inP The parceled state to restore, or null to restore none.
       */
-    private void create( final Parcel _inP )
+    private void create( final Parcel inP/*grep CtorRestore*/ ) // see Recreating an Activity [RA]
     {
-      // CONFIGURATION EDITOR FOR WAYREPO PREVIEW.
-      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        /* * *
-        - configuration and control of previews in wayrepo-based UI views
-          such as pollar forest (precount) and relational graph (wayscript precompilation)
-        - deployment
-            - to be shown via ActionBar
-                - via Settings item
-                    - via standard Preference UI
-                        < http://developer.android.com/guide/topics/ui/settings.html
-                        - as custom dialogue
-                            < http://developer.android.com/guide/topics/ui/settings.html#Custom
-                            - formally to select the wayrepo location
-                            - but also with side effect (somehow) of affecting enabled state,
-                              and possibly other settings
-            - designed for possible reuse in other non-setting contexts,
-              such as "Refresh" dialogue that floats, allowing preview to show behind it
-            - meantime just deployed inline here
-        - layout
-            - plan
-                - wayrepo location (URI)
-                    [ view
-                        ( text view
-                    [ clear button
-                        ( push-button
-                    [ finder button
-                        ( push-button
-                        - pops the Android "document" finder
-                [ enabling switch
-                    ( toggle button
-                    - enabling implies also an immediate refresh
-                - refresh buttons
-                    ( push buttons
-                    [ local refresh
-                        - e.g. precount only, leaving unadjusted cache
-                        - to allow immediate testing of wayrepo changes
-                    [ full refresh
-                        - e.g. unadjusted cache too
-                    - refresh may also be initiated wherever preview itself is shown
-                      (i.e. in all wayrepo-based UI views) by impatience gesture
-                        - such as deselection with immediate reselection
-                        - when refresh gesture immediately repeated, depth of effect escalates:
-                            ( notebook 2015.6.4
-                            - 1st locally refreshes
-                            - 2nd fully refreshes
-                [ feedback view
-                    ( text view
-                    - shows by default the time lapsed since last successful refresh
-            - only pieces of this layout are test-coded below
-          */
-        final LinearLayout y = new LinearLayout( this );
-        setContentView( y );
-        y.setOrientation( LinearLayout.VERTICAL );
-        final SharedPreferences preferences = app.preferences();
-        {
-          // Wayrepo location view.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            final TextView view = new TextView( this );
-            y.addView( view );
-            preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
-            {
-                {
-                    relay(); // init
-                    Object unregistrationAgent = preferencesUnregisterOnDestruction( this );
-                      // no need to unregister the agent itself, its registry does not outlive it
-                }
-                private void relay()
-                {
-                    String text = app.wayrepoTreeLoc();
-                    if( text == null ) text = "location unspecified";
-                    view.setText( text );
-                }
-                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
-            });
-        }
-        {
-            final LinearLayout x = new LinearLayout( this );
-            y.addView( x );
-            {
-              // Location clear button, to clear the wayrepo location.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( this );
-                x.addView( button );
-                button.setText( "Clear" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _v ) { wayrepoTreeLoc( null ); }
-                });
-            }
-            {
-              // Location finder button, to open the finder and locate the wayrepo.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( this );
-                x.addView( button );
-                button.setText( "Locate wayrepo" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _v )
-                    {
-                        final int req =
-                          REQ_WAYREPO;
-                       // REQ_DOCUMENT; // TEST mostly just to doc this type of request, which is more common
-                        final Intent intent;
-                        try
-                        {
-                            if( req == REQ_WAYREPO ) intent = new Intent( ACTION_OPEN_DOCUMENT_TREE );
-                            else
-                            {
-                                intent = new Intent( ACTION_OPEN_DOCUMENT );
-                                intent.addCategory( android.content.Intent.CATEGORY_OPENABLE );
-                                intent.setType( "*/*" ); // setType or throws ActivityNotFoundException
-                            }
-                        }
-                        catch( final ActivityNotFoundException x ) { throw new RuntimeException( x ); }
-
-                        startActivityForResult( intent, req ); // hence to onActivityResult
-                    }
-                });
-            }
-        }
-        {
-            final LinearLayout x = new LinearLayout( this );
-            y.addView( x );
-            {
-              // Local refresh button, to refresh from local wayrepo.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( this );
-                x.addView( button );
-                button.setText( "Refresh from wayrepo" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _v ) { forests.startRefreshFromWayrepo( app.wayrepoTreeLoc() ); }
-                });
-                preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
-                {
-                    {
-                        relay(); // init
-                        Object unregistrationAgent = preferencesUnregisterOnDestruction( this );
-                          // no need to unregister the agent itself, its registry does not outlive it
-                    }
-                    private void relay() { button.setEnabled( app.wayrepoTreeLoc() != null ); }
-                      // hint to user that refresh without a wayrepo is pointless
-                    public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
-                });
-            }
-            {
-              // Full refresh button, to refresh from all sources.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( this );
-                x.addView( button );
-                button.setText( "from all" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _v ) { forests.startRefresh( app.wayrepoTreeLoc() ); }
-                });
-            }
-        }
-
-      // Feedback view.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        final TextView noteView = new TextView( this );
-        y.addView( noteView );
-
-
-      // MISCELLANEOUS TOOLS.
-      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        {
-            final LinearLayout x = new LinearLayout( this );
-            y.addView( x );
-            {
-              // Logging test button, to log test messages at all standard logging levels.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( this );
-                x.addView( button );
-                button.setText( "Test logging" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _v ) { LoggerX.test( logger ); }
-                });
-            }
-            {
-              // Generic test button.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( this );
-                x.addView( button );
-                button.setText( "Extend roots" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _v )
-                    {
-                        final Forest forest = forests.get( "end" );
-                        new ServerCount(forest.pollName()).enqueuePeersRequest( null/*ground*/, forest,
-                          /*paddedLimit*/0 );
-                    }
-                });
-            }
-        }
-        final Parcel inP/*grep CtorRestore*/ = _inP;
-
-
-      // IN-LINE RESTORATION.  (here following the pattern of restoring (inP) constructors elsewhere)
-      // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
         final boolean isFirstConstruction;
         if( wasConstructorCalled ) isFirstConstruction = false;
@@ -288,13 +81,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             }
         });
         forests = new ForestCache( inP/*by CtorRestore*/ );
-        forests.notaryBell().register( new Auditor<Changed>()
-        { // no need to unregister, registry does not outlive this registrant
-            { relay(); } // init
-            private void relay() { noteView.setText( forests.refreshNote() ); }
-            public void hear( Changed _ding ) { relay(); }
-        });
-        if( isFirstConstruction ) forests.startRefreshFromWayrepo( app.wayrepoTreeLoc() );
+        if( isFirstConstruction ) forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
 
       // Forester.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -314,6 +101,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         }
 
       // - - -
+        setContentView( new WayrangingV( this ));
         if( isFirstConstruction ) stators.seal();
     }
 
@@ -325,6 +113,15 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
    // --------------------------------------------------------------------------------------------------
+
+
+    /** The pollar forests of this wayranging activity.
+      */
+    ForestCache forests() { return forests; }
+
+
+        private ForestCache forests; // final after create, which adds stator
+
 
 
     /** Answers whether this activity’s creation is a creation from scratch, as opposed to {@linkplain
@@ -363,40 +160,129 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
+ // /** Adds a change listener to the {@linkplain Application#preferences() general preference store}
+ //   * and holds its reference in this activity.  This convenience method is a workaround for the
+ //   * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
+ //   * target='_top'>weak register</a> in the store.
+ //   */
+ // void registerStrongly( final OnSharedPreferenceChangeListener l )
+ // {
+ //     wk.preferences().registerOnSharedPreferenceChangeListener( l );
+ //     preferencesStrongRegister.add( l );
+ // }
+ //
+ //
+ //     private final ArrayList<OnSharedPreferenceChangeListener> preferencesStrongRegister =
+ //       new ArrayList<>();
+ //
+ //
+ //     /** Removes a change listener from the {@linkplain Application#preferences() general preference
+ //       * store} and releases its reference from this activity.
+ //       */
+ //     void unregisterStrongly( final OnSharedPreferenceChangeListener l )
+ //     {
+ //         wk.preferences().unregisterOnSharedPreferenceChangeListener( l );
+ //         preferencesStrongRegister.remove( l );
+ //     }
+ //
+ /// all unregistration yet, as by unregisterOnDestruction, already strongly holds registrant
+
+
+
+    /** Launches an activity that returns a result to the given receiver.  Use this method in preference
+      * to its namesake alternatives, which afford no means of passing the result to the caller.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent,+int)'
+      *       target='_top'>startActivityForResult</a>(Intent,int)
+      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent,+int,+android.os.Bundle)'
+      *       target='_top'>startActivityForResult</a>(Intent,int,Bundle)
+      */
+    void startActivityForResult( final Intent request, final ActivityResultReceiver resultReceiver )
+    {
+        if( startActivity_resultReceiver != null )
+        {
+            throw new IllegalStateException( "Start of new activity when old is still pending" );
+              // implied impossible, http://developer.android.com/guide/components/tasks-and-back-stack.html
+        }
+
+        startActivity_resultReceiver = resultReceiver;
+        startActivityForResult( request, startActivity_requestCode ); // to continue in onActivityResult
+    }
+
+
+        private ActivityResultReceiver startActivity_resultReceiver; /* For pending request, or null if none.
+          Must persist by stator, as calling an activity may happen to entail save/restore of this one. */
+
+        private int startActivity_requestCode = 0; /* That of next result to be returned.
+          Must be ≥ zero or no result will be returned; see #startActivityForResult(Intent,int,Bundle). */
+
+            static { stators.add( new Stator<Wayranging>()
+            {
+                public void save( final Wayranging wr, final Parcel out )
+                {
+                    ParcelX.writeParcelable( wr.startActivity_resultReceiver, out );
+                    out.writeInt( wr.startActivity_requestCode );
+                }
+                public void restore( final Wayranging wr, final Parcel in )
+                {
+                    wr.startActivity_resultReceiver = ParcelX.readParcelable( in );
+                    wr.startActivity_requestCode = in.readInt();
+                }
+            });}
+
+
+
+    /** Schedules the given preference listener to be unregistered
+      * from the {@linkplain Application#preferences() general preference store}
+      * when this activity is destroyed.  This convenience method happens also to defeat the
+      * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
+      * target='_top'>weak register</a> in the store by holding a strong reference to the listener.
+      *
+      *     @return The agent that is responsible soley for unregistering the listener.  The agent is
+      *       implemented as an auditor of the {@linkplain #lifeStageBell() life stage bell}.
+      */
+    Auditor<Changed> unregisterOnDestruction( final OnSharedPreferenceChangeListener l )
+    {
+        final Auditor<Changed> auditor = new Auditor<Changed>()
+        {
+            public void hear( Changed _ding )
+            {
+                if( lifeStage != DESTROYING ) return;
+
+                wk.preferences().unregisterOnSharedPreferenceChangeListener( l );
+            }
+        };
+        lifeStageBell.register( auditor );
+        return auditor;
+    }
+
+
+
    // - A c t i v i t y --------------------------------------------------------------------------------
 
 
-    protected @Override void onActivityResult( final int req, final int res, final Intent intent )
+      @Override
+    protected void onActivityResult( final int requestCode, final int resultCode, final Intent result )
     {
-        if( req == REQ_DOCUMENT )
+System.err.println( " --- onActivityResult wk.isMainThread()=" + wk.isMainThread() ); // TEST
+        final ActivityResultReceiver receiver = startActivity_resultReceiver;
+        guard:
         {
-            if( res == RESULT_OK )
+            final String expected;
+            if( receiver == null ) expected = "*none*";
+            else
             {
-                final Uri uri = intent.getData();
-                System.out.println( "URI of selected document: " + uri );
+                if( requestCode == startActivity_requestCode ) break guard;
+
+                expected = Integer.toString( startActivity_requestCode );
             }
-            return;
+            throw new IllegalStateException( "Expecting result from activity request " + expected +
+              ", but received result from " + requestCode );
         }
 
-        if( req != REQ_WAYREPO ) throw new IllegalStateException( "Unrecognized req: " + req );
-
-        if( res != RESULT_OK )
-        {
-            if( res != RESULT_CANCELED )
-            {
-                logger.warning( "Document request returned an unrecognized result code: " + res );
-            }
-            return;
-        }
-
-        if( intent == null ) // docs imply null is indeed possible
-        {                   // https://developer.android.com/guide/topics/providers/document-provider.html#client
-            logger.warning( "Null response to document request" );
-            return;
-        }
-
-        final Uri treeUri = intent.getData();
-        wayrepoTreeLoc( treeUri );
+        startActivity_resultReceiver = null;
+        startActivity_requestCode = MathX08.incrementExact( startActivity_requestCode ); // "Must be ≥ zero"
+        receiver.receive( resultCode, result );
     }
 
 
@@ -413,10 +299,11 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    protected @Override void onSaveInstanceState( final Bundle outB ) // [RA]
+    protected @Override void onSaveInstanceState( final Bundle outB ) // see Recreating an Activity [RA]
     {
-        System.err.println( " --- onSaveInstanceState to bundle" ); // TEST
-        super.onSaveInstanceState( outB );
+        logger.info( "Saving activity state to bundle" );
+     // super.onSaveInstanceState( outB );
+     /// till it's needed
         final byte[] state;
         final Parcel outP = Parcel.obtain();
         try
@@ -433,14 +320,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private final Waykit app = Waykit.i();
-
-
-
-    private ForestCache forests; // final after create, which adds stator
-
-
-
     private ForestV forestV; // final after create, which adds stator
 
 
@@ -449,100 +328,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
- // /** Adds a change listener to the {@linkplain Application#preferences() general preference store}
- //   * and holds its reference in this activity.  This convenience method is a workaround for the
- //   * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
- //   * target='_top'>weak register</a> in the store.
- //   */
- // private void preferencesRegisterStrongly( final OnSharedPreferenceChangeListener l )
- // {
- //     app.preferences().registerOnSharedPreferenceChangeListener( l );
- //     preferencesStrongRegister.add( l );
- // }
- //
- //
- //     private final ArrayList<OnSharedPreferenceChangeListener> preferencesStrongRegister =
- //       new ArrayList<>();
- //
- //
- //     /** Removes a change listener from the {@linkplain Application#preferences() general preference
- //       * store} and releases its reference from this activity.
- //       */
- //     private void preferencesUnregisterStrongly( final OnSharedPreferenceChangeListener l )
- //     {
- //         app.preferences().unregisterOnSharedPreferenceChangeListener( l );
- //         preferencesStrongRegister.remove( l );
- //     }
- //
- /// not actually needed yet; agents (such as unregisterOnDestruction) that unregister the listeners
- /// all happen to be strongly held, with consequence that listener itself is strongly held
-
-
-
-    /** Schedules the listener to be unregistered
-      * from the {@linkplain Application#preferences() general preference store}
-      * when this activity is destroyed.  This convenience method happens also to defeat the
-      * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
-      * target='_top'>weak register</a> in the store by holding a strong reference to the listener.
-      *
-      *     @return The agent that is responsible soley for unregistering the listener.  The agent is
-      *       implemented as an auditor of the {@linkplain #lifeStageBell() life stage bell}.
-      */
-    private Auditor<Changed> preferencesUnregisterOnDestruction( final OnSharedPreferenceChangeListener l )
-    {
-        final Auditor<Changed> auditor = new Auditor<Changed>()
-        {
-            public void hear( Changed _ding )
-            {
-                if( lifeStage != DESTROYING ) return;
-
-                app.preferences().unregisterOnSharedPreferenceChangeListener( l );
-            }
-        };
-        lifeStageBell.register( auditor );
-        return auditor;
-    }
-
-
-
-    private static final int REQ_WAYREPO = 0; // using SAF [SAF] ACTION_OPEN_DOCUMENT_TREE
-
-    private static final int REQ_DOCUMENT = 1; /* using SAF [SAF] ACTION_OPEN_DOCUMENT (single,
-      isolated doc) for regression testing of this action in external Android SMBProvider app */
-
-
-    private void wayrepoTreeLoc( final Uri uri )
-    {
-        final ContentResolver r = getContentResolver();
-        final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-        final String locOld = Waykit.i().wayrepoTreeLoc();
-        if( locOld != null )
-        {
-            try { r.releasePersistableUriPermission( Uri.parse(locOld), flags ); }
-            catch( final SecurityException x ) { logger.info( x.toString() ); }
-        }
-        final SharedPreferences.Editor e = app.preferences().edit();
-        if( uri == null ) e.remove( "wayrepoTreeLoc" );
-        else
-        {
-            e.putString( "wayrepoTreeLoc", uri.toString() );
-            try { r.takePersistableUriPermission( uri, flags ); } // persist permissions too
-                /* * *
-              / ! takePersistableUriPermission throws SecurityException
-              /     " java.lang.SecurityException:
-              /       No persistable permission grants found for UID 10058 and Uri 0
-              /       @ content://de.hahnjo.android.smbprovider/tree/havoc/100-0/
-              /     - new FLAG_GRANT_PERSISTABLE_URI_PERMISSION | FLAG_GRANT_PREFIX_URI_PERMISSION
-              /         ? might those help
-              // recompiled and it took this time
-                  */
-            catch( final SecurityException x )
-            {
-                logger.log( WARNING, "Cannot persist permissions to access URI " + uri, x );
-            }
-        }
-        e.apply();
-    }
+    private final WaykitUI wk = WaykitUI.i();
 
 
 }
@@ -552,6 +338,3 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 // -----
 //  [RA] Recreating an Activity
 //      http://developer.android.com/training/basics/activity-lifecycle/recreating.html
-//
-//  [SAF] Storage Access Framework
-//      https://developer.android.com/guide/topics/providers/document-provider.html

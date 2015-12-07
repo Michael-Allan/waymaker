@@ -21,7 +21,7 @@ final class WayrepoReader implements java.io.Closeable
       *
       *     @see #wayrepoTreeUri()
       *     @throws WayrepoX if access to the wayrepo is denied by a security exception.
-      *       See {@linkplain Waykit#wayrepoTreeLoc_message(String) wayrepoTreeLoc_message}.
+      *       See {@linkplain WaykitUI#wayrepoTreeLoc_message(String) wayrepoTreeLoc_message}.
       */
     @ThreadSafe WayrepoReader( final Uri wayrepoTreeUri, final ContentResolver contentResolver )
       throws WayrepoX
@@ -31,7 +31,7 @@ final class WayrepoReader implements java.io.Closeable
         try { provider = contentResolver.acquireContentProviderClient( wayrepoTreeUri ); }
         catch( final SecurityException x )
         {
-            throw new WayrepoX( Waykit.wayrepoTreeLoc_message(wayrepoTreeUri.toString()), x );
+            throw new WayrepoX( WaykitUI.wayrepoTreeLoc_message(wayrepoTreeUri.toString()), x );
         }
     }
 
@@ -224,7 +224,7 @@ final class WayrepoReader implements java.io.Closeable
     private final class Observer extends ContentObserver
     {
 
-        Observer() { super( Waykit.i().handler() ); }
+        Observer() { super( WaykitUI.i().handler() ); }
 
 
         volatile boolean isFullyLoaded;

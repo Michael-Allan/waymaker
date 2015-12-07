@@ -3,7 +3,7 @@
 	<uses-sdk a:minSdkVersion='21' a:targetSdkVersion='23'/>
             <!--               ↓      targetSdkVersion 23 ← androidVersion in spec/build/ConfigDefault.js
                  minSdkVersion 21 required for SAF directory selection in Wayranging.wayrepoTreeLoc -->
-    <application a:name='waymaker.top.android.Waykit'>
+    <application a:name='waymaker.top.android.WaykitUI'>
         <activity a:name='waymaker.top.android.Wayranging'>
              <intent-filter>
                 <category a:name='android.intent.category.LAUNCHER'/>

@@ -18,9 +18,9 @@ import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
 import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 
-/** A count engine that generates an adjusted count by introducing changes read from the user’s local
-  * wayrepo, which are yet unknown to the server count engine, thus anticipating a future server count.
-  * Precounters are single use facilities; construct one, use it, and discard it.
+/** A count engine that uses a {@linkplain WayrepoPreviewController wayrepo preview} to form an
+  * adjusted, local count, thus anticipating a future server count.  Precounters are single use
+  * facilities; construct one, use it, and discard it.
   */
 final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 {
@@ -35,7 +35,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
       *     @param originalUnaCount The number of unadjusted nodes in the original groundUnaState cache,
       *        or zero if groundUnaState is null.  The value serves only to enlarge the initial capacity
       *        of the node map in order to avoid forseeable rehashes.
-      *     @see Waykit#wayrepoTreeLoc()
+      *     @see WaykitUI#wayrepoTreeLoc()
       */
       @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per UnadjustedGround.restore
    Precounter( final String pollName, final byte[] groundUnaState, final int originalUnaCount,
@@ -47,7 +47,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
         nodeMap = new HashMap<>( MapX.hashCapacity(originalUnaCount + NodeCache.INITIAL_HEADROOM),
           MapX.HASH_LOAD_FACTOR );
         serverCount = new ServerCount( pollName );
-        try { xhtmlParserFactory = Waykit.xhtmlConfigured( XmlPullParserFactory.newInstance() ); }
+        try { xhtmlParserFactory = WaykitUI.xhtmlConfigured( XmlPullParserFactory.newInstance() ); }
         catch( final XmlPullParserException x ) { throw new RuntimeException( x ); }
 
         ground = new UnadjustedGround();
@@ -161,7 +161,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
             catch( final SecurityException x )
             {
                 // usually but not always thrown first by acquireContentProviderClient in WayrepoReader
-                throw new CountFailure( Waykit.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
+                throw new CountFailure( WaykitUI.wayrepoTreeLoc_message(wayrepoTreeLoc), x );
             }
 
             docID = inWr.findDirectory( "poll", docID );

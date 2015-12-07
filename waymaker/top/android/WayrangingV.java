@@ -1,13 +1,13 @@
 package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
-import android.content.Context;
-import android.widget.LinearLayout;
+import android.view.View;
+import android.widget.*;
 import waymaker.gen.*;
 
 
-/** .
+/** A wayranging view.
   */
-@ThreadRestricted("app main") final class WayrangerV extends LinearLayout
+@ThreadRestricted("app main") final class WayrangingV extends LinearLayout
 {
     /* * *
                                               WaypathV
@@ -140,25 +140,65 @@ import waymaker.gen.*;
                 - function also accessible by pinch gesture in WayscopeV
       */
 
-    static final PolyStator<WayrangerV> stators = new PolyStator<>();
 
-///////
-
-
-    /** Constructs a WayrangerV.
-      *
-      *     @see #getContext()
+    /** Constructs a WayrangingV.
       */
-    WayrangerV( final Context context )
+    WayrangingV( final Wayranging wr )
     {
-        super( context );
+        super( /*context*/wr );
         setOrientation( VERTICAL );
+
+      // Wayrepo preview controller.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        addView( new WayrepoPreviewController( wr ));
+            /* * *
+            - to be deployed via menu popper (m)
+                - via Settings item
+                    - via standard Preference UI
+                        < http://developer.android.com/guide/topics/ui/settings.html
+                        - as custom dialogue
+                            < http://developer.android.com/guide/topics/ui/settings.html#Custom
+              */
+        {
+            final LinearLayout x = new LinearLayout( wr );
+            addView( x );
+            {
+              // Logging test button, to log test messages at all standard logging levels.
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                final Button button = new Button( wr );
+                x.addView( button );
+                button.setText( "Test logging" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( View _v ) { LoggerX.test( logger ); }
+                });
+            }
+            {
+              // Generic test button.
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                final Button button = new Button( wr );
+                x.addView( button );
+                button.setText( "Extend roots" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( View _v )
+                    {
+                        final String pollName = "end";
+                        final Forest forest = wr.forests().get( pollName );
+                        new ServerCount(pollName).enqueuePeersRequest( null/*ground*/, forest,
+                          /*paddedLimit*/0 );
+                    }
+                });
+            }
+        }
     }
 
 
 
-///////
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
-    static { stators.seal(); }
+
+    private static final java.util.logging.Logger logger = LoggerX.getLogger( WayrangingV.class );
+
 
 }
