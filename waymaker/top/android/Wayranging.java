@@ -302,8 +302,7 @@ System.err.println( " --- onActivityResult wk.isMainThread()=" + wk.isMainThread
     protected @Override void onSaveInstanceState( final Bundle outB ) // see Recreating an Activity [RA]
     {
         logger.info( "Saving activity state to bundle" );
-     // super.onSaveInstanceState( outB );
-     /// till it's needed
+        super.onSaveInstanceState( outB ); // at least in order to reopen any open dialogues
         final byte[] state;
         final Parcel outP = Parcel.obtain();
         try

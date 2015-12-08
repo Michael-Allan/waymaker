@@ -7,8 +7,12 @@
   * Android runtime.  Much of the library code for Android is likewise restricted, but with no
   * annotation or other indication.</p>
   *
-  * <h3 id='ContentProviderClient-TS'>ContentProviderClient thread safety
-  *  (ContentProviderClient-TS)</h3>
+  * <h3 id='AutoRestore-public'>Automatic restoration by public access (AutoRestore-public)</h3>
+  *
+  * <p>Automatic restoration of an open dialogue will throw IllegalAccessException if the declaring
+  * subclass of DialogFragment is not public.</p>
+  *
+  * <h3 id='ContentProviderClient-TS'>ContentProviderClient thread safety (ContentProviderClient-TS)</h3>
   *
   * <p><a href='http://developer.android.com/reference/android/content/ContentProviderClient.html'
   *  target='_top'>ContentProviderClient</a> is thread restricted, but not restricted to the
@@ -23,23 +27,6 @@
   * “Unlike ContentResolver, the methods here [in <a href=
   * 'http://developer.android.com/reference/android/content/ContentProviderClient.html'
   * target='_top'>ContentProviderClient</a>] ... are not thread safe”.</p>
-  *
-  * <h3 id='FreezeSync'>Thread synchronization by final freezing (FreezeSync)</h3>
-  *
-  * <p>“A thread that can only see a reference to an object after that object has been completely initialized
-  * is guaranteed to see the correctly initialized values for that object's final fields...
-  * [including] versions of any object or array referenced by those final fields
-  * that are at least as up-to-date as the final fields are.”
-  * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.5' target='_top'>17.5</a>)
-  * That’s an attempt to summarize the ‘freeze’ rule for final fields
-  * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.5.1' target='_top'>17.5.1</a>),
-  * which is difficult to parse.  See also
-  * <a href='http://tech.puredanger.com/2008/11/26/jmm-and-final-field-freeze' target='_top'>JMM and final field freeze</a>.</p>
-  *
-  * <p>In other words, given a fully constructed and properly referenced instance, a read from one of
-  * its final fields <i>happens-after</i> all initialization of values accessible through that field.
-  * The initial values of a composite member such as an array or collection, for example, are guaranteed
-  * visible to any reader who accesses it through a final field.</p>
   *
   * <h3 id='DocumentsContract-TS'>DocumentsContract thread safety (DocumentsContract-TS)</h3>
   *
@@ -62,6 +49,30 @@
   * >Parcel</a>.obtain and .recycle methods appear to be thread safe judging by inspection
   * of the source code.</p>
   *
+  * <h3 id='FreezeSync'>Thread synchronization by final freezing (FreezeSync)</h3>
+  *
+  * <p>“A thread that can only see a reference to an object after that object has been completely initialized
+  * is guaranteed to see the correctly initialized values for that object's final fields...
+  * [including] versions of any object or array referenced by those final fields
+  * that are at least as up-to-date as the final fields are.”
+  * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.5' target='_top'>17.5</a>)
+  * That’s an attempt to summarize the ‘freeze’ rule for final fields
+  * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.5.1' target='_top'>17.5.1</a>),
+  * which is difficult to parse.  See also
+  * <a href='http://tech.puredanger.com/2008/11/26/jmm-and-final-field-freeze' target='_top'>JMM and final field freeze</a>.</p>
+  *
+  * <p>In other words, given a fully constructed and properly referenced instance, a read from one of
+  * its final fields <i>happens-after</i> all initialization of values accessible through that field.
+  * The initial values of a composite member such as an array or collection, for example, are guaranteed
+  * visible to any reader who accesses it through a final field.</p>
+  *
+  * <h3 id='StartSync'>Thread synchronization by starting (StartSync)</h3>
+  *
+  * <p>“A call to start() on a thread <i>happens-before</i> any actions in the started thread.”
+  * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.4.5' target='_top'>17.4.5</a>)
+  * Therefore when thread T1 starts thread T2, it thereby ensures that every previous
+  * action of T1 is visible to all subsequent actions of T2.</p>
+  *
   * <h3 id='TermSync'>Thread synchronization by termination detecting (TermSync)</h3>
   *
   * <p>“The final action in a thread T1 <i>synchronizes-with</i> any action in another
@@ -75,12 +86,5 @@
   * from a join() on that thread.”
   * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.4.5' target='_top'>17.4.5</a>)
   * </p>
-  *
-  * <h3 id='StartSync'>Thread synchronization by starting (StartSync)</h3>
-  *
-  * <p>“A call to start() on a thread <i>happens-before</i> any actions in the started thread.”
-  * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.4.5' target='_top'>17.4.5</a>)
-  * Therefore when thread T1 starts thread T2, it thereby ensures that every previous
-  * action of T1 is visible to all subsequent actions of T2.</p>
   */
 package waymaker.gen;

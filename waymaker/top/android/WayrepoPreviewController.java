@@ -15,7 +15,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
 
 
 /** A controller and configurer of those models that can introduce changes read from the user’s local
-  * wayrepo, which are yet unknown to public sources, thus anticipating a future state.
+  * wayrepo, which are yet unknown to public sources, thus anticipating a future public state.
   */
 @ThreadRestricted("app main") final class WayrepoPreviewController extends LinearLayout
 {
@@ -80,7 +80,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
                 private void relay()
                 {
                     String text = wk.wayrepoTreeLoc();
-                    if( text == null ) text = "location unspecified";
+                    if( text == null ) text = "Location unspecified";
                     view.setText( text );
                 }
                 public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
@@ -97,7 +97,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
                 button.setText( "Clear" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { wk.wayrepoTreeLoc( null ); }
+                    public void onClick( View _src ) { wk.wayrepoTreeLoc( null ); }
                 });
             }
             {
@@ -108,7 +108,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
                 button.setText( "Locate wayrepo" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v )
+                    public void onClick( View _src )
                     {
                         final Intent request;
                      // try
@@ -127,6 +127,18 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
             }
         }
         {
+          // Note view.
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            final TextView noteView = new TextView( wr );
+            addView( noteView );
+            wr.forests().notaryBell().register( new Auditor<Changed>()
+            { // no need to unregister, registry does not outlive this registrant
+                { relay(); } // init
+                private void relay() { noteView.setText( wr.forests().refreshNote() ); }
+                public void hear( Changed _ding ) { relay(); }
+            });
+        }
+        {
             final LinearLayout x = new LinearLayout( wr );
             addView( x );
             {
@@ -137,7 +149,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
                 button.setText( "Refresh from wayrepo" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v )
+                    public void onClick( View _src )
                     {
                         wr.forests().startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
                     }
@@ -162,21 +174,10 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
                 button.setText( "from all" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _v ) { wr.forests().startRefresh( wk.wayrepoTreeLoc() ); }
+                    public void onClick( View _src ) { wr.forests().startRefresh( wk.wayrepoTreeLoc() ); }
                 });
             }
         }
-
-      // Note view.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        final TextView noteView = new TextView( wr );
-        wr.forests().notaryBell().register( new Auditor<Changed>()
-        { // no need to unregister, registry does not outlive this registrant
-            { relay(); } // init
-            private void relay() { noteView.setText( wr.forests().refreshNote() ); }
-            public void hear( Changed _ding ) { relay(); }
-        });
-        addView( noteView );
     }
 
 

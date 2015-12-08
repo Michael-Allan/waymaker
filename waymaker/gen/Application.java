@@ -81,7 +81,7 @@ public @ThreadRestricted("app main") class Application extends android.app.Appli
     public final boolean isMainThread()
     {
      // return mainLooper.isCurrentThread();
-     /// requires API 23
+     /// assumes API level 23
         return Thread.currentThread() == mainLooper.getThread();
 
     }
@@ -113,7 +113,7 @@ public @ThreadRestricted("app main") class Application extends android.app.Appli
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private final Looper mainLooper; // store to save sync in Looper.getMainLooper (API 23)
+    private final Looper mainLooper; // store to avoid sync in Looper.getMainLooper (API level 23 source)
 
 
 }

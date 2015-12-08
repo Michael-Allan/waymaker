@@ -2,7 +2,7 @@ package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Way
 
 import android.view.View;
 import android.widget.*;
-import waymaker.gen.*;
+import waymaker.gen.ThreadRestricted;
 
 
 /** A wayranging view.
@@ -25,11 +25,11 @@ import waymaker.gen.*;
                   |         Incididunt ut labore         ←
                   *       ← Et dolore magna aliqua
                   *
-                  *                                    (m)
+                  *                                    (≡)
                   *                       /         (-)(+)
                                          /                 \
                                      WayscopeV              \
-                                                       .cornerButtons
+                                                       corner buttons
 
     - decorational cues (primary)
         - in overlap order from top down
@@ -127,9 +127,9 @@ import waymaker.gen.*;
             [ means link ←
                 ( right ←
                 - pans view to next poll meansward in waypath
-        [ cornerButtons
+        [ corner buttons
             - placed bottom-right where disruption to view is minimized
-            [ (m) menu popper
+            [ (≡) menu popper
             [ (-) out zoomer
                 - zooms view out of parent element
                 - function also accessible by pinch gesture in WayscopeV
@@ -148,57 +148,21 @@ import waymaker.gen.*;
         super( /*context*/wr );
         setOrientation( VERTICAL );
 
-      // Wayrepo preview controller.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        addView( new WayrepoPreviewController( wr ));
-            /* * *
-            - to be deployed via menu popper (m)
-                - via Settings item
-                    - via standard Preference UI
-                        < http://developer.android.com/guide/topics/ui/settings.html
-                        - as custom dialogue
-                            < http://developer.android.com/guide/topics/ui/settings.html#Custom
-              */
         {
-            final LinearLayout x = new LinearLayout( wr );
-            addView( x );
+          // Menu summoner.
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            final Button button = new Button( wr );
+            addView( button );
+            button.setText( "≡" );
+            button.setOnClickListener( new View.OnClickListener()
             {
-              // Logging test button, to log test messages at all standard logging levels.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( wr );
-                x.addView( button );
-                button.setText( "Test logging" );
-                button.setOnClickListener( new View.OnClickListener()
+                public void onClick( View _src )
                 {
-                    public void onClick( View _v ) { LoggerX.test( logger ); }
-                });
-            }
-            {
-              // Generic test button.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( wr );
-                x.addView( button );
-                button.setText( "Extend roots" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _v )
-                    {
-                        final String pollName = "end";
-                        final Forest forest = wr.forests().get( pollName );
-                        new ServerCount(pollName).enqueuePeersRequest( null/*ground*/, forest,
-                          /*paddedLimit*/0 );
-                    }
-                });
-            }
+                    new MenuDF().show( wr.getFragmentManager(), /*fragment tag*/null );
+                }
+            });
         }
     }
-
-
-
-//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
-
-
-    private static final java.util.logging.Logger logger = LoggerX.getLogger( WayrangingV.class );
 
 
 }
