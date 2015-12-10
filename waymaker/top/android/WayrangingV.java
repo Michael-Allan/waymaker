@@ -4,10 +4,14 @@ import android.view.View;
 import android.widget.*;
 import waymaker.gen.ThreadRestricted;
 
+import static android.widget.RelativeLayout.ALIGN_PARENT_BOTTOM;
+import static android.widget.RelativeLayout.ALIGN_PARENT_RIGHT;
+import static waymaker.gen.RelativeLayoutJig.jigRelative;
+
 
 /** A wayranging view.
   */
-@ThreadRestricted("app main") final class WayrangingV extends LinearLayout
+@ThreadRestricted("app main") final class WayrangingV extends RelativeLayout
 {
     /* * *
                                               WaypathV
@@ -146,13 +150,12 @@ import waymaker.gen.ThreadRestricted;
     WayrangingV( final Wayranging wr )
     {
         super( /*context*/wr );
-        setOrientation( VERTICAL );
 
         {
           // Menu summoner.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             final Button button = new Button( wr );
-            addView( button );
+            addView( button, jigRelative().rule(ALIGN_PARENT_BOTTOM).rule(ALIGN_PARENT_RIGHT).unjig() );
             button.setText( "≡" );
             button.setOnClickListener( new View.OnClickListener()
             {
