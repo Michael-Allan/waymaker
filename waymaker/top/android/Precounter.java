@@ -238,7 +238,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
                 }
             }
         }
-        catch( final MalformedID|WayrepoX x ) { throw new CountFailure( x ); }
+        catch( final MalformedID|WayrepoAccessFailure x ) { throw new CountFailure( x ); }
 
       // Ensure owner is precounted.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

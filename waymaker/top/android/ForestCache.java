@@ -318,7 +318,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
                 String docID;
                 docID = DocumentsContract.getTreeDocumentId( wayrepoTreeUri );
                 docID = inWr.findDirectory( "poll", docID );
-                if( docID == null ) throw new WayrepoX( "Missing 'poll' directory" );
+                if( docID == null ) throw new WayrepoAccessFailure( "Missing 'poll' directory" );
 
                 try( final Cursor c/*proID_NAME_TYPE*/ = inWr.queryChildren( docID ); )
                 {
@@ -356,7 +356,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
                     }
                 }
             }
-            catch( final WayrepoX x )
+            catch( final WayrepoAccessFailure x )
             {
                 logger.log( WARNING, "", x );
                 failureH.set( x );

@@ -3,7 +3,7 @@ package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Way
 import waymaker.gen.ThreadSafe;
 
 
-/** Thrown when a vote count fails.
+/** An exception thrown when a vote count fails.
   */
 final @SuppressWarnings("serial") @ThreadSafe class CountFailure extends Exception
 {

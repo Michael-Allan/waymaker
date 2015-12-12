@@ -20,18 +20,18 @@ final class WayrepoReader implements java.io.Closeable
     /** Constructs a WayrepoReader.  Call {@linkplain #close close}() when done with it.
       *
       *     @see #wayrepoTreeUri()
-      *     @throws WayrepoX if access to the wayrepo is denied by a security exception.
+      *     @throws WayrepoAccessFailure if access to the wayrepo is denied by a security exception.
       *       See {@linkplain WaykitUI#wayrepoTreeLoc_message(String) wayrepoTreeLoc_message}.
       */
     @ThreadSafe WayrepoReader( final Uri wayrepoTreeUri, final ContentResolver contentResolver )
-      throws WayrepoX
+      throws WayrepoAccessFailure
     {
         this.wayrepoTreeUri = wayrepoTreeUri;
         this.contentResolver = contentResolver;
         try { provider = contentResolver.acquireContentProviderClient( wayrepoTreeUri ); }
         catch( final SecurityException x )
         {
-            throw new WayrepoX( WaykitUI.wayrepoTreeLoc_message(wayrepoTreeUri.toString()), x );
+            throw new WayrepoAccessFailure( WaykitUI.wayrepoTreeLoc_message(wayrepoTreeUri.toString()), x );
         }
     }
 
@@ -44,7 +44,7 @@ final class WayrepoReader implements java.io.Closeable
       *
       *     @param parentID The document identifier of the parent.
       */
-    String findDirectory( final String name, final String parentID ) throws WayrepoX, InterruptedException
+    String findDirectory( final String name, final String parentID ) throws WayrepoAccessFailure, InterruptedException
     {
         try( final Cursor c/*proID_NAME_TYPE*/ = queryChildren( parentID ); )
         {
@@ -90,7 +90,7 @@ final class WayrepoReader implements java.io.Closeable
       *
       *     @param parentID The document identifier of the parent.
       */
-    Cursor queryChildren( final String parentID ) throws WayrepoX, InterruptedException
+    Cursor queryChildren( final String parentID ) throws WayrepoAccessFailure, InterruptedException
     {
         return queryChildren( parentID, false );
     }
@@ -132,7 +132,7 @@ final class WayrepoReader implements java.io.Closeable
 
 
     private Cursor queryChildren( final String parentID, final boolean isRetry )
-      throws WayrepoX, InterruptedException
+      throws WayrepoAccessFailure, InterruptedException
     {
         final Cursor c;
         try
@@ -141,15 +141,15 @@ final class WayrepoReader implements java.io.Closeable
               proID_NAME_TYPE, /*selector, unsupported*/null, /*selectorArgs*/null, /*order*/null );
               // selector unsupported in base impl (DocumentsProvider.queryChildDocuments)
         }
-        catch( final RemoteException x ) { throw new WayrepoX( x ); }
+        catch( final RemoteException x ) { throw new WayrepoAccessFailure( x ); }
 
-        if( c == null ) throw new WayrepoX( "Cannot read wayrepo directory: " + parentID );
+        if( c == null ) throw new WayrepoAccessFailure( "Cannot read wayrepo directory: " + parentID );
 
       // Return response if fully loaded.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         if( !c.getExtras().getBoolean( DocumentsContract.EXTRA_LOADING )) return c;
 
-        if( isRetry ) { throw new WayrepoX( "Incomplete response from documents provider after retry" ); }
+        if( isRetry ) { throw new WayrepoAccessFailure( "Incomplete response from documents provider after retry" ); }
 
       // Else wait for response to fully load.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,7 +175,7 @@ final class WayrepoReader implements java.io.Closeable
                     final long msElapsed = System.currentTimeMillis() - msStart;
                     if( msElapsed > MS_TIMEOUT_MIN )
                     {
-                        throw new WayrepoX( "Wayrepo timeout after " + msElapsed + " ms" );
+                        throw new WayrepoAccessFailure( "Wayrepo timeout after " + msElapsed + " ms" );
                     }
 
                     WayrepoReader.this.wait( MS_TIMEOUT_INTERVAL );
