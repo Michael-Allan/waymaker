@@ -4,15 +4,17 @@ import java.util.List;
 import waymaker.gen.*;
 
 
-/** A forest view that is oriented by a {@linkplain Forester forester}.
+/** A forest view that is oriented by the {@linkplain Wayranging#forester() forester}.
   */
 @ThreadRestricted("app main") final class ForestV
 {
     /* * *
-    - f-structure notebook 2015.1.31
-        - heaviest nodes at bottom of peers, as that allows voters to slide into peers
+    - laid out in thin, vertical line
+        ( like f-structure of notebook 2015.1.31, but with vertical voters
+        - voters replaced with quantity indicator if screen space too small
     [ vote control
-        - to right of horizontal voters atop view
+      / - to right of horizontal voters atop view
+      // no longer horizontal, vote control placement is now unknown
         - when on-path, subject node is either directly there, or upstream
             - because waypath crosses via transnorm of first pipe downstream of subject
     - peer overflow accessed via page up control atop peers
@@ -20,44 +22,39 @@ import waymaker.gen.*;
         - down control appears at bottom of peers, when paged
     - minor peers handled by appendage to final page
         - similar to Votorola
-        - notebook 2015.6.1, ad b
+        ( notebook 2015.6.1, ad b
       */
-
-    static final PolyStator<ForestV> stators = new PolyStator<>();
-
-///////
 
 
     /** Constructs a ForestV.
-      *
-      *     @see #forester()
       */
-    ForestV( Forester _forester )
+    ForestV( final Wayranging _wr )
     {
-        forester = _forester;
+        wr = _wr;
+        final Forester forester = wr.forester();
         groundWidth = forester.nodeCache().ground().voters().size();
         forester.bell().register( new Auditor<Changed>() // TEST
         {
             private NodeCache cache = forester.nodeCache();
             public void hear( Changed _ding )
             {
-                final NodeCache cacheNow = forester.nodeCache();
-                if( cacheNow == cache ) return;
+                final NodeCache _cache = wr.forester().nodeCache();
+                if( _cache == cache ) return;
 
-                cache = cacheNow;
+                cache = _cache;
                 groundWidth = cache.ground().voters().size();
                 System.err.println( " --- forest cache has changed" );
                 show();
             }
         });
-        forester.forestCache().voterListingBell().register( new Auditor<Changed>() // TEST
+        wr.forests().voterListingBell().register( new Auditor<Changed>() // TEST
         {
             public void hear( Changed _ding )
             {
-                final int groundWidthNow = forester.nodeCache().ground().voters().size();
-                if( groundWidthNow == groundWidth ) return;
+                final int _groundWidth = wr.forester().nodeCache().ground().voters().size();
+                if( _groundWidth == groundWidth ) return;
 
-                groundWidth = groundWidthNow;
+                groundWidth = _groundWidth;
                 System.err.println( " --- root list has grown" );
                 show();
             }
@@ -73,19 +70,10 @@ import waymaker.gen.*;
 
     final @Warning("init call") void show() // TEST
     {
-        final List<? extends Node> roots = forester.nodeCache().ground().voters();
+        final List<? extends Node> roots = wr.forester().nodeCache().ground().voters();
         System.err.println( " --- root list size=" + roots.size() );
         for( final Node root: roots ) System.err.println( "     root=" + root );
     }
-
-
-
-    /** The forester that orients this view.
-      */
-    Forester forester() { return forester; }
-
-
-        private final Forester forester;
 
 
 
@@ -95,8 +83,8 @@ import waymaker.gen.*;
     private int groundWidth;
 
 
-///////
 
-    static { stators.seal(); }
+    private final Wayranging wr; // TEST, till can use overridden getActivity
+
 
 }

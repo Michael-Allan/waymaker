@@ -83,36 +83,39 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         forests = new ForestCache( inP/*by CtorRestore*/ );
         if( isFirstConstruction ) forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
 
-      // Forester.
+      // Poll namer.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
         {
             public void save( final Wayranging wr, final Parcel out )
             {
-                Forester.stators.save( wr.forestV.forester(), out );
-                ForestV.stators.save( wr.forestV, out );
+                out.writeString( wr.pollNamer.get() );
             }
         });
-        forestV = new ForestV( new Forester( forests/*by CtorRestore*/.getOrMakeForest( "end" )));
-        if( inP != null ) // restore
-        {
-            Forester.stators.restore( forestV.forester(), inP );
-            ForestV.stators.restore( forestV, inP );
-        }
+        pollNamer = new BelledVariable<String>( inP == null? "end": inP.readString() );
+          // CtorRestore to cleanly construct with restored state
+
+      // Dependents of above.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        forester = new Forester( this );
+        setContentView( new WayrangingV( this ));
 
       // - - -
-        setContentView( new WayrangingV( this ));
         if( isFirstConstruction ) stators.seal();
     }
 
 
 
-    private static boolean wasConstructorCalled; /* or more correctly 'wasCreateCalled',
-      but here following the pattern of restoring (inP) constructors elsewhere */
-
-
-
    // --------------------------------------------------------------------------------------------------
+
+
+    /** The forester of this wayranging activity.
+      */
+    Forester forester() { return forester; }
+
+
+        private Forester forester; // final after create
+
 
 
     /** The pollar forests of this wayranging activity.
@@ -157,6 +160,15 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
         private final ReRinger<Changed> lifeStageBell = Changed.newReRinger();
+
+
+
+    /** The namer of the poll on which wayranging now focuses.
+      */
+    BelledVariable<String> pollNamer() { return pollNamer;}
+
+
+        private BelledVariable<String> pollNamer; // final after create, which adds stator
 
 
 
@@ -319,11 +331,12 @@ System.err.println( " --- onActivityResult wk.isMainThread()=" + wk.isMainThread
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private ForestV forestV; // final after create, which adds stator
-
-
-
     private static final java.util.logging.Logger logger = LoggerX.getLogger( Wayranging.class );
+
+
+
+    private static boolean wasConstructorCalled;
+      // more correctly 'wasCreateCalled', but here following the usual pattern of CtorRestore
 
 
 

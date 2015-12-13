@@ -14,7 +14,7 @@ public @ThreadSafe final class Changed implements Ding<Changed>
    // --------------------------------------------------------------------------------------------------
 
 
-    /** Constructs a ReRinger for signifying changes.
+    /** Constructs a Changed and returns a re-ringer that emits it.
       */
     public static ReRinger<Changed> newReRinger() { return (ReRinger<Changed>)new Changed().source; }
 

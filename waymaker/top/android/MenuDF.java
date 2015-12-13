@@ -37,6 +37,21 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
             });
         }
         {
+          // Vote control summoner.
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            final Button button = new Button( context );
+            y.addView( button );
+            button.setText( "Vote…" );
+            button.setEnabled( false ); // not yet coded
+              /* * *
+                - vote control dialogue to float non-modally
+                    - allowing actionable cues
+                        - e.g. when this summoner (menu summoner) is subject-coloured
+                            - e.g. when user is virgin, so chosen node = voted node = null
+                            " Choose a candidate from the forest at left
+                */
+        }
+        {
           // Logging test button, to log test messages at all standard logging levels.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             final Button button = new Button( context );
@@ -48,21 +63,38 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
             });
         }
         {
-          // Generic test button.
+          // Generic test buttons.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            final Button button = new Button( context );
-            y.addView( button );
-            button.setText( "Extend roots" );
-            button.setOnClickListener( new View.OnClickListener()
+            final LinearLayout x = new LinearLayout( context );
+            y.addView( x );
             {
-                public void onClick( final View src )
+                final Button button = new Button( context );
+                x.addView( button );
+                button.setText( "Change poll" );
+                button.setOnClickListener( new View.OnClickListener()
                 {
-                    final Wayranging wr = (Wayranging)src.getContext();
-                    final String pollName = "end";
-                    final Forest forest = wr.forests().get( pollName );
-                    new ServerCount(pollName).enqueuePeersRequest( null/*ground*/, forest, /*paddedLimit*/0 );
-                }
-            });
+                    public void onClick( final View src )
+                    {
+                        final BelledVariable<String> pollNamer = ((Wayranging)src.getContext()).pollNamer();
+                        final String otherName = "end".equals(pollNamer.get())? "wk":"end";
+                        pollNamer.set( otherName );
+                    }
+                });
+            }
+            {
+                final Button button = new Button( context );
+                x.addView( button );
+                button.setText( "Extend roots" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( final View src )
+                    {
+                        final Forest forest = ((Wayranging)src.getContext()).forester().forest();
+                        new ServerCount( forest.pollName() ).
+                          enqueuePeersRequest( null/*ground*/, forest, /*paddedLimit*/0 );
+                    }
+                });
+            }
         }
         return y;
     }

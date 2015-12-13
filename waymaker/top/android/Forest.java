@@ -108,10 +108,6 @@ final class Forest implements PeersReceiver
 
 
 
-    private static volatile boolean wasConstructorCalled;
-
-
-
    // --------------------------------------------------------------------------------------------------
 
 
@@ -464,6 +460,13 @@ final class Forest implements PeersReceiver
     ///////
         static { stators.seal(); }
     };
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    private static volatile boolean wasConstructorCalled;
 
 
 }

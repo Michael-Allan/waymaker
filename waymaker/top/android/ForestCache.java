@@ -32,6 +32,10 @@ import static waymaker.top.android.Forest.NodeCacheF;
       */
     ForestCache( final Parcel inP/*grep CtorRestore*/ )
     {
+        // A CtorRestore is a state-component restoration that is coded within a constructor or factory
+        // method, as opposed to the restore method of a stator.  Coordinating it with the whole save
+        // and restore procedure complicates its code.  CtorRestore is therefore used only where reason
+        // demands.  The reason in each case is documented by a comment labeled "CtorRestore".
         if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
         final boolean isFirstConstruction;
         if( wasConstructorCalled ) isFirstConstruction = false;
@@ -94,10 +98,6 @@ import static waymaker.top.android.Forest.NodeCacheF;
       // - - -
         if( isFirstConstruction ) stators.seal();
     }
-
-
-
-    private static boolean wasConstructorCalled;
 
 
 
@@ -222,6 +222,10 @@ import static waymaker.top.android.Forest.NodeCacheF;
         t.start();
         return t;
     }
+
+
+
+    private static boolean wasConstructorCalled;
 
 
 

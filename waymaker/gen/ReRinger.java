@@ -6,7 +6,7 @@ import waymaker.gen.CopyOnResizeArraySet;
 import static waymaker.gen.Auditor.EMPTY_AUDITOR_ARRAY;
 
 
-/** A bell that always emits the same ding.
+/** A bell that re-emits the same ding.
   *
   *     @param <D> The type of ding emitted.
   */

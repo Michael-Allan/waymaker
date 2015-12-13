@@ -4,45 +4,48 @@ import java.util.List;
 import waymaker.gen.*;
 
 
-/** An agent to move incrementally through forests.  Motion in a particular forest is commanded by the
-  * following methods:
+/** An agent to move incrementally through the {@linkplain Wayranging#forests() forests}.  Motion in a
+  * particular forest is commanded by the following methods:
   *
   * <ul>
   *     <li>{@linkplain #ascendToVoter(Node) ascendToVoter}</li>
   *     <li>{@linkplain #descendToCandidate(Node) descendToCandidate}</li>
   *     <li>{@linkplain #moveToPeer(Node) moveToPeer}</li>
   *     </ul>
-  *
-  *     @see <a href='../../../../forest' target='_top'>‘forest’</a>
   */
-@ThreadRestricted("app main") final class Forester
+@ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
 {
-
-    static final PolyStator<Forester> stators = new PolyStator<>();
-
-///////
 
 
     /** Constructs a Forester.
       *
       *     @see #forest()
       */
-    Forester( final Forest forest )
+    Forester( final Wayranging wr )
     {
-        this.forest = forest;
-        forestCache = forest.forestCache();
-        nodeCache = forest.nodeCache();
-        candidate = nodeCache.ground();
-        forestCache.nodeCacheBell().register( new Auditor<Changed>() // TEST
+        final ForestCache forests = wr.forests();
+        forest = forests.getOrMakeForest( wr.pollNamer().get() );
+        nodeCache( forest.nodeCache() );
+        wr.pollNamer().bell().register( new Auditor<Changed>()
+        {
+            public void hear( Changed _ding )
+            {
+                final String _pollName = wr.pollNamer().get();
+                if( _pollName.equals(forest.pollName()) ) return;
+
+                forest = wr.forests().getOrMakeForest( _pollName );
+                nodeCache( forest.nodeCache() );
+                bell.ring();
+            }
+        });
+        forests.nodeCacheBell().register( new Auditor<Changed>()
         {
             public void hear( Changed _ding )
             {
                 final NodeCache _nodeCache = forest.nodeCache();
                 if( _nodeCache == nodeCache ) return;
 
-                nodeCache = _nodeCache;
-                candidate = nodeCache.ground(); // pending code to attempt something less disruptive
-                node = null;
+                nodeCache( _nodeCache );
                 bell.ring();
             }
         });
@@ -104,16 +107,7 @@ import waymaker.gen.*;
     Forest forest() { return forest; }
 
 
-        private final Forest forest;
-
-
-
-    /** The store of each forest.
-      */
-    ForestCache forestCache() { return forestCache; }
-
-
-        private final ForestCache forestCache;
+        private Forest forest;
 
 
 
@@ -152,8 +146,12 @@ import waymaker.gen.*;
         private NodeCache nodeCache; // may temporarily lag forest.nodeCache instance till change reaches here
 
 
-///////
+        private final @Warning("init call") void nodeCache( final NodeCache _nodeCache )
+        {
+            nodeCache = _nodeCache;
+            candidate = _nodeCache.ground(); // pending code to position from "concrete" node of waypath
+            node = null;
+        }
 
-    static { stators.seal(); }
 
 }

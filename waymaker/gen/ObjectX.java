@@ -10,8 +10,8 @@ public @ThreadSafe final class ObjectX
 
 
 
-    /** Answers whether both objects are equal in the sense of
-      * o1.{@linkplain Object#equals(Object) equals}(o2), or both are null.
+    /** Answers whether the given objects are equal in the sense either of both being null, or
+      * <code>o1.{@linkplain Object#equals(Object) equals}(o2)</code>.
       */
     public static boolean equals( final Object o1, final Object o2 )
     {
