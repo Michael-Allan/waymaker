@@ -5,11 +5,11 @@ import waymaker.gen.*;
 
 /** A voter list for an unadjusted node.
   */
-final class UnadjustedVoterList extends CopyOnResizeArrayList<UnadjustedNode1>
+public final class UnadjustedVoterList extends CopyOnResizeArrayList<UnadjustedNode1>
 {
 
 
-    @ThreadSafe UnadjustedVoterList() {}
+    public @ThreadSafe UnadjustedVoterList() {}
 
 
 

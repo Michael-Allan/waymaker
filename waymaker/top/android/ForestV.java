@@ -29,13 +29,13 @@ import static android.view.View.INVISIBLE;
   * <p>Any {@linkplain Forester#ascendToVoter(Node) upward mobility} it indicates by enabling the up
   * climber (top).  The peers viewer alone is paged; the candidates viewer is ellipsed.</p>
   */
-@ThreadRestricted("app main") final class ForestV extends LinearLayout
+public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 {
 
 
     /** Constructs a ForestV.
       */
-    ForestV( final Wayranging wr )
+    public ForestV( final Wayranging wr )
     {
         super( /*context*/wr );
         setOrientation( VERTICAL );

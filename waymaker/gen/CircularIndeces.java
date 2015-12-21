@@ -112,15 +112,6 @@ public final class CircularIndeces
 
 
 
-    /** The index to write to.
-      */
-    int write() { return write; }
-
-
-        private int write;
-
-
-
     /** Advances the write index and returns its original value, also advancing the read index as
       * necessary to prevent a boundary exception.  Use this method to implement a write operation on
       * the buffer that allows for overwriting of the oldest, unread value.  Or equivalently a tail
@@ -149,6 +140,15 @@ public final class CircularIndeces
 
 
     private final int max; // maximum value of an index, capacity - 1
+
+
+
+    /** The index to write to.
+      */
+    private int write() { return write; }
+
+
+        private int write;
 
 
 }

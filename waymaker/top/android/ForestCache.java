@@ -18,7 +18,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
   * storage and singleton referencing forest instances, which together reduce the frequency of slow
   * communications with the remote data source (count server).
   */
-@ThreadRestricted("app main") final class ForestCache // effectively so restricted by "dives" into "app main"
+public @ThreadRestricted("app main") final class ForestCache // effectively so restricted by "dives" into "app main"
 {
 
     static final PolyStator<ForestCache> stators = new PolyStator<>();
@@ -30,7 +30,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
       *
       *     @param inP The parceled state to restore, or null to restore none.
       */
-    ForestCache( final Parcel inP/*grep CtorRestore*/ )
+    public ForestCache( final Parcel inP/*grep CtorRestore*/ )
     {
         // A CtorRestore is a state-component restoration that is coded within a constructor or factory
         // method, as opposed to the restore method of a stator.  Coordinating it with the whole save
@@ -108,7 +108,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
       *
       *     @see Forest#pollName()
       */
-    Forest get( final String pollName ) { return forestMap.get( pollName ); }
+    public Forest get( final String pollName ) { return forestMap.get( pollName ); }
 
 
 
@@ -117,7 +117,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
       *
       *     @see Forest#pollName()
       */
-    Forest getOrMakeForest( final String pollName )
+    public Forest getOrMakeForest( final String pollName )
     {
         Forest forest = get( pollName );
         if( forest == null )
@@ -132,7 +132,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
 
     /** A bell that rings when a forest {@linkplain Forest#nodeCache() node cache} is replaced.
       */
-    Bell<Changed> nodeCacheBell() { return nodeCacheBell; }
+    public Bell<Changed> nodeCacheBell() { return nodeCacheBell; }
 
 
         private final ReRinger<Changed> nodeCacheBell = Changed.newReRinger();
@@ -141,7 +141,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
 
     /** A bell that rings when a note is changed.
       */
-    Bell<Changed> notaryBell() { return notaryBell; }
+    public Bell<Changed> notaryBell() { return notaryBell; }
 
 
         private final ReRinger<Changed> notaryBell = Changed.newReRinger();
@@ -151,7 +151,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
     /** A note for the user on the ultimate result of the latest refresh attempt.  Any change in the
       * return value will be signalled by the {@linkplain #notaryBell() notary bell}.
       */
-    String refreshNote() { return refreshNote; }
+    public String refreshNote() { return refreshNote; }
 
 
         private String refreshNote = "Not yet refreshed";
@@ -172,7 +172,7 @@ import static waymaker.top.android.Forest.NodeCacheF;
       *
       *     @see WaykitUI#wayrepoTreeLoc()
       */
-    void startRefresh( final String wayrepoTreeLoc ) { r1( /*toClear*/true, wayrepoTreeLoc ); }
+    public void startRefresh( final String wayrepoTreeLoc ) { r1( /*toClear*/true, wayrepoTreeLoc ); }
 
 
 
@@ -183,13 +183,13 @@ import static waymaker.top.android.Forest.NodeCacheF;
       *
       *     @see WaykitUI#wayrepoTreeLoc()
       */
-    void startRefreshFromWayrepo( final String wayrepoTreeLoc ) { r1( /*toClear*/false, wayrepoTreeLoc ); }
+    public void startRefreshFromWayrepo( final String wayrepoTreeLoc ) { r1( /*toClear*/false, wayrepoTreeLoc ); }
 
 
 
     /** A bell that rings when a nodal {@linkplain Node#voters() voter list} is extended.
       */
-    ReRinger<Changed> voterListingBell() { return voterListingBell; }
+    public ReRinger<Changed> voterListingBell() { return voterListingBell; }
 
         /* * *
         - after hearing a ring, client may re-test extension of precount node's voter list

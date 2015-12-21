@@ -10,7 +10,7 @@ import waymaker.spec.VotingID;
   *
   *     @see <a href='../../../../forest' target='_top'>‘forest’</a>
   */
-final class Forest implements PeersReceiver
+public final class Forest implements PeersReceiver
 {
 
     static final PolyStator<Forest> stators = new PolyStator<>();
@@ -23,7 +23,7 @@ final class Forest implements PeersReceiver
       *     @see #pollName()
       *     @see #forestCache()
       */
-    Forest( final String pollName, final ForestCache forestCache )
+    public Forest( final String pollName, final ForestCache forestCache )
     {
         this( pollName, forestCache, /*inP*/null, /*nodeCache*/null );
     }
@@ -36,7 +36,7 @@ final class Forest implements PeersReceiver
       *     @see #forestCache()
       *     @param inP Parceled state to restore.
       */
-    Forest( final String pollName, final ForestCache forestCache, final Parcel inP )
+    public Forest( final String pollName, final ForestCache forestCache, final Parcel inP )
     {
         this( pollName, forestCache, inP, /*nodeCache*/null );
     }
@@ -49,7 +49,7 @@ final class Forest implements PeersReceiver
       *     @see #forestCache()
       *     @see #nodeCache()
       */
-    Forest( final String pollName, final ForestCache forestCache, final NodeCacheF nodeCache )
+    public Forest( final String pollName, final ForestCache forestCache, final NodeCacheF nodeCache )
     {
         this( pollName, forestCache, /*inP*/null, nodeCache );
     }
@@ -113,7 +113,7 @@ final class Forest implements PeersReceiver
 
     /** The store of this forest.
       */
-    ForestCache forestCache() { return forestCache; }
+    public ForestCache forestCache() { return forestCache; }
 
 
         private final ForestCache forestCache;
@@ -124,7 +124,7 @@ final class Forest implements PeersReceiver
       * may be wholly replaced at any time.  Each replacement is signalled by the {@linkplain
       * ForestCache#nodeCacheBell() node cache bell}.
       */
-    NodeCache nodeCache() { return nodeCache; }
+    public NodeCache nodeCache() { return nodeCache; }
 
 
         private NodeCacheF nodeCache; // constructor adds stator
@@ -141,7 +141,7 @@ final class Forest implements PeersReceiver
 
     /** The identifier of the poll that was counted to form this forest.  It also identifies the forest.
       */
-    String pollName() { return pollName; }
+    public String pollName() { return pollName; }
 
 
         private final String pollName;
@@ -281,10 +281,17 @@ final class Forest implements PeersReceiver
 
 
 
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    private static volatile boolean wasConstructorCalled;
+
+
+
    // ==================================================================================================
 
 
-    static @Warning("non-API") final class NodeCacheF implements NodeCache,
+    static final class NodeCacheF implements NodeCache,
       PrecountNode.SKit, PrecountNode.RKit, UnadjustedNodeV.RKit, UnadjustedNodeV.SKit
     {
         static final PolyStator<NodeCacheF> stators = new PolyStator<>();
@@ -460,13 +467,6 @@ final class Forest implements PeersReceiver
     ///////
         static { stators.seal(); }
     };
-
-
-
-//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
-
-
-    private static volatile boolean wasConstructorCalled;
 
 
 }

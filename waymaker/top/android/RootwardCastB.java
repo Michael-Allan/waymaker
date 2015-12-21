@@ -6,7 +6,7 @@ import waymaker.spec.VotingID;
 
 /** An implementation of a barred rootward cast.
   */
-final @ThreadSafe class RootwardCastB<C extends Node> implements RootwardCast<C>
+public final @ThreadSafe class RootwardCastB<C extends Node> implements RootwardCast<C>
 {
 
 
@@ -14,7 +14,7 @@ final @ThreadSafe class RootwardCastB<C extends Node> implements RootwardCast<C>
       *
       *     @see #votedID()
       */
-    RootwardCastB( C _ground, VotingID _votedID )
+    public RootwardCastB( C _ground, VotingID _votedID )
     {
         ground = _ground;
         votedID = _votedID;

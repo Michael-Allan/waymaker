@@ -5,7 +5,7 @@ import waymaker.gen.ThreadSafe;
 
 /** An exception thrown on a failed attempt to communicate with a wayrepo.
   */
-final @SuppressWarnings("serial") @ThreadSafe class WayrepoAccessFailure extends java.io.IOException
+public final @SuppressWarnings("serial") @ThreadSafe class WayrepoAccessFailure extends java.io.IOException
 {
 
     WayrepoAccessFailure( Throwable cause ) { super( cause ); }

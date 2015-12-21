@@ -6,7 +6,7 @@ import waymaker.spec.VotingID;
 
 /** An implementation of a precount-adjustable node.
   */
-final class PrecountNode1 extends PrecountNode
+public final class PrecountNode1 extends PrecountNode
 {
 
 
@@ -19,7 +19,7 @@ final class PrecountNode1 extends PrecountNode
       *     @throws NullPointerException if the given unadjusted base is the ground.  In that case, you
       *       should construct a PrecountGround instead.
       */
-    PrecountNode1( final UnadjustedNode unadjusted )
+    public PrecountNode1( final UnadjustedNode unadjusted )
     {
         super( unadjusted, /*toCopyVoters*/true );
 
@@ -47,7 +47,7 @@ final class PrecountNode1 extends PrecountNode
       *     @throws AssertionError if assertions are enabled and the given unadjusted base is the
       *       ground.  In that case, you should construct a PrecountGround instead.
       */
-    PrecountNode1( final UnadjustedNode unadjusted, final RootwardCast<PrecountNode> _rootwardInThis )
+    public PrecountNode1( final UnadjustedNode unadjusted, final RootwardCast<PrecountNode> _rootwardInThis )
     {
         super( unadjusted, /*toCopyVoters*/false );
         assert !unadjusted.isGround(); // matching this.isGround
@@ -179,7 +179,7 @@ final class PrecountNode1 extends PrecountNode
    // - P r e c o u n t - N o d e -- s -----------------------------------------------------------------
 
 
-    void addVoter( final PrecountNode1 voter )
+    public void addVoter( final PrecountNode1 voter )
     {
         enlistVoterIfExtended( voter );
         final int voterOutflow = VOTER_OUTFLOW;
@@ -188,7 +188,7 @@ final class PrecountNode1 extends PrecountNode
 
 
 
-    void addVoter( final PrecountNode1 voter, final PrecountNode effectiveGround )
+    public void addVoter( final PrecountNode1 voter, final PrecountNode effectiveGround )
     {
         enlistVoterIfExtended( voter );
         if( effectiveGround == this ) return; // vote flow is unaffected
@@ -199,7 +199,7 @@ final class PrecountNode1 extends PrecountNode
 
 
 
-    void removeVoter( final PrecountNode1 voter )
+    public void removeVoter( final PrecountNode1 voter )
     {
         unlistVoter( voter );
         final int voterOutflow = VOTER_OUTFLOW;
@@ -208,7 +208,7 @@ final class PrecountNode1 extends PrecountNode
 
 
 
-    PrecountNode removeVoter( final PrecountNode1 voter, final PrecountNode futureCandidate,
+    public PrecountNode removeVoter( final PrecountNode1 voter, final PrecountNode futureCandidate,
       final Precounter precounter )
     {
         unlistVoter( voter );

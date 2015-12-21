@@ -90,7 +90,9 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
          // out.println( '-linksource' );
          /// instead link to built source (../source/Target.js) consistent with javadoc comments
             out.println( '-noqualifier waymaker.*' );
-            out.println( '-package' );
+         // out.println( '-package' );
+         /// But it encourages doc of package private API (for consistency) which in turn discourages
+         /// breaking out elaborate member classes to the top level where they properly belong.
             out.append( '-sourcepath ' ).println( Waymaker.loc() );
             out.println( '-subpackages waymaker' );
             out.println( '-use' );

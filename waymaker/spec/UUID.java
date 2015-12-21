@@ -54,43 +54,6 @@ public abstract class UUID extends ID implements TriSerialUUID
 
 
 
-    /** Compares this identifier to the other based on both its scope and serial numbers.  Does no
-      * preliminary "other == this" short cutting, but instead lets the caller do that.
-      *
-      *     @return A negative number, zero, or a positive number as this identifier is less less than,
-      *       equal to, or greater than the other.
-      *     @throws NullPointerException if other is null.
-      */
-    final int compareUniversally( final TriSerialUUID _other )
-    {
-        final UUID other = (UUID)_other; // gain accesss to package-protected scopeByte for faster comparison
-        int result = Byte.compare( scopeByte(), other.scopeByte() ); // or throws NullPointerException
-        assert Integer.signum(result) == Integer.signum(scope().compareTo(other.scope()));
-          // byte-form comparisons are consistent with name form, as name alone is canonical
-        if( result == 0 ) result = compareNumerically( other );
-        return result;
-    }
-
-
-
-    /** Constructs a UUID by adopting a byte array that encodes its serial numbers.  The new identifier
-      * will thenceforth own the given array; do not alter its contents.
-      *
-      *     @see #scopeByte()
-      *     @see #numericBytes()
-      */
-    static UUID make( final byte scopeByte, final byte[] numericBytes )
-    {
-        final UUID id;
-        if( scopeByte == PipeID.SCOPE_BYTE ) id = new PipeID( numericBytes );
-        else if( scopeByte == PersonID.SCOPE_BYTE ) id = new PersonID( numericBytes );
-        else throw new IllegalArgumentException( "Bad scope byte: " + scopeByte );
-
-        return id;
-    }
-
-
-
     /** Constructs a UUID by parsing an identifier in {@linkplain
       * #toTriSerialScopedString(StringBuilder) scoped string form}.
       */
@@ -121,30 +84,6 @@ public abstract class UUID extends ID implements TriSerialUUID
             }
         }
         throw new MalformedID( "Bad scope suffix", scopedString );
-    }
-
-
-
-    /** The encoded value of the {@linkplain #scope() scope} for this identifier in the current version
-      * of the software.  It may change in a future version.
-      */
-    abstract byte scopeByte(); // for sake of speedy, short term serialization, as in AndroidXID.writeUUID
-
-
-        /** The encoded form of the scope for a null identifier in this version of the software.
-          */
-        static final byte SCOPE_BYTE_NULL = -1; // start of sequence, continues lexically with PersonID
-
-
-
-    /** Outputs a {@linkplain #toTriSerialString(StringBuilder) tri-serial string} suffixed by a
-      * {@linkplain #scope() scope string}.
-      */
-    final void toTriSerialScopedString( final StringBuilder out )
-    {
-        toTriSerialString( out );
-        out.append( '-' );
-        out.append( scope() );
     }
 
 
@@ -188,6 +127,70 @@ public abstract class UUID extends ID implements TriSerialUUID
         final StringBuilder out = new StringBuilder();
         toTriSerialScopedString( out );
         return out.toString();
+    }
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    /** Compares this identifier to the other based on both its scope and serial numbers.  Does no
+      * preliminary "other == this" short cutting, but instead lets the caller do that.
+      *
+      *     @return A negative number, zero, or a positive number as this identifier is less less than,
+      *       equal to, or greater than the other.
+      *     @throws NullPointerException if other is null.
+      */
+    final int compareUniversally( final TriSerialUUID _other )
+    {
+        final UUID other = (UUID)_other; // gain accesss to package-protected scopeByte for faster comparison
+        int result = Byte.compare( scopeByte(), other.scopeByte() ); // or throws NullPointerException
+        assert Integer.signum(result) == Integer.signum(scope().compareTo(other.scope()));
+          // byte-form comparisons are consistent with name form, as name alone is canonical
+        if( result == 0 ) result = compareNumerically( other );
+        return result;
+    }
+
+
+
+    /** Constructs a UUID by adopting a byte array that encodes its serial numbers.  The new identifier
+      * will thenceforth own the given array; do not alter its contents.
+      *
+      *     @see #scopeByte()
+      *     @see #numericBytes()
+      */
+    static UUID make( final byte scopeByte, final byte[] numericBytes )
+    {
+        final UUID id;
+        if( scopeByte == PipeID.SCOPE_BYTE ) id = new PipeID( numericBytes );
+        else if( scopeByte == PersonID.SCOPE_BYTE ) id = new PersonID( numericBytes );
+        else throw new IllegalArgumentException( "Bad scope byte: " + scopeByte );
+
+        return id;
+    }
+
+
+
+    /** The encoded value of the {@linkplain #scope() scope} for this identifier in the current version
+      * of the software.  It may change in a future version.
+      */
+    abstract byte scopeByte(); // for sake of speedy, short term serialization, as in AndroidXID.writeUUID
+
+
+        /** The encoded form of the scope for a null identifier in this version of the software.
+          */
+        static final byte SCOPE_BYTE_NULL = -1; // start of sequence, continues lexically with PersonID
+
+
+
+    /** Outputs a {@linkplain #toTriSerialString(StringBuilder) tri-serial string} suffixed by a
+      * {@linkplain #scope() scope string}.
+      */
+    final void toTriSerialScopedString( final StringBuilder out )
+    {
+        toTriSerialString( out );
+        out.append( '-' );
+        out.append( scope() );
     }
 
 

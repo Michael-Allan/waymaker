@@ -103,6 +103,89 @@ public @ThreadSafe class ID implements TriSerialID
    // --------------------------------------------------------------------------------------------------
 
 
+    /** Answers whether the given string is a well formed serial number.  It must have a non-zero
+      * length, a non-zero leading character, and each character must be one of the following radix 62
+      * digits: {@value #RADIX_62_STRING}.
+      */
+    public static boolean isSerialForm( final String string ) // cf. digit(ch)
+    {
+        final int cN = string.length();
+        if( cN == 0 ) return false; // empty string
+
+        int c = 0;
+        char ch = string.charAt( 0 );
+        if( ch == '0' ) return false; // zero leader
+
+        for( ;; )
+        {
+            if( ch < '0' ) return false;
+
+            if( ch > '9' )
+            {
+                if( ch < 'A' ) return false;
+
+                if( ch > 'Z' )
+                {
+                    if( ch < 'a' || ch > 'z' ) return false;
+                }
+            }
+
+            ++c;
+            if( c == cN ) return true;
+
+            ch = string.charAt( c );
+        }
+    }
+
+
+
+   // - O b j e c t ------------------------------------------------------------------------------------
+
+
+    /** Answers whether o has a class of ID, and the same serial numbers as this identifier.
+      */
+    public @Override boolean equals( final Object o )
+    {
+        if( o == this ) return true;
+
+        if( o == null ) return false;
+
+        if( !o.getClass().equals( ID.class )) return false;
+          // Merely testing instanceof would allow this ID to equal a UUID.  That would be asymmetric if
+          // this ID not subclassed, but just an unscoped ID, because no UUID can equal an unscoped ID.
+
+        return equalsNumerically( (ID)o );
+    }
+
+
+
+    /** Derives a hash code from the instance number of this identifier.
+      */
+    public final @Override int hashCode()
+    {
+        final int dEnd = numericBytes.length - 1; // end bound (index of last+1)
+        int d = numericBytes[dEnd] - SA1N_ENCODER; // start index
+        int hashCode = 31 + numericBytes[d++];
+        while( d < dEnd ) hashCode = 31 * hashCode + numericBytes[d++];
+        return hashCode;
+    }
+
+
+
+    /** Outputs the tri-serial string form of this identifier.
+      */
+    public @Override String toString()
+    {
+        final StringBuilder out = new StringBuilder();
+        toTriSerialString( out );
+        return out.toString();
+    }
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
  // /** A comparator that sorts identifiers by their serial numbers and class names.  It accepts null
  //   * identifiers.
  //   */
@@ -174,6 +257,23 @@ public @ThreadSafe class ID implements TriSerialID
 
 
 
+    private static byte digit( final char ch ) throws BadCharacter // cf. isSerialNumber(String)
+    {
+        final int digit;
+        if( ch >= 'A' )
+        {
+            if( ch <= 'Z' ) digit = 11 + (ch - 'A') * 2;
+            else if( ch >= 'a' && ch <= 'z' ) digit = 10 + (ch - 'a') * 2;
+            else throw new BadCharacter();
+        }
+        else if( ch >= '0' && ch <= '9' ) digit = ch - '0';
+        else throw new BadCharacter();
+
+        return (byte)digit;
+    }
+
+
+
     /** Answers whether this identifier has the same serial numbers as oID.  This method will usually
       * answer faster than compareNumerically because it tests in reverse beginning with the instance
       * number, which is more likely to differ.  Does no preliminary "oID == this" short cutting, but
@@ -194,42 +294,6 @@ public @ThreadSafe class ID implements TriSerialID
             if( numericBytes[b] != oBytes[b] ) return false;
 
             if( b == 0 ) return true;
-        }
-    }
-
-
-
-    /** Answers whether the given string is a well formed serial number.  It must have a non-zero
-      * length, a non-zero leading character, and each character must be one of the following radix 62
-      * digits: {@value #RADIX_62_STRING}.
-      */
-    public static boolean isSerialForm( final String string ) // cf. digit(ch)
-    {
-        final int cN = string.length();
-        if( cN == 0 ) return false; // empty string
-
-        int c = 0;
-        char ch = string.charAt( 0 );
-        if( ch == '0' ) return false; // zero leader
-
-        for( ;; )
-        {
-            if( ch < '0' ) return false;
-
-            if( ch > '9' )
-            {
-                if( ch < 'A' ) return false;
-
-                if( ch > 'Z' )
-                {
-                    if( ch < 'a' || ch > 'z' ) return false;
-                }
-            }
-
-            ++c;
-            if( c == cN ) return true;
-
-            ch = string.charAt( c );
         }
     }
 
@@ -256,8 +320,28 @@ public @ThreadSafe class ID implements TriSerialID
 
 
 
-    /** Outputs the tri-serial string form of this identifier.
-      */
+    private static final String RADIX_62_STRING =
+      "0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ";
+    // ^0        ^10       ^20       ^30       ^40       ^50       ^60
+
+
+    private static final int SA1N_ENCODER; // value added to encode sa1N, subtracted to decode it
+
+
+
+    private static final int SA1N_MIN = /*domain*/1 + /*generator*/2;
+
+    private static final int SA1N_MAX; // minimum & maximum length allowed for first sub-array
+
+
+        static
+        {
+            SA1N_ENCODER = Byte.MIN_VALUE - SA1N_MIN; // thus encoding 3..258 to byte -128..127
+            SA1N_MAX = Byte.MAX_VALUE - SA1N_ENCODER;
+        }
+
+
+
     final void toTriSerialString( final StringBuilder out )
     {
         final int sa2End = numericBytes.length - 1; // end bound (index of last+1) in sub-array 2
@@ -348,92 +432,6 @@ public @ThreadSafe class ID implements TriSerialID
           /                     - predefinition required by top/android issue train
           // not clear how 00p-* form will be useful
           */
-
-
-
-   // - O b j e c t ------------------------------------------------------------------------------------
-
-
-    /** Answers whether o has a class of ID, and the same serial numbers as this identifier.
-      */
-    public @Override boolean equals( final Object o )
-    {
-        if( o == this ) return true;
-
-        if( o == null ) return false;
-
-        if( !o.getClass().equals( ID.class )) return false;
-          // Merely testing instanceof would allow this ID to equal a UUID.  That would be asymmetric if
-          // this ID not subclassed, but just an unscoped ID, because no UUID can equal an unscoped ID.
-
-        return equalsNumerically( (ID)o );
-    }
-
-
-
-    /** Derives a hash code from the instance number of this identifier.
-      */
-    public final @Override int hashCode()
-    {
-        final int dEnd = numericBytes.length - 1; // end bound (index of last+1)
-        int d = numericBytes[dEnd] - SA1N_ENCODER; // start index
-        int hashCode = 31 + numericBytes[d++];
-        while( d < dEnd ) hashCode = 31 * hashCode + numericBytes[d++];
-        return hashCode;
-    }
-
-
-
-    /** @see #toTriSerialString(StringBuilder)
-      */
-    public @Override String toString()
-    {
-        final StringBuilder out = new StringBuilder();
-        toTriSerialString( out );
-        return out.toString();
-    }
-
-
-
-//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
-
-
-    private static byte digit( final char ch ) throws BadCharacter // cf. isSerialNumber(String)
-    {
-        final int digit;
-        if( ch >= 'A' )
-        {
-            if( ch <= 'Z' ) digit = 11 + (ch - 'A') * 2;
-            else if( ch >= 'a' && ch <= 'z' ) digit = 10 + (ch - 'a') * 2;
-            else throw new BadCharacter();
-        }
-        else if( ch >= '0' && ch <= '9' ) digit = ch - '0';
-        else throw new BadCharacter();
-
-        return (byte)digit;
-    }
-
-
-
-    private static final String RADIX_62_STRING =
-      "0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ";
-    // ^0        ^10       ^20       ^30       ^40       ^50       ^60
-
-
-    private static final int SA1N_ENCODER; // value added to encode sa1N, subtracted to decode it
-
-
-
-    private static final int SA1N_MIN = /*domain*/1 + /*generator*/2;
-
-    private static final int SA1N_MAX; // minimum & maximum length allowed for first sub-array
-
-
-        static
-        {
-            SA1N_ENCODER = Byte.MIN_VALUE - SA1N_MIN; // thus encoding 3..258 to byte -128..127
-            SA1N_MAX = Byte.MAX_VALUE - SA1N_ENCODER;
-        }
 
 
 

@@ -5,7 +5,7 @@ import waymaker.spec.VotingID;
 
 /** A detector of cycles in proposed vote casts.
   */
-final class CycleForeseer implements AutoCloseable
+public final class CycleForeseer implements AutoCloseable
 {
 
 
@@ -13,7 +13,7 @@ final class CycleForeseer implements AutoCloseable
       * proposed cast, or null if no cycle was detected.  It is the node with the {@linkplain
       * waymaker.spec.TriSerialUUID#compareTo(Object) highest identifier} in the cycle.
       */
-    PrecountNode1 barNode() { return barNode; }
+    public PrecountNode1 barNode() { return barNode; }
 
 
         private PrecountNode1 barNode;
@@ -32,7 +32,7 @@ final class CycleForeseer implements AutoCloseable
     /** The future {@linkplain RootwardCast#candidate() cast candidate}, which may be the ground, and
       * definitely will be if the original voter is to be barred.
       */
-    PrecountNode candidate() { return candidate; }
+    public PrecountNode candidate() { return candidate; }
 
 
         private PrecountNode candidate;
@@ -55,7 +55,7 @@ final class CycleForeseer implements AutoCloseable
       *
       *     @throws IllegalStateException if this foreseer is already open.
       */
-    void foresee( final PrecountNode1 o, final VotingID oVotedID, final Precounter precounter )
+    public void foresee( final PrecountNode1 o, final VotingID oVotedID, final Precounter precounter )
     {
         if( isOpen ) throw new IllegalStateException();
 

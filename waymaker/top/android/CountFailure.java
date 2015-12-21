@@ -5,7 +5,7 @@ import waymaker.gen.ThreadSafe;
 
 /** An exception thrown when a vote count fails.
   */
-final @SuppressWarnings("serial") @ThreadSafe class CountFailure extends Exception
+public final @SuppressWarnings("serial") @ThreadSafe class CountFailure extends Exception
 {
 
     CountFailure( Throwable cause ) { super( cause ); }

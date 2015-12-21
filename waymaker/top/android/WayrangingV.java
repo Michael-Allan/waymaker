@@ -40,7 +40,7 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
   *   (+)  In zoomer
   * </pre>
   */
-@ThreadRestricted("app main") final class WayrangingV extends RelativeLayout
+public @ThreadRestricted("app main") final class WayrangingV extends RelativeLayout
 {
     /* * *
     - decorational cues (primary)
@@ -177,7 +177,7 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
 
     /** Constructs a WayrangingV.
       */
-    WayrangingV( final Wayranging wr )
+    public WayrangingV( final Wayranging wr )
     {
         super( /*context*/wr );
 

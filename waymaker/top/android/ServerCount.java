@@ -7,7 +7,7 @@ import waymaker.spec.*;
 
 /** A pollar count at the remote count server.
   */
-final @ThreadSafe class ServerCount
+public final @ThreadSafe class ServerCount
 {
     /* * *
     - redundant requests
@@ -32,7 +32,7 @@ final @ThreadSafe class ServerCount
 
     /** Constructs a ServerCount.
       */
-    ServerCount( final String pollName ) { this.pollName = pollName; }
+    public ServerCount( final String pollName ) { this.pollName = pollName; }
 
 
 
@@ -58,7 +58,7 @@ final @ThreadSafe class ServerCount
       *
       *     @see <a href='../../../../peer' target='_top'>‘peer’</a>
       */
-    void enqueuePeersRequest( final VotingID rootwardID, final PeersReceiver receiver, final int paddedLimit )
+    public void enqueuePeersRequest( final VotingID rootwardID, final PeersReceiver receiver, final int paddedLimit )
     {
         if( paddedLimit < 0 ) throw new IllegalArgumentException();
 
@@ -102,7 +102,7 @@ final @ThreadSafe class ServerCount
       *
       *     @throws IndexOutOfBoundsException if pStart is less than 1 or greater than pEndBound.
       */
-    void enqueuePeersRequest( VotingID rootwardID, PeersReceiver receiver, int peersStart, int peersEndBound )
+    public void enqueuePeersRequest( VotingID rootwardID, PeersReceiver receiver, int peersStart, int peersEndBound )
     {
         if( peersStart < 1 || peersStart > peersEndBound ) throw new IndexOutOfBoundsException();
 
@@ -134,7 +134,7 @@ final @ThreadSafe class ServerCount
       *     @throws AssertionError if assertions are enabled and nodeMap already keys the given
       *       identifier.
       */
-    UnadjustedNode fetchNode( final VotingID id, final Map<VotingID,UnadjustedNode> nodeMap )
+    public UnadjustedNode fetchNode( final VotingID id, final Map<VotingID,UnadjustedNode> nodeMap )
     {
         assert !nodeMap.containsKey(id): "Not fetching an already fetched node";
         return null; // server counts not yet coded
@@ -146,7 +146,7 @@ final @ThreadSafe class ServerCount
     /** Answers whether the given string is a well formed poll name, that is a well formed rep
       * {@linkplain ID#isSerialForm(String) serial number}.
       */
-    static boolean isPollNameForm( final String string ) { return ID.isSerialForm( string ); }
+    public static boolean isPollNameForm( final String string ) { return ID.isSerialForm( string ); }
 
 
 

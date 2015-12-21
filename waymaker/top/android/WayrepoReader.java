@@ -13,7 +13,9 @@ import static android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE;
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
 
 
-final class WayrepoReader implements java.io.Closeable
+/** A tool for reading from the user’s local wayrepo.
+  */
+public final class WayrepoReader implements java.io.Closeable
 {
 
 
@@ -23,7 +25,7 @@ final class WayrepoReader implements java.io.Closeable
       *     @throws WayrepoAccessFailure if access to the wayrepo is denied by a security exception.
       *       See {@linkplain WaykitUI#wayrepoTreeLoc_message(String) wayrepoTreeLoc_message}.
       */
-    @ThreadSafe WayrepoReader( final Uri wayrepoTreeUri, final ContentResolver contentResolver )
+    public @ThreadSafe WayrepoReader( final Uri wayrepoTreeUri, final ContentResolver contentResolver )
       throws WayrepoAccessFailure
     {
         this.wayrepoTreeUri = wayrepoTreeUri;
@@ -44,7 +46,7 @@ final class WayrepoReader implements java.io.Closeable
       *
       *     @param parentID The document identifier of the parent.
       */
-    String findDirectory( final String name, final String parentID ) throws WayrepoAccessFailure, InterruptedException
+    public String findDirectory( final String name, final String parentID ) throws WayrepoAccessFailure, InterruptedException
     {
         try( final Cursor c/*proID_NAME_TYPE*/ = queryChildren( parentID ); )
         {
@@ -71,14 +73,14 @@ final class WayrepoReader implements java.io.Closeable
       *  target='_top'>MIME type</a> (TYPE).
       * Do not modify it.
       */
-    static final String[] proID_NAME_TYPE =
+    public static final String[] proID_NAME_TYPE =
       new String[] { COLUMN_DOCUMENT_ID, COLUMN_DISPLAY_NAME, COLUMN_MIME_TYPE };
 
 
 
     /** The device that gives this reader access to the wayrepo.
       */
-    ContentProviderClient provider() { return provider; }
+    public ContentProviderClient provider() { return provider; }
 
 
         private final ContentProviderClient provider; // grep ContentProviderClient-TS
@@ -90,7 +92,7 @@ final class WayrepoReader implements java.io.Closeable
       *
       *     @param parentID The document identifier of the parent.
       */
-    Cursor queryChildren( final String parentID ) throws WayrepoAccessFailure, InterruptedException
+    public Cursor queryChildren( final String parentID ) throws WayrepoAccessFailure, InterruptedException
     {
         return queryChildren( parentID, false );
     }
@@ -102,7 +104,7 @@ final class WayrepoReader implements java.io.Closeable
       *     @see <a href='https://developer.android.com/about/versions/android-5.0.html#DirectorySelection'
       *       target='_top'>Android 5.0 § Directory selection</a>
       */
-    Uri wayrepoTreeUri() { return wayrepoTreeUri; }
+    public Uri wayrepoTreeUri() { return wayrepoTreeUri; }
 
 
         private final Uri wayrepoTreeUri;

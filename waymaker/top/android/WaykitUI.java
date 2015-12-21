@@ -47,7 +47,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
       *     @see <a href='https://developer.android.com/about/versions/android-5.0.html#DirectorySelection'
       *       target='_top'>Android 5.0 § Directory selection</a>
       */
-    String wayrepoTreeLoc()
+    public String wayrepoTreeLoc()
     {
         return preferences().getString( "wayrepoTreeLoc", /*default*/null );
     }
@@ -56,7 +56,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
 
     /** Sets the access location of the user’s wayrepo.
       */
-    void wayrepoTreeLoc( final Uri uri )
+    public void wayrepoTreeLoc( final Uri uri )
     {
         final ContentResolver r = getContentResolver();
         final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
@@ -97,7 +97,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
       *
       *     @see #wayrepoTreeLoc()
       */
-    static @ThreadSafe String wayrepoTreeLoc_message( final String loc )
+    public static @ThreadSafe String wayrepoTreeLoc_message( final String loc )
     {
         return "Cannot access wayrepo via " + loc
           + "\nTry using the wayrepo preview to reselect its location";
@@ -109,7 +109,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
       *
       *     @return The same parser factory.
       */
-    static @ThreadSafe XmlPullParserFactory xhtmlConfigured( XmlPullParserFactory f )
+    public static @ThreadSafe XmlPullParserFactory xhtmlConfigured( XmlPullParserFactory f )
       throws XmlPullParserException
     {
         f.setFeature( XmlPullParser.FEATURE_PROCESS_NAMESPACES, true );

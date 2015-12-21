@@ -7,11 +7,11 @@ import waymaker.gen.ThreadSafe;
 /** An original node as read from a server count engine, not adjusted by any
   * {@linkplain Precounter precount}.
   */
-abstract class UnadjustedNode implements Node
+public abstract class UnadjustedNode implements Node
 {
 
 
-    @ThreadSafe UnadjustedNode() {}
+    public @ThreadSafe UnadjustedNode() {}
 
 
 
@@ -21,7 +21,7 @@ abstract class UnadjustedNode implements Node
     /** A version of this node adjusted to reflect changes introduced by a {@linkplain Precounter
       * precount}, or null if no precount introduced changes.
       */
-    PrecountNode precounted() { return precounted; }
+    public PrecountNode precounted() { return precounted; }
 
 
         private PrecountNode precounted;
@@ -34,7 +34,7 @@ abstract class UnadjustedNode implements Node
           *     @throws IllegalArgumentException if precountedNew.{@linkplain PrecountNode#unadjusted()
           *       unadjusted} does not equal this node.
           */
-        void precounted( final PrecountNode _precounted )
+        public void precounted( final PrecountNode _precounted )
         {
             if( precounted != null ) throw new IllegalStateException( "A value was already set" );
 
@@ -47,7 +47,7 @@ abstract class UnadjustedNode implements Node
 
     /** Returns the shared instance of an unbarred cast to this node, first creating it if necessary.
       */
-    abstract RootwardCast<UnadjustedNode> rootwardHither_getOrMake();
+    public abstract RootwardCast<UnadjustedNode> rootwardHither_getOrMake();
 
 
 

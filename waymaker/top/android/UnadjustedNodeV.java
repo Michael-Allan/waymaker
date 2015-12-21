@@ -8,7 +8,7 @@ import waymaker.spec.*;
 
 /** A skeletal implementation of a votable unadjusted node.
   */
-abstract class UnadjustedNodeV extends UnadjustedNode
+public abstract class UnadjustedNodeV extends UnadjustedNode
 {
 
     static final KittedPolyStatorSR<UnadjustedNodeV,SKit,RKit> stators = new KittedPolyStatorSR<>();
@@ -22,7 +22,8 @@ abstract class UnadjustedNodeV extends UnadjustedNode
       *     @see #peerOrdinal()
       *     @see #rootwardInThis()
       */
-    @ThreadSafe UnadjustedNodeV( VotingID _id, int _peerOrdinal, RootwardCast<UnadjustedNode> _rootwardInThis )
+      @ThreadSafe
+    public UnadjustedNodeV( VotingID _id, int _peerOrdinal, RootwardCast<UnadjustedNode> _rootwardInThis )
     {
         id = _id;
         peerOrdinal = _peerOrdinal;
@@ -36,7 +37,7 @@ abstract class UnadjustedNodeV extends UnadjustedNode
 
     /** Saves state from the voter, writing out to the parcel.
       */
-    void saveVoter( final UnadjustedNode1 voter, final Parcel out, final SKit kit )
+    public void saveVoter( final UnadjustedNode1 voter, final Parcel out, final SKit kit )
     {
       // a. Voter ID.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,7 +56,7 @@ abstract class UnadjustedNodeV extends UnadjustedNode
 
     /** Reconstructs a voter and restores its state, reading in from the parcel.
       */
-    UnadjustedNode1 restoreVoter( final VotingID id, final Parcel in, final RKit kit,
+    public UnadjustedNode1 restoreVoter( final VotingID id, final Parcel in, final RKit kit,
       final RootwardCast<UnadjustedNode> rootwardHither )
     {
       // b.
@@ -200,7 +201,7 @@ abstract class UnadjustedNodeV extends UnadjustedNode
           *     @throws IllegalArgumentException if the voter list is already complete, or if newValue
           *        does not register an actual change that extends or properly completes it.
           */
-        final void votersNextOrdinal( final int newValue )
+        public final void votersNextOrdinal( final int newValue )
         {
             if( votersNextOrdinal == Integer.MAX_VALUE )
             {
@@ -220,7 +221,7 @@ abstract class UnadjustedNodeV extends UnadjustedNode
    // - U n a d j u s t e d - N o d e ------------------------------------------------------------------
 
 
-    final RootwardCast<UnadjustedNode> rootwardHither_getOrMake()
+    public final RootwardCast<UnadjustedNode> rootwardHither_getOrMake()
     {
         if( rootwardHither == null ) rootwardHither = new RootwardCastU<UnadjustedNode>( this );
         return rootwardHither;
@@ -236,7 +237,7 @@ abstract class UnadjustedNodeV extends UnadjustedNode
 
     /** Resources for restoring the persisted state of votable unadjusted nodes.
       */
-    static interface RKit
+    public static interface RKit
     {
 
        // - U n a d j u s t e d - N o d e - V . R - K i t ----------------------------------------------
@@ -259,7 +260,7 @@ abstract class UnadjustedNodeV extends UnadjustedNode
 
     /** Resources for saving the persisted state of votable unadjusted nodes.
       */
-    static interface SKit
+    public static interface SKit
     {
 
        // - U n a d j u s t e d - N o d e - V . S - K i t ----------------------------------------------

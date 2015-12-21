@@ -6,7 +6,7 @@ import waymaker.spec.*;
 
 /** A precount-adjustable {@linkplain NodeCache#ground() ground pseudo-node}.
   */
-final class PrecountGround extends PrecountNode
+public final class PrecountGround extends PrecountNode
 {
 
 
@@ -15,7 +15,7 @@ final class PrecountGround extends PrecountNode
       *
       *     @see #unadjusted()
       */
-    PrecountGround( final UnadjustedNode unadjusted )
+    public PrecountGround( final UnadjustedNode unadjusted )
     {
         super( unadjusted, /*toCopyVoters*/true );
         assert unadjusted.isGround();
@@ -27,7 +27,7 @@ final class PrecountGround extends PrecountNode
 
 
       @Override/*to allow for voters that are barred*/
-    void saveVoter( final PrecountNode1 voter, final Parcel out, final SKit kit )
+    public void saveVoter( final PrecountNode1 voter, final Parcel out, final SKit kit )
     {
       // a. Vote.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,7 +40,7 @@ final class PrecountGround extends PrecountNode
 
 
 
-    @Override PrecountNode1 restoreVoter( final UnadjustedNode voterUna, final Parcel in,
+    public @Override PrecountNode1 restoreVoter( final UnadjustedNode voterUna, final Parcel in,
       final RKit kit, final RootwardCast<PrecountNode> rootwardHither )
     {
       // a.
@@ -90,11 +90,11 @@ final class PrecountGround extends PrecountNode
    // - P r e c o u n t - N o d e -- s -----------------------------------------------------------------
 
 
-    void addVoter( PrecountNode1 _voter ) { enlistVoterIfExtended( _voter ); }
+    public void addVoter( PrecountNode1 _voter ) { enlistVoterIfExtended( _voter ); }
 
 
 
-    void addVoter( final PrecountNode1 _voter, final PrecountNode effectiveGround )
+    public void addVoter( final PrecountNode1 _voter, final PrecountNode effectiveGround )
     {
         if( effectiveGround != this ) throw new IllegalArgumentException( "Effective ground is off path" );
 
@@ -103,11 +103,11 @@ final class PrecountGround extends PrecountNode
 
 
 
-    void removeVoter( PrecountNode1 voter ) { unlistVoter( voter ); }
+    public void removeVoter( PrecountNode1 voter ) { unlistVoter( voter ); }
 
 
 
-    PrecountNode removeVoter( final PrecountNode1 voter, final PrecountNode _candidate, Precounter p_ )
+    public PrecountNode removeVoter( final PrecountNode1 voter, final PrecountNode _candidate, Precounter p_ )
     {
         unlistVoter( voter );
         return this;

@@ -6,7 +6,7 @@ import waymaker.spec.VotingID;
 
 /** An implementation of an unbarred rootward cast.
   */
-final @ThreadSafe class RootwardCastU<C extends Node> implements RootwardCast<C>
+public final @ThreadSafe class RootwardCastU<C extends Node> implements RootwardCast<C>
 {
 
 
@@ -14,7 +14,7 @@ final @ThreadSafe class RootwardCastU<C extends Node> implements RootwardCast<C>
       *
       *     @see #candidate()
       */
-    RootwardCastU( final C candidate )
+    public RootwardCastU( final C candidate )
     {
         if( candidate == null ) throw new NullPointerException();
 

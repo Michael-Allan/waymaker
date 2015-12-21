@@ -18,7 +18,7 @@ import waymaker.gen.*;
   * <p>Do not hold an instance of EffectiveGrounder indefinitely.  It retains the contents of its path
   * buffers for sake of speed, which may cause old forests to be witheld from the garbage collector.</p>
   */
-final @Warning("no hold") class EffectiveGrounder
+public final @Warning("no hold") class EffectiveGrounder
 {
 
 
@@ -27,7 +27,7 @@ final @Warning("no hold") class EffectiveGrounder
       * not guaranteed, however, to be the leafmost effective ground; if the two paths are very long,
       * then a more rootward one may be returned instead.
       */
-    PrecountNode effectiveGround( final PrecountNode candidateA, final PrecountNode candidateB )
+    public PrecountNode effectiveGround( final PrecountNode candidateA, final PrecountNode candidateB )
     {
         try
         {

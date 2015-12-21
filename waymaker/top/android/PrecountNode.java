@@ -9,7 +9,7 @@ import waymaker.spec.*;
 /** A node that a {@linkplain Precounter precounter} may adjust in order to include changes read from
   * the user’s local wayrepo.
   */
-abstract class PrecountNode implements Node
+public abstract class PrecountNode implements Node
 {
 
     static final KittedPolyStatorSR<PrecountNode,SKit,RKit> stators = new KittedPolyStatorSR<>();
@@ -24,7 +24,7 @@ abstract class PrecountNode implements Node
       *     @param toCopyVoters Whether to copy the initial voters from the unadjusted base, or to leave
       *       the voters initially empty.
       */
-    PrecountNode( UnadjustedNode _unadjusted, final boolean toCopyVoters )
+    public PrecountNode( UnadjustedNode _unadjusted, final boolean toCopyVoters )
     {
         unadjusted = _unadjusted;
 
@@ -59,7 +59,7 @@ abstract class PrecountNode implements Node
       *     @throws IllegalArgumentException if the voter is miscast such that voter.{@linkplain
       *       #rootwardInThis() rootwardInThis}.candidate does not equal this node.
       */
-    abstract void addVoter( PrecountNode1 voter );
+    public abstract void addVoter( PrecountNode1 voter );
 
 
 
@@ -75,7 +75,7 @@ abstract class PrecountNode implements Node
       *       voter.{@linkplain #rootwardInThis() rootwardInThis}.candidate does not equal this
       *       node, (b) the voter is already listed, or (c) effectiveGround is off the root path.
       */
-    abstract void addVoter( PrecountNode1 voter, PrecountNode effectiveGround );
+    public abstract void addVoter( PrecountNode1 voter, PrecountNode effectiveGround );
 
 
 
@@ -86,7 +86,7 @@ abstract class PrecountNode implements Node
       *     @throws IllegalStateException if the voter list is insufficiently extended to accept the
       *       voter.
       */
-    final void enlistVoter( final PrecountNode voter )
+    public final void enlistVoter( final PrecountNode voter )
     {
         assert voter.peerOrdinal() == 0; // major voter, okay for initial extension
         if( unadjusted.votersNextOrdinal() == 0 ) throw new IllegalStateException( "Insufficient extension" );
@@ -101,7 +101,7 @@ abstract class PrecountNode implements Node
           *     @throws IllegalArgumentException if voter is miscast such that voter.{@linkplain
           *       #rootwardInThis() rootwardInThis}.candidate does not equal this node.
           */
-        final void enlistVoterIfExtended( final PrecountNode1 voter )
+        public final void enlistVoterIfExtended( final PrecountNode1 voter )
         {
             if( unadjusted.votersNextOrdinal() == 0 ) return;
               // not yet extended to cover precount (major) voters
@@ -128,7 +128,7 @@ abstract class PrecountNode implements Node
       * {@linkplain UnadjustedNode#precounted(PrecountNode) attached} to the given unadjusted base;
       * or, if none is attached, then a newly constructed and attached one.
       */
-    static PrecountNode getOrMake( final UnadjustedNode una )
+    public static PrecountNode getOrMake( final UnadjustedNode una )
     {
         PrecountNode pre = una.precounted();
         if( pre == null ) pre = make( una );
@@ -140,7 +140,7 @@ abstract class PrecountNode implements Node
     /** Returns the identified precount node from the cache; or a newly constructed one, which may
       * entail connecting to the remote count server.
       */
-    static PrecountNode getOrMake( final VotingID id, final Precounter precounter )
+    public static PrecountNode getOrMake( final VotingID id, final Precounter precounter )
     {
         UnadjustedNode una = precounter.getOrFetchUnadjusted( id );
         if( una == null ) return UnadjustedNode0.makeMappedPrecounted(id,precounter).precounted();
@@ -161,7 +161,7 @@ abstract class PrecountNode implements Node
       *     @param _votedID An identifier that might differ from that of the current vote.  If actually
       *       the identifiers are discovered to be identical, then this method returns null.
       */
-    static PrecountNode getOrMakeIfVoteChanged( final VotingID id, final Precounter precounter,
+    public static PrecountNode getOrMakeIfVoteChanged( final VotingID id, final Precounter precounter,
       final boolean toForceNode, final VotingID _votedID )
     {
         UnadjustedNode una = precounter.getOrFetchUnadjusted( id );
@@ -202,7 +202,7 @@ abstract class PrecountNode implements Node
       *     @throws NoSuchElementException if the list is known to be complete and the voter is absent
       *       from it.
       */
-    abstract void removeVoter( PrecountNode1 voter );
+    public abstract void removeVoter( PrecountNode1 voter );
 
 
 
@@ -232,7 +232,7 @@ abstract class PrecountNode implements Node
       *     @throws NoSuchElementException if the list is known to be complete and the voter is absent
       *       from it.
       */
-    abstract PrecountNode removeVoter( PrecountNode1 voter, PrecountNode futureCandidate,
+    public abstract PrecountNode removeVoter( PrecountNode1 voter, PrecountNode futureCandidate,
       Precounter precounter );
 
       // Cycles are excluded because (a) the "effective ground" optimization might be difficult to code
@@ -242,13 +242,13 @@ abstract class PrecountNode implements Node
 
     /** Returns the shared instance of an unbarred cast to this node, first creating it if necessary.
       */
-    abstract RootwardCast<PrecountNode> rootwardHither_getOrMake();
+    public abstract RootwardCast<PrecountNode> rootwardHither_getOrMake();
 
 
 
     /** Saves state from the precount-adjusted voter, writing out to the parcel.
       */
-    void saveVoter( final PrecountNode1 voter, final Parcel out, final SKit kit )
+    public void saveVoter( final PrecountNode1 voter, final Parcel out, final SKit kit )
     {
         PrecountNode1.stators.save( voter, out, kit );
     }
@@ -256,7 +256,7 @@ abstract class PrecountNode implements Node
 
         /** Reconstructs a precount-adjusted voter and restores its state, reading in from the parcel.
           */
-        PrecountNode1 restoreVoter( final UnadjustedNode voterUna, final Parcel in, final RKit kit,
+        public PrecountNode1 restoreVoter( final UnadjustedNode voterUna, final Parcel in, final RKit kit,
           final RootwardCast<PrecountNode> rootwardHither )
         {
             final PrecountNode1 voter = new PrecountNode1( voterUna, rootwardHither );
@@ -274,7 +274,7 @@ abstract class PrecountNode implements Node
       *     @throws NoSuchElementException if the list is complete and the unadjusted counterpart is
       *       absent from the list.
       */
-    final void substituteVoter( final PrecountNode1 voterSub )
+    public final void substituteVoter( final PrecountNode1 voterSub )
     {
         final UnadjustedNode unadjusted = voterSub.unadjusted();
         int vUna = voters.indexOf( unadjusted );
@@ -315,7 +315,7 @@ abstract class PrecountNode implements Node
 
     /** The original node on which this precount-adjustable version is based.
       */
-    final UnadjustedNode unadjusted() { return unadjusted; }
+    public final UnadjustedNode unadjusted() { return unadjusted; }
 
 
         private final UnadjustedNode unadjusted;
@@ -330,7 +330,7 @@ abstract class PrecountNode implements Node
       *     @throws NoSuchElementException if the list is known to be complete and the voter is absent
       *       from it.
       */
-    final void unlistVoter( final PrecountNode1 voter )
+    public final void unlistVoter( final PrecountNode1 voter )
     {
         if( voter.rootwardInThis().candidate() == this ) throw new IllegalArgumentException( "Miscast" );
 
@@ -570,7 +570,7 @@ abstract class PrecountNode implements Node
 
     /** Resources for restoring the persisted state of precount adjusted nodes.
       */
-    static interface RKit
+    public static interface RKit
     {
 
        // - P r e c o u n t - N o d e . R - K i t ------------------------------------------------------
@@ -606,7 +606,7 @@ abstract class PrecountNode implements Node
 
     /** Resources for saving the persisted state of precount adjusted nodes.
       */
-    static interface SKit
+    public static interface SKit
     {
 
        // - P r e c o u n t - N o d e . S - K i t ------------------------------------------------------

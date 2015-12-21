@@ -7,7 +7,7 @@ import waymaker.spec.*;
 
 /** A counting node in the vote flow of a {@linkplain Forest pollar forest}.
   */
-interface Node
+public interface Node
 {
 
 
@@ -18,7 +18,7 @@ interface Node
       * according to their ordinals.  This matches the order in which data pages are received from the
       * {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) server count}.
       */
-    static final Comparator<Node> peersComparator = new Comparator<Node>()
+    public static final Comparator<Node> peersComparator = new Comparator<Node>()
     {
         public int compare( final Node n, final Node m )
         {

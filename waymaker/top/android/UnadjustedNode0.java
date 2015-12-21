@@ -11,13 +11,13 @@ import waymaker.spec.VotingID;
   * which may {@linkplain #rootwardInPrecount() cast rootward} to a precount node (ground or other) and
   * then <em>will be</em> listed among the {@linkplain PrecountNode#voters() voters there}.
   */
-final class UnadjustedNode0 extends UnadjustedNode
+public final class UnadjustedNode0 extends UnadjustedNode
 {
 
 
     /** Constructs an UnadjustedNode0.
       */
-    UnadjustedNode0( final VotingID _id, final UnadjustedGround ground )
+    public UnadjustedNode0( final VotingID _id, final UnadjustedGround ground )
     {
         id = _id;
         rootwardInThis = ground.rootwardHither_getOrMake();
@@ -31,7 +31,7 @@ final class UnadjustedNode0 extends UnadjustedNode
       *
       *     @see #id()
       */
-    static UnadjustedNode0 makeMapped( final VotingID id, final Precounter precounter )
+    public static UnadjustedNode0 makeMapped( final VotingID id, final Precounter precounter )
     {
         final UnadjustedNode0 una = new UnadjustedNode0( id, precounter.ground() );
         precounter.nodeMap().put( id, una );
@@ -45,7 +45,7 @@ final class UnadjustedNode0 extends UnadjustedNode
       *
       *     @see #id()
       */
-    static UnadjustedNode0 makeMappedPrecounted( final VotingID id, final Precounter precounter )
+    public static UnadjustedNode0 makeMappedPrecounted( final VotingID id, final Precounter precounter )
     {
         final UnadjustedNode0 una = makeMapped( id, precounter );
         new PrecountNode1( una );

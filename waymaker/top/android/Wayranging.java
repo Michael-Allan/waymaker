@@ -121,7 +121,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
     /** The forester of this wayranging activity.
       */
-    Forester forester() { return forester; }
+    public Forester forester() { return forester; }
 
 
         private Forester forester; // final after create2
@@ -130,7 +130,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
     /** The pollar forests of this wayranging activity.
       */
-    ForestCache forests() { return forests; }
+    public ForestCache forests() { return forests; }
 
 
         private ForestCache forests; // final after create2, which adds stator
@@ -142,7 +142,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       *
       *     @throws IllegalStateException if the life stage is less than CREATING.
       */
-    boolean isCreatedAnew()
+    public boolean isCreatedAnew()
     {
         if( lifeStage.compareTo(CREATING) < 0 ) throw new IllegalStateException();
 
@@ -157,7 +157,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     /** The life stage of this activity.  Initially set to INITIALIZING, any subsequent change to the
       * return value will be signalled by the life stage bell.
       */
-    ActivityLifeStage lifeStage() { return lifeStage; }
+    public ActivityLifeStage lifeStage() { return lifeStage; }
 
 
         private ActivityLifeStage lifeStage;
@@ -166,7 +166,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
     /** A bell that rings when the life stage changes.
       */
-    Bell<Changed> lifeStageBell() { return lifeStageBell; }
+    public Bell<Changed> lifeStageBell() { return lifeStageBell; }
 
 
         private final ReRinger<Changed> lifeStageBell = Changed.newReRinger();
@@ -175,7 +175,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
     /** The namer of the poll on which wayranging now focuses.
       */
-    BelledVariable<String> pollNamer() { return pollNamer;}
+    public BelledVariable<String> pollNamer() { return pollNamer;}
 
 
         private BelledVariable<String> pollNamer; // final after create2, which adds stator
@@ -187,7 +187,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
  //   * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
  //   * target='_top'>weak register</a> in the store.
  //   */
- // void registerStrongly( final OnSharedPreferenceChangeListener l )
+ // public void registerStrongly( final OnSharedPreferenceChangeListener l )
  // {
  //     wk.preferences().registerOnSharedPreferenceChangeListener( l );
  //     preferencesStrongRegister.add( l );
@@ -201,7 +201,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
  //     /** Removes a change listener from the {@linkplain Application#preferences() general preference
  //       * store} and releases its reference from this activity.
  //       */
- //     void unregisterStrongly( final OnSharedPreferenceChangeListener l )
+ //     public void unregisterStrongly( final OnSharedPreferenceChangeListener l )
  //     {
  //         wk.preferences().unregisterOnSharedPreferenceChangeListener( l );
  //         preferencesStrongRegister.remove( l );
@@ -219,7 +219,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent,+int,+android.os.Bundle)'
       *       target='_top'>startActivityForResult</a>(Intent,int,Bundle)
       */
-    void startActivityForResult( final Intent request, final ActivityResultReceiver resultReceiver )
+    public void startActivityForResult( final Intent request, final ActivityResultReceiver resultReceiver )
     {
         if( startActivity_resultReceiver != null )
         {
@@ -263,7 +263,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       *     @return The agent that is responsible soley for unregistering the listener.  The agent is
       *       implemented as an auditor of the {@linkplain #lifeStageBell() life stage bell}.
       */
-    Auditor<Changed> unregisterOnDestruction( final OnSharedPreferenceChangeListener l )
+    public Auditor<Changed> unregisterOnDestruction( final OnSharedPreferenceChangeListener l )
     {
         final Auditor<Changed> auditor = new Auditor<Changed>()
         {
@@ -277,6 +277,22 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         lifeStageBell.register( auditor );
         return auditor;
     }
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    private static final java.util.logging.Logger logger = LoggerX.getLogger( Wayranging.class );
+
+
+
+    private static boolean wasConstructorCalled;
+      // more correctly 'wasCreateCalled', but here following the usual pattern of CtorRestore
+
+
+
+    private final WaykitUI wk = WaykitUI.i();
 
 
 
@@ -335,22 +351,6 @@ System.err.println( " --- onActivityResult wk.isMainThread()=" + wk.isMainThread
         finally { outP.recycle(); }
         outB.putByteArray( Wayranging.class.getName(), state ); // put state into bundle
     }
-
-
-
-//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
-
-
-    private static final java.util.logging.Logger logger = LoggerX.getLogger( Wayranging.class );
-
-
-
-    private static boolean wasConstructorCalled;
-      // more correctly 'wasCreateCalled', but here following the usual pattern of CtorRestore
-
-
-
-    private final WaykitUI wk = WaykitUI.i();
 
 
 }

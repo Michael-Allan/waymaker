@@ -7,13 +7,13 @@ import waymaker.spec.*;
 
 /** An unadjusted {@linkplain NodeCache#ground() ground pseudo-node}.
   */
-final class UnadjustedGround extends UnadjustedNodeV
+public final class UnadjustedGround extends UnadjustedNodeV
 {
 
 
     /** Contructs an UnadjustedGround.
       */
-    @ThreadSafe UnadjustedGround() { super( null, 0, (RootwardCast<UnadjustedNode>)null ); }
+    public @ThreadSafe UnadjustedGround() { super( null, 0, (RootwardCast<UnadjustedNode>)null ); }
 
 
 
@@ -21,7 +21,7 @@ final class UnadjustedGround extends UnadjustedNodeV
 
 
       @Override/*to allow for voters that are barred*/
-    void saveVoter( final UnadjustedNode1 voter, final Parcel out, final SKit kit )
+    public void saveVoter( final UnadjustedNode1 voter, final Parcel out, final SKit kit )
     {
 
       // a. Voter ID.
@@ -48,7 +48,7 @@ final class UnadjustedGround extends UnadjustedNodeV
       *     @param state The state as marshalled from the {@linkplain stators stators}.
       */
       @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per stators.restore
-    void restore( final byte[] state, final UnadjustedNodeV.RKit kit )
+    public void restore( final byte[] state, final UnadjustedNodeV.RKit kit )
     {
         final Parcel in = Parcel.obtain(); // grep Parcel-TS
         try
@@ -62,7 +62,7 @@ final class UnadjustedGround extends UnadjustedNodeV
 
 
 
-    @Override UnadjustedNode1 restoreVoter( final VotingID id, final Parcel in, final RKit kit,
+    public @Override UnadjustedNode1 restoreVoter( final VotingID id, final Parcel in, final RKit kit,
       final RootwardCast<UnadjustedNode> rootwardHither )
     {
       // b.
@@ -103,10 +103,10 @@ final class UnadjustedGround extends UnadjustedNodeV
    // - U n a d j u s t e d - N o d e ------------------------------------------------------------------
 
 
-    @Override PrecountGround precounted() { return (PrecountGround)super.precounted(); }
+    public @Override PrecountGround precounted() { return (PrecountGround)super.precounted(); }
 
 
-        @Override void precounted( final PrecountNode _precounted )
+        public @Override void precounted( final PrecountNode _precounted )
         {
             if( !(_precounted instanceof PrecountGround) ) throw new IllegalArgumentException();
 

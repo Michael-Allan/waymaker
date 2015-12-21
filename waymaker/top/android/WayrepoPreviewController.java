@@ -17,7 +17,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
 /** A controller and configurer of those models that can introduce changes read from the user’s local
   * wayrepo, which are yet unknown to public sources, thus anticipating a future public state.
   */
-@ThreadRestricted("app main") final class WayrepoPreviewController extends LinearLayout
+public @ThreadRestricted("app main") final class WayrepoPreviewController extends LinearLayout
 {
     /* * *
     - designed for possible use in (among other contexts) a "Refresh" dialogue that floats,
@@ -58,7 +58,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
 
     /** Constructs a WayrepoPreviewController.
       */
-    WayrepoPreviewController( final Wayranging wr )
+    public WayrepoPreviewController( final Wayranging wr )
     {
         super( /*context*/wr );
         setOrientation( VERTICAL );
@@ -201,7 +201,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
         };
 
 
-        void receive( final int resultCode, final Intent result )
+        public void receive( final int resultCode, final Intent result )
         {
             if( resultCode != RESULT_OK )
             {

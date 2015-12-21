@@ -7,7 +7,7 @@ import waymaker.gen.ThreadSafe;
   * {@linkplain ID ID}, the interface is separately defined here in order to enable {@linkplain
   * TriSerialUUID useful patterns of subtyping} in future.
   */
-@ThreadSafe interface TriSerialID extends java.io.Serializable {}
+public @ThreadSafe interface TriSerialID extends java.io.Serializable {}
 
     // Not also extending Comparable<TriSerialID>; rather letting TriSerialUUID alone define the natural
     // order by extending Comparable<TriSerialUUID>.  Else would have to uphold Comparable's constraint

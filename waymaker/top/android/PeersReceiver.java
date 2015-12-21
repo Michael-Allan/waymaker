@@ -6,7 +6,7 @@ import waymaker.gen.ThreadSafe;
 /** A receiver of a response to a
   * {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) peers request}.
   */
-interface PeersReceiver
+public interface PeersReceiver
 {
 
 

@@ -9,7 +9,7 @@ import waymaker.spec.VotingID;
   * by {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) requesting} further nodal
   * data from the count server.
   */
-interface NodeCache
+public interface NodeCache
 {
     /* * *
     - cache inconsistency due to lazy growth is detected by repocaster serial number (RepocastSer)
@@ -43,7 +43,7 @@ interface NodeCache
     /** Extra node capacity for newly constructed caches: {@value}.  This addition of space is traded
       * for a reduction of time in rehashes.
       */
-    static final int INITIAL_HEADROOM = 30;
+    public static final int INITIAL_HEADROOM = 30;
 
 
 

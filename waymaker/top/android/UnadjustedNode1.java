@@ -6,7 +6,7 @@ import waymaker.spec.VotingID;
 
 /** An implementation of a proper unadjusted node.
   */
-class UnadjustedNode1 extends UnadjustedNodeV
+public class UnadjustedNode1 extends UnadjustedNodeV
 {
 
 
@@ -16,7 +16,8 @@ class UnadjustedNode1 extends UnadjustedNodeV
       *     @see #peerOrdinal()
       *     @see #rootwardInThis()
       */
-    @ThreadSafe UnadjustedNode1( VotingID id, int peerOrdinal, RootwardCast<UnadjustedNode> rootwardInThis )
+      @ThreadSafe
+    public UnadjustedNode1( VotingID id, int peerOrdinal, RootwardCast<UnadjustedNode> rootwardInThis )
     {
         super( id, peerOrdinal, rootwardInThis );
         assert id != null; // not ground
@@ -30,7 +31,8 @@ class UnadjustedNode1 extends UnadjustedNodeV
       *     @see #id()
       *     @see #peerOrdinal()
       */
-    @ThreadSafe UnadjustedNode1( final VotingID id, final int peerOrdinal, final UnadjustedNode candidate )
+      @ThreadSafe
+    public  UnadjustedNode1( final VotingID id, final int peerOrdinal, final UnadjustedNode candidate )
     {
         super( id, peerOrdinal, candidate.rootwardHither_getOrMake() );
         assert id != null; // not ground

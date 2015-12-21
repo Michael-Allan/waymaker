@@ -9,7 +9,7 @@ import waymaker.gen.*;
   * {@linkplain Wayranging#startActivityForResult(Intent,ActivityResultReceiver) purpose-launched} activity.
   * Each implementation must declare a creator, which may be a {@linkplain SimpleCreator simple creator}.
   */
-@ThreadRestricted("app main") abstract class ActivityResultReceiver implements Parcelable
+public @ThreadRestricted("app main") abstract class ActivityResultReceiver implements Parcelable
 {
     /* * *
     - receivers will often have a problem of recovering context at time of reception
@@ -37,7 +37,7 @@ import waymaker.gen.*;
       *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#onActivityResult(int,+int,+android.content.Intent)'
       *       target='_top'>onActivityResult</a>(int,int,Intent)
       */
-    abstract void receive( int resultCode, Intent result );
+    public abstract void receive( int resultCode, Intent result );
 
 
 

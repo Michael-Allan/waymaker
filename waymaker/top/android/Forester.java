@@ -14,7 +14,7 @@ import waymaker.gen.*;
   *     <li>{@linkplain #descendToCandidate() descendToCandidate}</li>
   *     </ul>
   */
-@ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
+public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
 {
 
 
@@ -22,7 +22,7 @@ import waymaker.gen.*;
       *
       *     @see #forest()
       */
-    Forester( final Wayranging wr )
+    public Forester( final Wayranging wr )
     {
         final ForestCache forests = wr.forests();
         forest = forests.getOrMakeForest( wr.pollNamer().get() );
@@ -67,13 +67,13 @@ import waymaker.gen.*;
       *     @throws NoSuchElementException if the specific node is null, or the target is not among its
       *       immediate voters.
       */
-    void ascendToVoter( Node target ) { throw new UnsupportedOperationException(); }
+    public void ascendToVoter( Node target ) { throw new UnsupportedOperationException(); }
 
 
 
     /** A bell that rings when this forester moves or experiences a node cache change.
       */
-    Bell<Changed> bell() { return bell; }
+    public Bell<Changed> bell() { return bell; }
 
 
         private final ReRinger<Changed> bell = Changed.newReRinger();
@@ -87,7 +87,7 @@ import waymaker.gen.*;
       *
       *     @return Either a real node or the {@linkplain NodeCache#ground() ground pseudo-node}.
       */
-    Node candidate() { return candidate; }
+    public Node candidate() { return candidate; }
 
 
         private Node candidate;
@@ -100,7 +100,7 @@ import waymaker.gen.*;
       *     @throws NoSuchElementException if the candidate is the
       *       {@linkplain NodeCache#ground() ground pseudo-node}.
       */
-    void descendToCandidate() { throw new UnsupportedOperationException(); }
+    public void descendToCandidate() { throw new UnsupportedOperationException(); }
 
 
 
@@ -108,7 +108,7 @@ import waymaker.gen.*;
       * the {@linkplain Wayranging#pollNamer poll namer}.  Any change in the return value will be
       * signalled by the {@linkplain #bell() bell}.
       */
-    Forest forest() { return forest; }
+    public Forest forest() { return forest; }
 
 
         private Forest forest;
@@ -124,7 +124,7 @@ import waymaker.gen.*;
       *     @throws NoSuchElementException if the target is not null, and not among the immediate voters
       *       of the candidate.
       */
-    void moveToPeer( Node target ) { throw new UnsupportedOperationException(); }
+    public void moveToPeer( Node target ) { throw new UnsupportedOperationException(); }
 
 
 
@@ -134,7 +134,7 @@ import waymaker.gen.*;
       * null and the candidate is ground, then the forester is said to be ‘grounded’ at the default
       * position.
       */
-    Node node() { return node; }
+    public Node node() { return node; }
 
 
         private Node node;
@@ -144,7 +144,7 @@ import waymaker.gen.*;
     /** The cache of nodes that now defines the forest structure.  Any change in the return value to a
       * different cache instance will be signalled by the {@linkplain #bell() bell}.
       */
-    NodeCache nodeCache() { return nodeCache; }
+    public NodeCache nodeCache() { return nodeCache; }
 
 
         private NodeCache nodeCache; // may temporarily lag forest.nodeCache instance till change reaches here

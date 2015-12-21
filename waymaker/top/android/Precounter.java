@@ -22,7 +22,7 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
   * adjusted, local count, thus anticipating a future server count.  Precounters are single use
   * facilities; construct one, use it, and discard it.
   */
-final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
+public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 {
 
 
@@ -38,7 +38,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
       *     @see WaykitUI#wayrepoTreeLoc()
       */
       @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per UnadjustedGround.restore
-   Precounter( final String pollName, final byte[] groundUnaState, final int originalUnaCount,
+   public Precounter( final String pollName, final byte[] groundUnaState, final int originalUnaCount,
      final ContentResolver contentResolver, final String wayrepoTreeLoc )
     {
         this.pollName = pollName;
@@ -62,7 +62,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
     /** A cycle foreseer for general reuse during the precount.
       */
-    CycleForeseer cycleForeseer() { return cycleForeseer; }
+    public CycleForeseer cycleForeseer() { return cycleForeseer; }
 
 
         private final CycleForeseer cycleForeseer = new CycleForeseer();
@@ -73,7 +73,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
       * properties are initialized from the latest count on the remote count server, or null if the
       * identified node is both unmapped and uncounted.
       */
-    UnadjustedNode getOrFetchUnadjusted( final VotingID id )
+    public UnadjustedNode getOrFetchUnadjusted( final VotingID id )
     {
         UnadjustedNode una = nodeMap.get( id );
         if( una == null ) una = serverCount.fetchNode( id, nodeMap );
@@ -85,7 +85,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
     /** The original, unadjusted {@linkplain NodeCache#ground() ground}.  Here the {@linkplain
       * #precount() precount} attaches the adjusted ground, if any.
       */
-    UnadjustedGround ground() { return ground; }
+    public UnadjustedGround ground() { return ground; }
 
 
         private final UnadjustedGround ground;
@@ -94,7 +94,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
     /** A grounder for general reuse during the precount.
       */
-    EffectiveGrounder grounder() { return grounder; }
+    public EffectiveGrounder grounder() { return grounder; }
 
 
         private final EffectiveGrounder grounder = new EffectiveGrounder(); // q.v. for "no hold"
@@ -103,7 +103,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
     /** A map of all known nodes including the ground pseudo-node, each keyed by identifier.
       */
-    HashMap<VotingID,UnadjustedNode> nodeMap() { return nodeMap; }
+    public HashMap<VotingID,UnadjustedNode> nodeMap() { return nodeMap; }
 
 
         private final HashMap<VotingID,UnadjustedNode> nodeMap;
@@ -112,7 +112,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 
     /** The name of the poll that is here precounted.
       */
-    String pollName() { return pollName; }
+    public String pollName() { return pollName; }
 
 
         private final String pollName;
@@ -122,7 +122,7 @@ final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
     /** Forms the adjusted count if possible, and attaches it among the {@linkplain #nodeMap() mapped}
       * nodes as <var>node</var>.{@linkplain UnadjustedNode#precounted() precounted}.  Call once only.
       */
-    void precount() throws CountFailure, InterruptedException
+    public void precount() throws CountFailure, InterruptedException
     {
         /* * *
         - count registers
