@@ -65,7 +65,6 @@ final @ThreadSafe class ServerCount
         receiver.receivePeersResponse( rootwardID ); // encoding default response, pending real server counts
     }
 
-
         /* * *
         - count server may implement by querying for all peers of ordinal <= paddedLimit
             - then calculate from result count the highest ordinal to return,
@@ -110,7 +109,6 @@ final @ThreadSafe class ServerCount
         throw new UnsupportedOperationException( "Server counts not yet coded" );
     }
 
-
         /* * *
         - maintenance of ordinals for minor peers in count engine
             - kept unique and contiguous with minimal effort
@@ -140,12 +138,8 @@ final @ThreadSafe class ServerCount
     {
         assert !nodeMap.containsKey(id): "Not fetching an already fetched node";
         return null; // server counts not yet coded
+          // will also have to detect and throw exception on serial inconsitency (RepocastSer)
     }
-
-
-        /* * *
-        - must also detect and throw exception on serial inconstency (RepocastSer)
-          */
 
 
 

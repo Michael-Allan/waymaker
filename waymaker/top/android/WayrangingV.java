@@ -4,41 +4,51 @@ import android.view.View;
 import android.widget.*;
 import waymaker.gen.ThreadRestricted;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.widget.RelativeLayout.ALIGN_PARENT_BOTTOM;
 import static android.widget.RelativeLayout.ALIGN_PARENT_RIGHT;
 import static waymaker.gen.RelativeLayoutJig.jigRelative;
 
 
-/** A wayranging view.
+/** <p>A wayranging view.  Its greater components are the waypath, forest and wayscope views:</p>
+  * <pre>
+  *                                      Waypath
+  *                                       /
+  *                          ____        /
+  *             end ← norm ← norm ···        *act* (=)
+  *
+  *             ∧
+  *            ---      Lorem ipsum et dolore
+  *   Forest    *       ———————————————————
+  *      \      *       Lorem ipsum dolor sit amet       --- Wayscope
+  *       \     *       Consectetur adipiscing elit  ←
+  *            (*)      Ded do eiusmod tempor
+  *             *       Incididunt ut labore         ←
+  *            ---    ← Et dolore magna aliqua
+  *             *
+  *             *
+  *             *                                   (≡)
+  *             ∨                                (-)(+)
+  * </pre>
+  * <p>Its lesser components are:</p>
+  * <pre>
+  *   (=)  Waypath chooser summoner
+  *    ←   End/means link
+  *   (≡)  Menu summoner
+  *   (-)  Out zoomer
+  *   (+)  In zoomer
+  * </pre>
   */
 @ThreadRestricted("app main") final class WayrangingV extends RelativeLayout
 {
     /* * *
-                                           WaypathV
-                                            /
-                               ____        /
-                  end ← norm ← norm ···       *act* (=)
-
-                  4
-                 ---     Lorem ipsum et dolore
-        ForestV   *      ---------------------
-           \      *      Lorem ipsum dolor sit amet       ---- WayscopeV
-            \     *      Consectetur adipiscing elit  ←
-                 (*)     Ded do eiusmod tempor
-                  *      Incididunt ut labore         ←
-                 ---   ← Et dolore magna aliqua
-                  *
-                  *
-                  *                                  (≡)
-                  *                               (-)(+)
-
     - decorational cues (primary)
         - in overlap order from top down
             - end/means colours
                 - end/act waynode in WayV
                 - end/means link (←) that is on chosen waypath
-                    - or all (unlooped) means links in case of leading (rightmost) edge
-                      of exploratory waypath
+                    - or all (unlooped) means links in case of leading (rightmost) edge of nascent waypath
                 - out zoomer (-) when in-zoomed beneath/above all on-path end/means links (←)
                   so they have disappeared
                 - forest node to choose in order to heal endward/meansward break
@@ -54,34 +64,46 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
                         - cue would otherwise be lost, vote control being removed from main screen
     [ WaypathV
         - narrow view of subject's way, showing only one waypath at a time
+        - basis of waypath view
+            - models
+                - waypath
+                    - types of origin
+                        | temporal
+                            - originating as nascent waypath
+                        | positional
+                            - originating in position document
+                    - identification
+                        ( as per 2015.12.12
+                        - using only string form, "name"
+                - Wayranging.pollNamer
+                - Wayranging.waypathNamer
+            - controls
+                - waypath chooser, summoner (=)
         - choice of waypath
             | explicitly by chooser
                 - waypaths that may be chosen
-                    ( functional categories, orthogonal to formal typology (positional|temporal)
-                    | established (0..*)
-                        - anchored by act
-                        | voted
-                            - waypaths are positionally documented in wayrepo
-                            - formal type: positional
-                            - action vote determines personal waypath
-                                - being that waypath documented leafmost on vote path, including self
-                        | stored
-                            - waypath (exploratory or voted) that was replaced implicitly by action vote
-                            - removed from storage either automatically when it matches a voted waypath,
-                              or manually by user
-                    | exploratory (0..1)
-                        - incomplete, missing an act
-                        - formal type: temporal
+                    ( functional categories, orthogonal to original typology (positional|temporal)
+                    | nascent (0..1)
+                        - incomplete, missing act
+                        - type of origin: temporal
+                    | adopted (0..*)
+                        - determined by action vote
+                            - leafmost positional waypath on action vote path, including self
+                        - type of origin: positional
+                    | stowed (0..*)
+                        - waypath (nascent or adopted) that was replaced implicitly by action vote
+                        - removed from storage either automatically when it matches an adopted waypath,
+                          or manually by user
             | implicitly by link travel
                 ( forest travel cannot change the waypath choice, only introduce a break
                 | exploring into an established waypath
-                    - bringing an exploratory waypath to match the endward (leftmost) subpath
+                    - bringing a nascent waypath to match the endward (leftmost) subpath
                       of just one established waypath chooses that waypath
                 | breaking out of an established waypath
-                    - travel to an off-path waynode chooses an exploratory path through to that waynode
+                    - travel to an off-path waynode chooses a nascent path through to that waynode
             | implicitly by action vote
-                - vote (or vote shift) in action poll chooses the voted waypath
-                - previously chosen waypath becomes stored, if not already stored, and user is told of this
+                - vote (or vote shift) in action poll chooses the adopted waypath
+                - previously chosen waypath becomes stowed, if not already stowed, and user is told of this
         - waynodes
             - end [ norm* [ act ]]
                 - one end, any number of norms, and one act (established way only)
@@ -91,7 +113,7 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
                     - temporary, so not to confuse user by masking the following:
                 | subject's vote
                 | default position, which is part of the waypath definition
-                    - in case of exploratory waypath, default position is last traversed during exploration
+                    - in case of nascent waypath, default position is last traversed during exploration
         - parallel subpaths
             ( notebook 2015.11.4-5 (Q1, A1)
             - e.g. for electoral action, diverging endward into multiple laws before converging again
@@ -99,7 +121,7 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
             - caused by forest travel (node choice) that breaks end/means relation
             | in established path
                 - between any two waynodes
-            | in exploratory path
+            | in nascent path
                 - at most one intermediate break between the two rightmost waynodes:
 
                         end ← norm ← norm ··· norm ···     *act*
@@ -111,11 +133,11 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
                         end ··· norm ···                    *act*
 
                 - final break (always present) to waynode placeholder *act*
-                    - so here is default exploratory waypath for virgin user
+                    - so here is default nascent waypath for virgin user
 
                         end ···                             *act*
 
-        - truncation of exploratory waypath
+        - truncation of nascent waypath
             ( leaving aside placeholder *act*, which is not a proper waynode
             - right side is truncated to the waynode choice
                 - moving leftward therefore retracts the waypath
@@ -124,6 +146,7 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
                     - link traversal rightward from either replaces the rightmost waynode
     [ (=)
         - waypath chooser summoner
+        - chooser is controller of Wayranging.waypathNamer
     [ WayscopeV
         - way element graph
             - elements
@@ -139,11 +162,11 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
     [ (≡)
         - menu summoner
     [ (-)
-        - out zoomer
+        - wayscope out zoomer
         - zooms view out of parent element
         - function also accessible by pinch gesture in WayscopeV
     [ (+)
-        - in zoomer
+        - wayscope in zoomer
         - main control, big
         - viewer function
             | in zoomer
@@ -160,7 +183,10 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
 
       // Forest view.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        final ForestV forestV = new ForestV( wr );
+        addView( new ForestV(wr),
+       // jigRelative(WRAP_CONTENT,MATCH_PARENT).
+       /// MATCH_PARENT is not exactly correct, but nor is WRAP_CONTENT; default to latter:
+          jigRelative().rule(ALIGN_PARENT_LEFT).rule(ALIGN_PARENT_TOP).rule(ALIGN_PARENT_BOTTOM).unjig() );
 
       // Menu summoner.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

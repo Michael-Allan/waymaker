@@ -2,6 +2,7 @@ package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Way
 
 import android.content.Intent;
 import android.os.*;
+import android.view.Window;
 import waymaker.gen.*;
 
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -33,7 +34,8 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         lifeStage = CREATING;
         lifeStageBell.ring();
         super.onCreate( inB );
-        if( isCreatedAnew ) create( null );
+        create1();
+        if( isCreatedAnew ) create2( null );
         else
         {
             logger.info( "Restoring activity state from bundle: " + inB );
@@ -48,7 +50,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             {
                 inP.unmarshall( state, 0, state.length ); // (sic) form state into parcel
                 inP.setDataPosition( 0 ); // (undocumented requirement)
-                create( inP );
+                create2( inP );
             }
             finally { inP.recycle(); }
         }
@@ -58,9 +60,17 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
+    private void create1()
+    {
+        final Window w = getWindow(); // note: w.requestFeature wants to precede setContentView
+        w.requestFeature( Window.FEATURE_NO_TITLE ); // omit activity bar, or whatever else shows title
+    }
+
+
+
     /** @param inP The parceled state to restore, or null to restore none.
       */
-    private void create( final Parcel inP/*grep CtorRestore*/ ) // see Recreating an Activity [RA]
+    private void create2( final Parcel inP/*grep CtorRestore*/ ) // see Recreating an Activity [RA]
     {
         if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
         final boolean isFirstConstruction;
@@ -114,7 +124,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     Forester forester() { return forester; }
 
 
-        private Forester forester; // final after create
+        private Forester forester; // final after create2
 
 
 
@@ -123,7 +133,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     ForestCache forests() { return forests; }
 
 
-        private ForestCache forests; // final after create, which adds stator
+        private ForestCache forests; // final after create2, which adds stator
 
 
 
@@ -168,7 +178,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     BelledVariable<String> pollNamer() { return pollNamer;}
 
 
-        private BelledVariable<String> pollNamer; // final after create, which adds stator
+        private BelledVariable<String> pollNamer; // final after create2, which adds stator
 
 
 

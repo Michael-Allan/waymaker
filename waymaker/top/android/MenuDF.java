@@ -63,10 +63,11 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
             });
         }
         {
+            LinearLayout x;
+
           // Generic test buttons.
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            final LinearLayout x = new LinearLayout( context );
-            y.addView( x );
+            y.addView( x = new LinearLayout( context ));
             {
                 final Button button = new Button( context );
                 x.addView( button );
@@ -95,6 +96,48 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
                     }
                 });
             }
+            y.addView( x = new LinearLayout( context ));
+            {
+                final Button button = new Button( context );
+                x.addView( button );
+                button.setText( "X" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( final View src )
+                    {
+                    }
+                });
+            }
+            {
+                final Button button = new Button( context );
+                x.addView( button );
+                button.setText( "Y" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( final View src )
+                    {
+                    }
+                });
+            }
+            {
+                final Button button = new Button( context );
+                x.addView( button );
+                button.setText( "Z" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( final View src )
+                    {
+                    }
+                });
+            }
+        }
+        {
+          // About.
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            final Button button = new Button( context );
+            y.addView( button );
+            button.setText( "About" );
+            button.setEnabled( false ); // not yet coded
         }
         return y;
     }

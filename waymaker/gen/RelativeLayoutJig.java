@@ -40,9 +40,21 @@ public final class RelativeLayoutJig
       * href='http://developer.android.com/reference/android/view/ViewGroup.LayoutParams.html#WRAP_CONTENT'
       * target='_top'>WRAP_CONTENT</a>.
       */
-    public static RelativeLayoutJig jigRelative()
+    public static RelativeLayoutJig jigRelative() { return jigRelative( WRAP_CONTENT, WRAP_CONTENT ); }
+
+
+
+    /** Constructs a set of layout parameters, lays them in the {@linkplain #i() single instance} of the
+      * jig, and returns the jig.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/widget/RelativeLayout.LayoutParams.html#RelativeLayout.LayoutParams(int,+int)'
+      *       target='_top'>RelativeLayout.LayoutParams(int, int)</a>
+      *     @see <a href='http://developer.android.com/reference/android/view/ViewGroup.LayoutParams.html#ViewGroup.LayoutParams(int,+int)'
+      *       target='_top'>ViewGroup.LayoutParams(int, int)</a>
+      */
+    public static RelativeLayoutJig jigRelative( final int width, final int height )
     {
-        instance.params = new RelativeLayout.LayoutParams( WRAP_CONTENT, WRAP_CONTENT );
+        instance.params = new RelativeLayout.LayoutParams( width, height );
         return instance;
     }
 
