@@ -46,26 +46,26 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         }
 
       // Forest map.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - -
         if( isFirstConstruction ) stators.add( new StateSaver<ForestCache>()
         {
             public void save( final ForestCache c, final Parcel out )
             {
               // 1. Size.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - -
                 final Collection<Forest> forests = c.forestMap.values();
                 out.writeInt( forests.size() );
 
               // 2. Map.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - -
                 for( final Forest forest: forests )
                 {
                   // 2a. Key.
-                  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                  // - - - - -
                     out.writeString( forest.pollName() );
 
                   // 2b. Value.
-                  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                  // - - - - - -
                     Forest.stators.save( forest, out );
                 }
 
@@ -235,12 +235,12 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
     private void r1( final boolean toClear, final String wayrepoTreeLoc )
     {
       // Coordinate with refresh series.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - -
         final int serial = ++refreshSerialLast; // signal any prior refresh, "you're superceded"
         if( tRefresh != null ) tRefresh.interrupt(); // tap on shoulder, "no longer wanted"
 
       // Scope the general refresh demands that are determinable from "app main".
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final ArrayList<RefreshDemand> demands = new ArrayList<>();
         final boolean toStrip = !toClear; /* No point stripping if cache to be entirely cleared.  The
           only type of demand yet determinable is one that will later be converted to a precount demand
@@ -258,7 +258,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         }
 
       // Maybe skip straight to r5.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - -
         if( wayrepoTreeLoc == null && demands.size() == 0 ) // then can't precount & there's nothing to strip
         {
             // can only clear if requested, and finally post the obligatory note for user feedback:
@@ -268,11 +268,11 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         }
 
       // Else make reference for use outside "app main".
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - -
         final ContentResolver cResolver = Application.i().getContentResolver(); // grep ContentResolver-TS
 
       // Start worker thread.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - -
         startNewWorkerThread( "r2t", serial, new Runnable() // grep StartSync
         {
             public void run() { r2t( toClear, wayrepoTreeLoc, serial, demands, cResolver ); }
@@ -311,7 +311,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         final Holder1<Exception> failureH = new Holder1<>();
 
       // Demand a precount for any poll that might have data in wayrepo (expensive test).
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final ArrayList<PrecountDemand> precountDemands = new ArrayList<>();
         int statelessDemandCount = 0; // precount demands that still require a snapshot of ground state
         if( wayrepoTreeLoc != null )
@@ -394,7 +394,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         }
 
       // Maybe skip straight to r4t.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - -
         final boolean r3Wanted;
         final boolean r4tWanted;
         if( !toClear && statelessDemandCount > 0 )
@@ -415,7 +415,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         }
 
       // Else must dive back into "app main" thread.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - -
         Application.i().handler().post( new JointRunnable( serial, /*threadToJoin*/t )
         {
             void runAfterJoin() // on "app main", grep TermSync
@@ -438,7 +438,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
       final List<StripDemand> stripDemands, final Holder1<Exception> failureH )
     {
       // Take snapshot of unadjusted ground state for each precount demand.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         for( final PrecountDemand demand: precountDemands )
         {
             if( demand.groundUnaState != null ) continue; // cached forest, snapshot already taken in r1
@@ -450,11 +450,11 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         }
 
       // Make reference for use outside "app main".
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - -
         final ContentResolver cResolver = Application.i().getContentResolver(); // grep ContentResolver-TS
 
       // Start worker thread.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - -
         startNewWorkerThread( "r4t", serial, new Runnable() // grep StartSync
         {
             public void run()
@@ -476,7 +476,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         final Thread t = Thread.currentThread();
 
       // Precount (expensive).
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - -
         if( !toClear) synchronized( COMPOSITION_LOCK ) {} // (a) before (b)
         for( final PrecountDemand demand: precountDemands )
         {
@@ -504,7 +504,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         }
 
       // Dive back into "app main" thread.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - -
         Application.i().handler().post( new JointRunnable( serial, /*threadToJoin*/t )
         {
             void runAfterJoin() // on "app main", grep TermSync
@@ -522,7 +522,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
       final List<StripDemand> stripDemands, final Exception failure )
     {
       // Apply results to forests.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - -
         boolean replacedNodeCache = false;
         if( toClear ) // then apply results to all forests: cached AND precounted but yet uncached:
         {
@@ -574,7 +574,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         if( replacedNodeCache ) nodeCacheBell.ring();
 
       // Inform user.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - -
         if( failure == null ) refreshNote = "Refresh " + serial + " done";
         else
         {

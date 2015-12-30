@@ -11,9 +11,24 @@ public @ThreadSafe final class MathX08
 
 
 
- // /** @see Math#incrementExact(int)
+ // /** @see Math#floorDiv(int,int)
  //   */
  /// reference not found
+    public static int floorDiv( final int dividend, final int divisor )
+    {
+        int quotient = dividend / divisor;
+        if( MathX.signsDiffer( dividend, divisor ))
+        {
+            if( quotient * divisor != dividend ) // if remainder is non-zero
+            {
+                --quotient;
+            }
+        }
+        return quotient;
+    }
+
+
+
     public static int incrementExact( final int value )
     {
         if( value == Integer.MAX_VALUE ) throw new ArithmeticException( "Numeric overflow" );

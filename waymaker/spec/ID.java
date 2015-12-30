@@ -40,7 +40,7 @@ public @ThreadSafe class ID implements TriSerialID
         try
         {
           // (sa1) Store the first sub-array.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - -
             // Three leading digits, at least.
             try
             {
@@ -68,7 +68,7 @@ public @ThreadSafe class ID implements TriSerialID
             }
 
           // (sa2) Store the second sub-array.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - - -
             // One leading digit, at least.
             try
             {
@@ -88,7 +88,7 @@ public @ThreadSafe class ID implements TriSerialID
         catch( BadCharacter _x ) { throw new MalformedID( "Bad character at index " + c, string ); }
 
       // (sa1NEnc) Encode the length of sa1.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - -
         assert d == numericBytes.length - 1; // storing in final byte
         numericBytes[d] = (byte)(sa1N + SA1N_ENCODER);
 

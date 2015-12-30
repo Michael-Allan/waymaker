@@ -67,7 +67,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
         final SharedPreferences preferences = wk.preferences();
         {
           // Wayrepo location view.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - -
             final TextView view = new TextView( wr );
             addView( view );
             preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
@@ -75,7 +75,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
                 {
                     relay(); // init
                     Object unregistrationAgent = wr.unregisterOnDestruction( this );
-                      // no need to unregister the agent itself, its registry does not outlive it
+                      // no need to unregister the agent itself, its own register does not outlive it
                 }
                 private void relay()
                 {
@@ -91,7 +91,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
             addView( x );
             {
               // Location clear button, to clear the wayrepo location.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 final Button button = new Button( wr );
                 x.addView( button );
                 button.setText( "Clear" );
@@ -102,7 +102,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
             }
             {
               // Location finder button, to open the finder and locate the wayrepo.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 final Button button = new Button( wr );
                 x.addView( button );
                 button.setText( "Locate wayrepo" );
@@ -128,11 +128,11 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
         }
         {
           // Note view.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - -
             final TextView noteView = new TextView( wr );
             addView( noteView );
             wr.forests().notaryBell().register( new Auditor<Changed>()
-            { // no need to unregister, registry does not outlive this registrant
+            { // no need to unregister, register does not outlive this registrant
                 { relay(); } // init
                 private void relay() { noteView.setText( wr.forests().refreshNote() ); }
                 public void hear( Changed _ding ) { relay(); }
@@ -143,7 +143,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
             addView( x );
             {
               // Local refresh button, to refresh from local wayrepo.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 final Button button = new Button( wr );
                 x.addView( button );
                 button.setText( "Refresh from wayrepo" );
@@ -159,7 +159,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
                     {
                         relay(); // init
                         Object unregistrationAgent = wr.unregisterOnDestruction( this );
-                          // no need to unregister the agent itself, its registry does not outlive it
+                          // no need to unregister the agent itself, its own register does not outlive it
                     }
                     private void relay() { button.setEnabled( wk.wayrepoTreeLoc() != null ); }
                       // hint to user that refreshing from a non-existent wayrepo is pointless
@@ -168,7 +168,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
             }
             {
               // Full refresh button, to refresh from all sources.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - - - - - - - - - - - - -
                 final Button button = new Button( wr );
                 x.addView( button );
                 button.setText( "from all" );

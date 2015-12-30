@@ -14,11 +14,11 @@ import java.lang.annotation.*;
   * <h3>Init call</h3>
   * <pre>
   *     &#064;Warning("init call")
-  *         // final method</pre>
+  *         // final method of non-final class</pre>
   *
-  * <p>Warns that the method is called from a constructor or other initializer where the call is not
-  * bound dynamically.  Often the method will have a final modifier to explicitly preclude overriding,
-  * even if it happens to be private or implicitly final in the current revision of the code.</p>
+  * <p>Warns that the method is called from a constructor or other initializer where the call cannot be
+  * bound dynamically.  In addition to the warning, the method should also have a final modifier to
+  * explicitly bar overriding, even if it happens to be private in the current revision of the code.</p>
   *
   * <h3>No hold</h3>
   * <pre>

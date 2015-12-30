@@ -24,7 +24,7 @@ public final class PrecountNode1 extends PrecountNode
         super( unadjusted, /*toCopyVoters*/true );
 
       // Ensure that all rootward candidates are precount adjustable, too.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final RootwardCast<UnadjustedNode> rootwardInUna = unadjusted.rootwardInThis();
         final PrecountNode candidate = getOrMake( rootwardInUna.candidate() ); // initially same as una
         rootwardInThis = rootwardInUna.isBarred()?
@@ -32,7 +32,7 @@ public final class PrecountNode1 extends PrecountNode
           candidate.rootwardHither_getOrMake();
 
       // Replace the unadjusted base in the candidate's voter list with this node.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         if( !unadjusted.getClass().equals( UnadjustedNode0.class )) candidate.substituteVoter( this );
         else candidate.addVoter( this ); // nothing to replace, so simply add it
     }
@@ -105,7 +105,7 @@ public final class PrecountNode1 extends PrecountNode
         assert !ObjectX.equals( votedID, _votedID ): NON_REDUNDANCY_ASSERTION;
 
       // (a1) Detect any present, barred cycle that involves this node.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final CycleForeseer cycleForeseer = precounter.cycleForeseer();
         final PrecountGround ground = precounter.ground().precounted(); // not null, ctor of this ensures
         for( PrecountNode nod = this;; ) // each node on root path
@@ -130,7 +130,7 @@ public final class PrecountNode1 extends PrecountNode
         }
 
       // (a2) Detect any future, barred cycle that would involve this node.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final PrecountNode candidate = rootwardInThis.candidate();
         final PrecountNode _candidate;
         try( final CycleForeseer cF = cycleForeseer )
@@ -139,11 +139,11 @@ public final class PrecountNode1 extends PrecountNode
             if( cF.barNode() != null )
             {
               // (a3') Uncast the old vote.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - -
                 rootwardInThis = ground.rootwardHither_getOrMake();
 
               // (a4') Unflow the old vote.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - -
                 candidate.removeVoter( this ); //
                 ground.addVoter( this );      // a complete hand off
 
@@ -158,7 +158,7 @@ public final class PrecountNode1 extends PrecountNode
         if( _votedID == null )
         {
           // (a3'') Uncast and unflow the old vote, leaving this node uncast.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             rootwardInThis = ground.rootwardHither_getOrMake();
             candidate.removeVoter( this ); //
             ground.addVoter( this );      // a complete hand off
@@ -166,11 +166,11 @@ public final class PrecountNode1 extends PrecountNode
         }
 
       // (a3) Uncast the old vote, recasting the new.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - -
         rootwardInThis = _candidate.rootwardHither_getOrMake();
 
       // (a4) Unflow the old vote and reflow the new.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - -
         _candidate.addVoter( this, candidate.removeVoter(this,_candidate,precounter) ); // a complete hand off
     }
 
@@ -274,7 +274,7 @@ public final class PrecountNode1 extends PrecountNode
         assert _votedID != null: NON_REDUNDANCY_ASSERTION;
 
       // (b1) Detect any future, barred cycle that would involve this node.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final PrecountNode _candidate;
         try( final CycleForeseer cF = precounter.cycleForeseer() )
         {
@@ -289,11 +289,11 @@ public final class PrecountNode1 extends PrecountNode
         }
 
       // (b2) Cast the new vote.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - -
         rootwardInThis = _candidate.rootwardHither_getOrMake();
 
       // (b3) Flow the new vote.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - -
         final PrecountGround ground = precounter.ground().precounted(); // not null, ctor of this ensures
         ground.removeVoter( this );   //
         _candidate.addVoter( this ); // a complete hand off
@@ -309,31 +309,31 @@ public final class PrecountNode1 extends PrecountNode
       final Precounter precounter )
     {
       // (c1) Uncast the old vote of this node, breaking the cycle.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final PrecountNode candidate = rootwardInThis.candidate();
         final PrecountGround ground = precounter.ground().precounted(); // not null, ctor of this ensures
         rootwardInThis = ground.rootwardHither_getOrMake();
         if( candidate != ground )
         {
           // (c2) Unflow the old vote.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - -
             candidate.removeVoter( this ); //
             ground.addVoter( this );      // a complete hand off
 
           // (c3) Recast the vote of the barred node, unbarring it.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             final PrecountNode barCandidate = getOrMake( barNode.rootwardInThis.votedID(), precounter );
             barNode.rootwardInThis = barCandidate.rootwardHither_getOrMake();
 
           // (c4) Reflow the vote of the newly unbarred node.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - - - - - - - - - -
             ground.removeVoter( barNode );     //
             barCandidate.addVoter( barNode ); // a complete hand off
         }
         else assert barNode == this; // so (c2) no flow change, and (c3-4) will instead recast below
 
       // (c5) Detect any future, barred cycle that would involve this node.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final PrecountNode _candidate;
         try( final CycleForeseer cF = precounter.cycleForeseer() )
         {
@@ -348,11 +348,11 @@ public final class PrecountNode1 extends PrecountNode
         }
 
       // (c6) Recast the new vote of this node.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - -
         rootwardInThis = _candidate.rootwardHither_getOrMake();
 
       // (c7) Reflow the new vote.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - -
         ground.removeVoter( this );   //
         _candidate.addVoter( this ); // a complete hand off
     }
@@ -369,7 +369,7 @@ public final class PrecountNode1 extends PrecountNode
         final PrecountGround ground = (PrecountGround)rootwardInThis.candidate();
 
       // (d1) Uncast the old vote of the future barred node, and bar it.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final PrecountNode1 _barNode = cF.barNode();
         if( _barNode == this ) // i.e. _votedID is self
         {
@@ -381,17 +381,17 @@ public final class PrecountNode1 extends PrecountNode
         _barNode.rootwardInThis = new RootwardCastB<PrecountNode>( ground, _barCandidate.id() );
 
       // (d2) Unflow the old vote.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - -
         _barCandidate.removeVoter( _barNode ); //
         ground.addVoter( _barNode );          // a complete hand off
 
       // (d3) Cast the new vote of this node.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - -
         final PrecountNode _candidate = cF.candidate();
         rootwardInThis = _candidate.rootwardHither_getOrMake();
 
       // (d4) Flow the new vote.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - -
         ground.removeVoter( this );   //
         _candidate.addVoter( this ); // a complete hand off
     }

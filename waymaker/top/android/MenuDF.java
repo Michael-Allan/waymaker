@@ -24,7 +24,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
         y.setOrientation( LinearLayout.VERTICAL );
         {
           // Wayrepo preview control summoner.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - - -
             final Button button = new Button( context );
             y.addView( button );
             button.setText( "Control wayrepo preview…" );
@@ -38,7 +38,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
         }
         {
           // Vote control summoner.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - -
             final Button button = new Button( context );
             y.addView( button );
             button.setText( "Vote…" );
@@ -53,7 +53,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
         }
         {
           // Logging test button, to log test messages at all standard logging levels.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             final Button button = new Button( context );
             y.addView( button );
             button.setText( "Test logging" );
@@ -66,7 +66,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
             LinearLayout x;
 
           // Generic test buttons.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - -
             y.addView( x = new LinearLayout( context ));
             {
                 final Button button = new Button( context );
@@ -133,7 +133,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
         }
         {
           // About.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - -
             final Button button = new Button( context );
             y.addView( button );
             button.setText( "About" );

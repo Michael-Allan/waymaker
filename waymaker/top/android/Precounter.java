@@ -168,7 +168,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
             if( docID == null ) throw new CountFailure( "Wayrepo has no 'poll' directory" );
 
           // Identify owner of wayrepo.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - -
             final ContentProviderClient provider = inWr.provider(); // grep ContentProviderClient-TS
             try // must be just after findDirectory (queryChildren) or SMBProvider returns null cursor
             (
@@ -182,7 +182,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
             catch( final RemoteException x ) { throw new CountFailure( x ); }
 
           // Read the wayrepo documents.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - -
             docID = inWr.findDirectory( pollName, docID );
             if( docID == null ) break read; // wayrepo has no nodes for this poll
 
@@ -241,7 +241,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
         catch( final MalformedID|WayrepoAccessFailure x ) { throw new CountFailure( x ); }
 
       // Ensure owner is precounted.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - -
         final PrecountNode ownerPre = PrecountNode.getOrMakeIfVoteChanged( ownerID, this,
           /*toForceNode*/false, ownerCandidateNewID );
         if( ownerPre != null ) ownerPre.rootwardInThis( ownerCandidateNewID, this );

@@ -148,13 +148,13 @@ public final class WayrepoReader implements java.io.Closeable
         if( c == null ) throw new WayrepoAccessFailure( "Cannot read wayrepo directory: " + parentID );
 
       // Return response if fully loaded.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - -
         if( !c.getExtras().getBoolean( DocumentsContract.EXTRA_LOADING )) return c;
 
         if( isRetry ) { throw new WayrepoAccessFailure( "Incomplete response from documents provider after retry" ); }
 
       // Else wait for response to fully load.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - -
         Uri nUri = c.getNotificationUri();
         final boolean nUriDescendentsToo;
         if( nUri == null ) // probable bug, https://code.google.com/p/android/issues/detail?id=182258
@@ -187,7 +187,7 @@ public final class WayrepoReader implements java.io.Closeable
         finally{ contentResolver.unregisterContentObserver( o ); }
 
       // Retry query now that response is fully loaded.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - -
         return queryChildren( parentID, true );
     }
 

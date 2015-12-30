@@ -40,15 +40,15 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
     public void saveVoter( final UnadjustedNode1 voter, final Parcel out, final SKit kit )
     {
       // a. Voter ID.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - -
         AndroidXID.writeUUID( voter.id(), out );
 
       // b. Voter ordinal.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - -
         out.writeInt( voter.peerOrdinal() );
 
       // c. Voter.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - -
         UnadjustedNode1.stators.save( voter, out, kit );
     }
 
@@ -111,7 +111,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
             public void save( final UnadjustedNodeV node, final Parcel out, final SKit kit )
             {
               // 1. Inlying voters.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - -
                 {
                     final List<UnadjustedNode1> inlyingVoters = node.voters;
                     final int vN = inlyingVoters.size();
@@ -120,7 +120,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
                 }
 
               // 2. Outlying voters.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - -
                 for( final UnadjustedNode1 voter: kit.outlyingVotersUna() )
                 {
                     if( voter.rootwardInThis().candidate() == node ) { node.saveVoter( voter, out, kit ); }

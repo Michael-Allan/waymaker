@@ -72,8 +72,9 @@ public interface Node
       * that direction on the unadjusted version.  This navigational asymmetry (rootward divergence and
       * leafward convergence) arises because the precount is determined by vote changes that flow
       * exclusively rootward in their effects; the leafward part is unaffected and remains equal to that
-      * of the unadjusted version.  And since the leafward part may be very large, this software
-      * physically shares it between the two versions of the forest.</p>
+      * of the unadjusted version.  The data modeling keeps it equal (indeed identical) by physically
+      * sharing it between the two versions of the forest.  This is optimal because the shared leafward
+      * part may be very large.</p>
       */
     public RootwardCast<? extends Node> rootwardInPrecount();
 

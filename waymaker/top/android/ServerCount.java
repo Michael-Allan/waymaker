@@ -31,6 +31,8 @@ public final @ThreadSafe class ServerCount
 
 
     /** Constructs a ServerCount.
+      *
+      *     @see #pollName()
       */
     public ServerCount( final String pollName ) { this.pollName = pollName; }
 
@@ -58,7 +60,8 @@ public final @ThreadSafe class ServerCount
       *
       *     @see <a href='../../../../peer' target='_top'>‘peer’</a>
       */
-    public void enqueuePeersRequest( final VotingID rootwardID, final PeersReceiver receiver, final int paddedLimit )
+    public void enqueuePeersRequest( final VotingID rootwardID, final PeersReceiver receiver,
+      final int paddedLimit )
     {
         if( paddedLimit < 0 ) throw new IllegalArgumentException();
 
@@ -102,7 +105,8 @@ public final @ThreadSafe class ServerCount
       *
       *     @throws IndexOutOfBoundsException if pStart is less than 1 or greater than pEndBound.
       */
-    public void enqueuePeersRequest( VotingID rootwardID, PeersReceiver receiver, int peersStart, int peersEndBound )
+    public void enqueuePeersRequest( VotingID rootwardID, PeersReceiver receiver,
+      int peersStart, int peersEndBound )
     {
         if( peersStart < 1 || peersStart > peersEndBound ) throw new IndexOutOfBoundsException();
 
@@ -150,10 +154,12 @@ public final @ThreadSafe class ServerCount
 
 
 
-//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+    /** The name of the poll that is counted.
+      */
+    public String pollName() { return pollName; }
 
 
-    private final String pollName;
+        private final String pollName;
 
 
 }

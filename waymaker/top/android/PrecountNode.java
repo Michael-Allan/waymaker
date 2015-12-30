@@ -29,7 +29,7 @@ public abstract class PrecountNode implements Node
         unadjusted = _unadjusted;
 
       // Initialize voters.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - -
         if( toCopyVoters )
         {
             final List<? extends UnadjustedNode> initialVoters = unadjusted.voters();
@@ -40,7 +40,7 @@ public abstract class PrecountNode implements Node
         else voters = new ArrayList<>();
 
       // Attach to unadjusted base.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - -
         unadjusted.precounted( this );
     }
 
@@ -290,7 +290,7 @@ public abstract class PrecountNode implements Node
             assert voterSub.peerOrdinal() != unadjusted.peerOrdinal(); // so placement might need adjusting
 
           // Maybe adjust placement in voters list.
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // - - - - - - - - - - - - - - - - - - - -
             int vMinor = vUna;
             do // decrement vMinor unto first minor voter in list
             {
@@ -306,7 +306,7 @@ public abstract class PrecountNode implements Node
         }
 
       // Replace unadjusted.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - -
         voters.set( vUna, voterSub );
         assert isCorrectlyOrdered( vUna, voterSub );
     }
@@ -412,7 +412,7 @@ public abstract class PrecountNode implements Node
             public void save( final PrecountNode node, final Parcel out, final SKit kit )
             {
               // 1. Inlying voters.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - -
                 {
                     final List<Node> inlyingVoters = node.voters;
                     final int vN = inlyingVoters.size();
@@ -422,51 +422,51 @@ public abstract class PrecountNode implements Node
                         final Node voter = inlyingVoters.get( v );
 
                       // 1a. Voter ID.
-                      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                      // - - - - - - - -
                         AndroidXID.writeUUID( voter.id(), out );
                         if( voter.getClass().equals( PrecountNode1.class ))
                         {
                           // 1b. Is voter a precount voter?
-                          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                          // - - - - - - - - - - - - - - - -
                             ParcelX.writeBoolean( true, out );
 
                           // 1c. Is its unadjusted counterpart empty?
-                          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                          // - - - - - - - - - - - - - - - - - - - - -
                             final PrecountNode1 voterPre = (PrecountNode1)voter;
                             ParcelX.writeBoolean(
                               voterPre.unadjusted().getClass().equals(UnadjustedNode0.class), out );
 
                           // 1d. Voter.
-                          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                          // - - - - - -
                             node.saveVoter( voterPre, out, kit );
                         }
                         else // unadjusted voter
                         {
                           // 1b. Is voter a precount voter?
-                          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                          // - - - - - - - - - - - - - - - -
                             ParcelX.writeBoolean( false, out );
                         }
                     }
                 }
 
               // 2. Outlying voters.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - -
                 for( final PrecountNode1 voter: kit.outlyingVotersPre() )
                 {
                     if( voter.rootwardInThis().candidate() == node )
                     {
 
                       // 2a. Voter ID.
-                      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                      // - - - - - - - -
                         AndroidXID.writeUUID( voter.id(), out );
 
                       // 2b. Is its unadjusted counterpart empty?
-                      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                      // - - - - - - - - - - - - - - - - - - - - -
                         ParcelX.writeBoolean(
                           voter.unadjusted().getClass().equals(UnadjustedNode0.class), out );
 
                       // 2c. Voter.
-                      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                      // - - - - - -
                         node.saveVoter( voter, out, kit );
                     }
                 }

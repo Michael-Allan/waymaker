@@ -82,7 +82,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         }
 
       // Forests.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - -
         if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
         {
             public void save( final Wayranging wr, final Parcel out )
@@ -94,7 +94,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         if( isFirstConstruction ) forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
 
       // Poll namer.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - -
         if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
         {
             public void save( final Wayranging wr, final Parcel out )
@@ -106,7 +106,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
           // CtorRestore to cleanly construct with restored state
 
       // Dependents of above.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - -
         forester = new Forester( this );
         setContentView( new WayrangingV( this ));
 

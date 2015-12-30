@@ -71,21 +71,21 @@ public final class Forest implements PeersReceiver
         }
 
       // Node cache.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - -
         if( isFirstConstruction ) stators.add( new StateSaver<Forest>()
         {
             public void save( final Forest f, final Parcel out )
             {
               // 1. Size.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - -
                 out.writeInt( f.nodeCache.nodeMap.size() );
 
               // 2. Has precount adjustments?
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - -
                 ParcelX.writeBoolean( f.nodeCache.groundUna.precounted() != null, out );
 
               // 3. Cache.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - -
                 NodeCacheF.stators.save( f.nodeCache, out );
             }
         });
@@ -120,9 +120,9 @@ public final class Forest implements PeersReceiver
 
 
 
-    /** The current cache of nodes that defines the forest structure.  The cache is never cleared but
-      * may be wholly replaced at any time.  Each replacement is signalled by the {@linkplain
-      * ForestCache#nodeCacheBell() node cache bell}.
+    /** The cache of nodes that defines the forest structure.  No content is ever removed or replaced,
+      * but the whole cache may be replaced at any time by an instance with different content.  Each
+      * replacement will be signalled by the {@linkplain ForestCache#nodeCacheBell() node cache bell}.
       */
     public NodeCache nodeCache() { return nodeCache; }
 
@@ -157,7 +157,7 @@ public final class Forest implements PeersReceiver
     public @ThreadSafe void receivePeersResponse( final Object _in )
     {
       // Decode the default response, pending real server counts.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         class Request
         {
             final VotingID rootwardID = (VotingID)_in;
@@ -180,7 +180,7 @@ public final class Forest implements PeersReceiver
                   */
 
               // Get candidate from node cache.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - - -
                 final UnadjustedNodeV candidateUna;
                 {
                     final UnadjustedNode node = nodeCache.nodeMap.get( req.rootwardID );
@@ -198,7 +198,7 @@ public final class Forest implements PeersReceiver
                   // obsolete response, voters now insufficiently extended (gap versus req.peersStart)
 
               // Extend with unadjusted voters from response.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - - - - - - - - - -
                 boolean isChanged = false; // so far
                 /* * *
                 - for each peer in response
@@ -253,7 +253,7 @@ public final class Forest implements PeersReceiver
                 }
 
               // Extend with any adjusted voters from precount.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              // - - - - - - - - - - - - - - - - - - - - - - - -
                 precount: if( votersNextOrdinal == 0 ) // this is initial extension covering major voters
                 {
                     assert candidateUna.votersNextOrdinal() != 0; // will do just once
@@ -417,12 +417,12 @@ public final class Forest implements PeersReceiver
                 public void save( final NodeCacheF nodeCache, final Parcel out )
                 {
                   // 1. Unadjusted nodes.
-                  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                  // - - - - - - - - - - -
                     final UnadjustedGround groundUna = nodeCache.groundUna;
                     UnadjustedGround.stators.save( groundUna, out, nodeCache );
 
                   // 2. Precount nodes.
-                  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                  // - - - - - - - - - -
                     final PrecountGround groundPre = groundUna.precounted();
                     if( groundPre != null ) PrecountGround.stators.save( groundPre, out, nodeCache );
                       // else cache constructed without precount adjustments

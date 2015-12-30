@@ -4,14 +4,13 @@ import java.util.*;
 import waymaker.gen.*;
 
 
-/** An agent to move incrementally through the {@linkplain Wayranging#forests() forests}.  It positions
-  * among the forests as {@linkplain #forest() forest}, {@linkplain #node() node} and {@linkplain
-  * #candidate() candidate}.  It moves within a given forest by the following methods:
+/** A position controller for forest views.  It declares a {@linkplain #forest() forest} variable that
+  * automatically tracks the {@linkplain Wayranging#pollNamer poll namer}, and a {@linkplain #position()
+  * nodal position} within the forest that obeys the following controls:
   *
   * <ul>
-  *     <li>{@linkplain #ascendToVoter(Node) ascendToVoter}</li>
-  *     <li>{@linkplain #moveToPeer(Node) moveToPeer}</li>
-  *     <li>{@linkplain #descendToCandidate() descendToCandidate}</li>
+  *     <li>{@linkplain #ascendTo(Node) ascendTo}</li>
+  *     <li>{@linkplain #descend() descend}</li>
   *     </ul>
   */
 public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
@@ -58,20 +57,18 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
 
 
 
-    /** Commands this forester to step leafward to one of the immediate voters of the specific node,
-      * viz. one of node.voters.  This changes the value of {@linkplain #node() node} and {@linkplain
-      * #candidate() candidate}.
+    /** Commands this forester to step leafward to one of the immediate ‘voters’ of the nodal position,
+      * viz. one of position.voters.  This changes the value of {@linkplain #position() position}.
       *
-      *     @param target The voter to move to.
+      *     @param _position The new position to move to.
       *
-      *     @throws NoSuchElementException if the specific node is null, or the target is not among its
-      *       immediate voters.
+      *     @throws NoSuchElementException if _position is not in position.voters.
       */
-    public void ascendToVoter( Node target ) { throw new UnsupportedOperationException(); }
+    public void ascendTo( Node _position ) { throw new UnsupportedOperationException(); }
 
 
 
-    /** A bell that rings when this forester moves or experiences a node cache change.
+    /** A bell that rings when this forester moves or replaces its node cache.
       */
     public Bell<Changed> bell() { return bell; }
 
@@ -80,27 +77,12 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
 
 
 
-    /** The general node at which this forester is positioned, directly rootward of any specific node
-      * ({@linkplain #node() node}).  Any change in the return value will be signalled by the
-      * {@linkplain #bell() bell}.  The value is identical to node.rootwardInPrecount.candidate when
-      * node is non-null, and is never itself null.
+    /** Commands this forester to move down to position.rootwardInPrecount.  This changes the value of
+      * {@linkplain #position() position}.
       *
-      *     @return Either a real node or the {@linkplain NodeCache#ground() ground pseudo-node}.
+      *     @throws NoSuchElementException if the position is already grounded.
       */
-    public Node candidate() { return candidate; }
-
-
-        private Node candidate;
-
-
-
-    /** Commands this forester to step down the path candidate.rootwardInPrecount.  This changes the
-      * value of {@linkplain #candidate() candidate}.
-      *
-      *     @throws NoSuchElementException if the candidate is the
-      *       {@linkplain NodeCache#ground() ground pseudo-node}.
-      */
-    public void descendToCandidate() { throw new UnsupportedOperationException(); }
+    public void descend() { throw new UnsupportedOperationException(); }
 
 
 
@@ -115,34 +97,19 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
 
 
 
-    /** Commands this forester to move laterally to one of the peers of the specific node, viz. one of
-      * candidate.voters, or to unspecify the node.  This changes the value of the {@linkplain #node()
-      * node}.
-      *
-      *     @param target The peer to move to, or null to unspecify the node.
-      *
-      *     @throws NoSuchElementException if the target is not null, and not among the immediate voters
-      *       of the candidate.
+    /** The height of this forester above ground.  This is the number of nodes on the path
+      * position.rootwardInPrecount, or zero if the position is ground,
       */
-    public void moveToPeer( Node target ) { throw new UnsupportedOperationException(); }
+    public int height() { return height; }
+
+
+        private int height;
 
 
 
-    /** The specific node at which this forester is positioned, or null if the node is unspecified.  Any
-      * change in the return value will be signalled by the {@linkplain #bell() bell}.  The general node
-      * ({@linkplain #candidate() candidate}) is always non-null regardless.  When the specific node is
-      * null and the candidate is ground, then the forester is said to be ‘grounded’ at the default
-      * position.
-      */
-    public Node node() { return node; }
-
-
-        private Node node;
-
-
-
-    /** The cache of nodes that now defines the forest structure.  Any change in the return value to a
-      * different cache instance will be signalled by the {@linkplain #bell() bell}.
+    /** The cache of nodes that defines the forest structure.  No content is ever removed or replaced,
+      * but the whole cache may be replaced at any time by an instance with different content.  Each
+      * replacement will be signalled by the {@linkplain #bell() bell}.
       */
     public NodeCache nodeCache() { return nodeCache; }
 
@@ -150,12 +117,25 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
         private NodeCache nodeCache; // may temporarily lag forest.nodeCache instance till change reaches here
 
 
-        private final @Warning("init call") void nodeCache( final NodeCache _nodeCache )
+        private void nodeCache( final NodeCache _nodeCache )
         {
             nodeCache = _nodeCache;
-            candidate = _nodeCache.ground(); // pending code to position from "concrete" node of waypath
-            node = null;
+            position = _nodeCache.ground(); // pending code to position from "concrete" node of waypath
+            height = 0;
         }
+
+
+
+    /** The nodal position of this forester within the forest.  Any change in the return value will be
+      * signalled by the {@linkplain #bell() bell}.  When the position is ground, then the forester is
+      * said to be ‘grounded’ at the default position.
+      *
+      *     @return Either a real node or the {@linkplain NodeCache#ground() ground pseudo-node}.
+      */
+    public Node position() { return position; }
+
+
+        private Node position;
 
 
 }
