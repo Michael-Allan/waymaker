@@ -236,9 +236,9 @@ public final class PrecountNode1 extends PrecountNode
 
 
 
-    /** @param effectiveGroundID The identifier of the effective ground for the change, which must
+    /** @param effectiveGroundID The identity of the effective ground for the change, which must
       *    either be null, or be obtained from another node in the same cache.  It is tested for
-      *    equality with candidate identifiers using the == operator.  Do not call this method if the
+      *    equality with candidate identity tags using the == operator.  Do not call this method if the
       *    effective ground is this node itself; that is an unexpected no-op case.
       */
     private void registerInflowChange( final int inflowChange, final VotingID effectiveGroundID )

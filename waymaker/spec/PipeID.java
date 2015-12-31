@@ -1,9 +1,9 @@
 package waymaker.spec; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
 
-/** A universally unique identifier for a pipe.
+/** A universally decisive identity tag for a pipe.
   */
-public final class PipeID extends UUID implements VotingID
+public final class PipeID extends UDID implements VotingID
 {
 
     private static final long serialVersionUID = 0L;
@@ -11,7 +11,7 @@ public final class PipeID extends UUID implements VotingID
 ///////
 
 
-    /** Constructs a PipeID by parsing an identifier in basic, {@linkplain
+    /** Constructs a PipeID by parsing an identity tag in basic, {@linkplain
       * #toTriSerialString(StringBuilder) unscoped string form}.
       *
       *     @see #toTriSerialScopedString(StringBuilder)
@@ -24,7 +24,7 @@ public final class PipeID extends UUID implements VotingID
 
 
     /** Constructs a PipeID by adopting a byte array that encodes its serial numbers.  The new
-      * identifier will thenceforth own the given array; do not alter its contents.
+      * identity tag will thenceforth own the given array; do not alter its contents.
       *
       *     @see #numericBytes()
       */
@@ -32,7 +32,7 @@ public final class PipeID extends UUID implements VotingID
 
 
 
-    /** Constructs a PipeID by parsing an identifier in basic, {@linkplain
+    /** Constructs a PipeID by parsing an identity tag in basic, {@linkplain
       * #toTriSerialString(StringBuilder) unscoped string form}.
       *
       *     @param _cN The length of the substring to parse, beginning at index 0 in the string.
@@ -42,13 +42,13 @@ public final class PipeID extends UUID implements VotingID
 
 
 
-   // - T r i - S e r i a l - U U I D ------------------------------------------------------------------
+   // - T r i - S e r i a l - U D I D ------------------------------------------------------------------
 
 
     public String scope() { return SCOPE; }
 
 
-        /** The nominal scope of uniqueness for a pipe identifier, which is {@value}.  When comparing
+        /** The nominal scope of decision for a pipe ID, which is {@value}.  When comparing
           * SCOPE and {@linkplain #scope() scope}, the == operator is effectively the same as the
           * {@linkplain #equals(Object) equals} method.
           */
@@ -59,7 +59,7 @@ public final class PipeID extends UUID implements VotingID
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-   // - U U I D ----------------------------------------------------------------------------------------
+   // - U D I D ----------------------------------------------------------------------------------------
 
 
     byte scopeByte() { return SCOPE_BYTE; }

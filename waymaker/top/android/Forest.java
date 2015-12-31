@@ -139,7 +139,7 @@ public final class Forest implements PeersReceiver
 
 
 
-    /** The identifier of the poll that was counted to form this forest.  It also identifies the forest.
+    /** The identity of the poll that was counted to form this forest.  It also identifies the forest.
       */
     public String pollName() { return pollName; }
 
@@ -370,7 +370,7 @@ public final class Forest implements PeersReceiver
         }
 
 
-        /** A map of all cached nodes including the ground pseudo-node, each keyed by its identifier.
+        /** A map of all cached nodes including the ground pseudo-node, each keyed by its identity tag.
           */
         private final HashMap<VotingID,UnadjustedNode> nodeMap;
           // content persisted by groundUna stator via node stators

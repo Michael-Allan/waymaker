@@ -4,7 +4,7 @@ import java.util.Arrays;
 import waymaker.gen.ThreadSafe;
 
 
-/** The implementation of a tri-serial identifier.
+/** The implementation of a tri-serial identity tag.
   */
 public @ThreadSafe class ID implements TriSerialID
 {
@@ -14,7 +14,7 @@ public @ThreadSafe class ID implements TriSerialID
 ///////
 
 
-    /** Constructs an ID by adopting a byte array that encodes its serial numbers.  The new identifier
+    /** Constructs an ID by adopting a byte array that encodes its serial numbers.  The new identity tag
       * will thenceforth own the given array; do not alter its contents.
       *
       *     @see #numericBytes()
@@ -23,7 +23,7 @@ public @ThreadSafe class ID implements TriSerialID
 
 
 
-    /** Constructs an ID by parsing an identifier in {@linkplain #toTriSerialString(StringBuilder)
+    /** Constructs an ID by parsing an identity tag in {@linkplain #toTriSerialString(StringBuilder)
       * string form}.
       *
       *     @param cN The length of the substring to parse, beginning at index 0 in the string.
@@ -142,7 +142,7 @@ public @ThreadSafe class ID implements TriSerialID
    // - O b j e c t ------------------------------------------------------------------------------------
 
 
-    /** Answers whether o has a class of ID, and the same serial numbers as this identifier.
+    /** Answers whether o has a class of ID, and the same serial numbers as this identity tag.
       */
     public @Override boolean equals( final Object o )
     {
@@ -151,15 +151,15 @@ public @ThreadSafe class ID implements TriSerialID
         if( o == null ) return false;
 
         if( !o.getClass().equals( ID.class )) return false;
-          // Merely testing instanceof would allow this ID to equal a UUID.  That would be asymmetric if
-          // this ID not subclassed, but just an unscoped ID, because no UUID can equal an unscoped ID.
+          // Merely testing instanceof would allow this ID to equal a UDID.  That would be asymmetric if
+          // this ID not subclassed, but just an unscoped ID, because no UDID can equal an unscoped ID.
 
         return equalsNumerically( (ID)o );
     }
 
 
 
-    /** Derives a hash code from the instance number of this identifier.
+    /** Derives a hash code from the instance number of this identity tag.
       */
     public final @Override int hashCode()
     {
@@ -172,7 +172,7 @@ public @ThreadSafe class ID implements TriSerialID
 
 
 
-    /** Outputs the tri-serial string form of this identifier.
+    /** Outputs the tri-serial string form of this identity tag.
       */
     public @Override String toString()
     {
@@ -186,8 +186,8 @@ public @ThreadSafe class ID implements TriSerialID
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
- // /** A comparator that sorts identifiers by their serial numbers and class names.  It accepts null
- //   * identifiers.
+ // /** A comparator that sorts identity tags by their serial numbers and class names.  It accepts null
+ //   * identity tags.
  //   */
  // static final Comparator<ID> comparatorNumerical = new Comparator<ID>()
  // {
@@ -213,10 +213,10 @@ public @ThreadSafe class ID implements TriSerialID
 
 
 
-    /** Compares this identifier to jID based on its serial numbers.  Does no preliminary "jID == this"
+    /** Compares this identity tag to jID based on its serial numbers.  Does no preliminary "jID == this"
       * short cutting, but instead lets the caller do that.
       *
-      *     @return A negative number, zero, or a positive number as this identifier is less less than,
+      *     @return A negative number, zero, or a positive number as this identity tag is less less than,
       *       equal to, or greater than jID.
       *     @throws NullPointerException if jID is null.
       *
@@ -227,7 +227,7 @@ public @ThreadSafe class ID implements TriSerialID
         final byte[] jBytes = jID.numericBytes;
         if( numericBytes == jBytes ) return 0;
 
-        // (i) this identifier, and (j) other
+        // (i) this identity tag, and (j) other
         final int iSA2End = numericBytes.length - 1; // end bound (index of last+1) in sub-array 2
         final int jSA2End =       jBytes.length - 1;
         final int iSA1N = numericBytes[iSA2End] - SA1N_ENCODER; // end bound in sub-array 1, start index in 2
@@ -274,7 +274,7 @@ public @ThreadSafe class ID implements TriSerialID
 
 
 
-    /** Answers whether this identifier has the same serial numbers as oID.  This method will usually
+    /** Answers whether this identity tag has the same serial numbers as oID.  This method will usually
       * answer faster than compareNumerically because it tests in reverse beginning with the instance
       * number, which is more likely to differ.  Does no preliminary "oID == this" short cutting, but
       * instead lets the caller do that.
@@ -299,7 +299,7 @@ public @ThreadSafe class ID implements TriSerialID
 
 
 
-    /** The serial numbers of this identifier together encoded as a byte array.  Do not modify it.
+    /** The serial numbers of this identity tag together encoded as a byte array.  Do not modify it.
       */
     byte[] numericBytes() { return numericBytes; }
 
@@ -391,7 +391,7 @@ public @ThreadSafe class ID implements TriSerialID
                                 - the larger "Digital Object Architecture" surrounding it looks shaky
                                     - it should be applicable to waymaking
                                         - both based on the storage of object data as "discrete data structures
-                                          with unique, resolvable identifiers"
+                                          with unique, resolvable identity tags"
                                             ( http://www.dorepository.org/
                                     - but the DOA form is clumsy in comparison with my repocasters
                                         ( http://www.dorepository.org/documentation/RepositoryJavaAPIDocumentation.html
@@ -416,13 +416,13 @@ public @ThreadSafe class ID implements TriSerialID
             - only a master rep bindery (typically remote) can validate a new tri-serial ID by binding it
             - vetting criteria will include testing the domain serial vs. requestor domain
               to ensure that the requestor is registered
-        - reserved identifiers
+        - reserved serial numbers
             - domain serial 0 is reserved for network use
           / - standard 0 generators are:
           /     [ 00p-INSTANCE
           /         ( referring to poll (p), not issue, per waymaker/gen/poll
           /         - reserved for issues
-          /             - all issues have an identifier in this form
+          /             - all issues have an identity tag in this form
           /                 ( examples: 00p-0 | 00p-torM
           /         - the instance serial number is largely unregulated in this case
           /             - i.e. collision avoidance is not enforced

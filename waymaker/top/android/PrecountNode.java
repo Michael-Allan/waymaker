@@ -152,14 +152,14 @@ public abstract class PrecountNode implements Node
 
     /** Returns the identified precount node from the cache; or a newly constructed and cached one,
       * which may entail connecting to the remote count server; or null if _votedID is discovered to be the
-      * identifier of the current vote.
+      * identity tag of the current vote.
       *
       *     @param toForceNode Ensures that the node is cached.  If missing from the original,
       *       unadjusted count, then toForceNode will construct and cache it.  This is done even if the
       *       vote is unchanged (_votedID is null) and consequently this method will return null (see
       *       _votedID below).
-      *     @param _votedID An identifier that might differ from that of the current vote.  If actually
-      *       the identifiers are discovered to be identical, then this method returns null.
+      *     @param _votedID An identity tag that might differ from that of the current vote.  If the
+      *       tags are discovered actually to be equal, then this method returns null.
       */
     public static PrecountNode getOrMakeIfVoteChanged( final VotingID id, final Precounter precounter,
       final boolean toForceNode, final VotingID _votedID )
@@ -390,7 +390,7 @@ public abstract class PrecountNode implements Node
           *     @see RootwardCast#votedID()
           *
           *     @throws AssertionError if assertions are enabled and the vote change would be redundant,
-          *       votedID being the identifier of the current vote.  The caller is expected to guard
+          *       votedID being the identity of the current vote.  The caller is expected to guard
           *       against such an inefficient call.
           *     @throws UnsupportedOperationException if this node is the ground.
           */
@@ -423,7 +423,7 @@ public abstract class PrecountNode implements Node
 
                       // 1a. Voter ID.
                       // - - - - - - - -
-                        AndroidXID.writeUUID( voter.id(), out );
+                        AndroidXID.writeUDID( voter.id(), out );
                         if( voter.getClass().equals( PrecountNode1.class ))
                         {
                           // 1b. Is voter a precount voter?
@@ -458,7 +458,7 @@ public abstract class PrecountNode implements Node
 
                       // 2a. Voter ID.
                       // - - - - - - - -
-                        AndroidXID.writeUUID( voter.id(), out );
+                        AndroidXID.writeUDID( voter.id(), out );
 
                       // 2b. Is its unadjusted counterpart empty?
                       // - - - - - - - - - - - - - - - - - - - - -
@@ -470,7 +470,7 @@ public abstract class PrecountNode implements Node
                         node.saveVoter( voter, out, kit );
                     }
                 }
-                AndroidXID.writeUUIDNull( out ); // mark the end of this node's outlying voters
+                AndroidXID.writeUDIDNull( out ); // mark the end of this node's outlying voters
             }
 
             public void restore( final PrecountNode node, final Parcel in, final RKit kit )
@@ -488,7 +488,7 @@ public abstract class PrecountNode implements Node
                     {
                       // 1a.
                       // - - -
-                        final VotingID id = (VotingID)AndroidXID.readUUID( in );
+                        final VotingID id = (VotingID)AndroidXID.readUDID( in );
 
                       // 1b.
                       // - - -
@@ -513,7 +513,7 @@ public abstract class PrecountNode implements Node
 
               // 2.
               // - - -
-                VotingID id = (VotingID)AndroidXID.readUUIDOrNull( in );
+                VotingID id = (VotingID)AndroidXID.readUDIDOrNull( in );
                 if( id == null ) return; // no outlying voters
 
                 final RootwardCast<PrecountNode> rootwardHither = node.rootwardHither_getOrMake();
@@ -529,7 +529,7 @@ public abstract class PrecountNode implements Node
 
                   // 2a.
                   // - - -
-                    id = (VotingID)AndroidXID.readUUIDOrNull( in );
+                    id = (VotingID)AndroidXID.readUDIDOrNull( in );
                 }
                 while( id != null );
             }

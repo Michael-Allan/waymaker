@@ -3,9 +3,9 @@ package waymaker.spec; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 import java.util.Comparator;
 
 
-/** A universally unique, tri-serial identifier.
+/** The implementation of a universally decisive, tri-serial identity tag.
   */
-public abstract class UUID extends ID implements TriSerialUUID
+public abstract class UDID extends ID implements TriSerialUDID
 {
 
     private static final long serialVersionUID = 0L;
@@ -13,34 +13,34 @@ public abstract class UUID extends ID implements TriSerialUUID
 ///////
 
 
-    /** Super-constructs a UUID by adopting a byte array that encodes its serial numbers.  The new
-      * identifier will thenceforth own the given array; do not alter its contents.
+    /** Super-constructs a UDID by adopting a byte array that encodes its serial numbers.  The new
+      * identity tag will thenceforth own the given array; do not alter its contents.
       *
       *     @see #numericBytes()
       */
-    UUID( byte[] _numericBytes ) { super( _numericBytes ); }
+    UDID( byte[] _numericBytes ) { super( _numericBytes ); }
 
 
 
-    /** Super-constructs a UUID by parsing an identifier in basic, {@linkplain
+    /** Super-constructs a UDID by parsing an identity tag in basic, {@linkplain
       * #toTriSerialString(StringBuilder) unscoped string form}.
       *
       *     @param _cN The length of the substring to parse, beginning at index 0 in the string.
       *     @see #toTriSerialScopedString(StringBuilder)
       */
-    UUID( String _string, int _cN ) throws MalformedID { super( _string, _cN ); }
+    UDID( String _string, int _cN ) throws MalformedID { super( _string, _cN ); }
 
 
 
    // --------------------------------------------------------------------------------------------------
 
 
-    /** A comparator based on the {@linkplain #compareUniversally(TriSerialUUID) universal comparison}.
-      * It accepts null identifiers.
+    /** A comparator based on the {@linkplain #compareUniversally(TriSerialUDID) universal comparison}.
+      * It accepts null identity tags.
       */
-    public static final Comparator<TriSerialUUID> comparatorUniversal = new Comparator<TriSerialUUID>()
+    public static final Comparator<TriSerialUDID> comparatorUniversal = new Comparator<TriSerialUDID>()
     {
-        public int compare( final TriSerialUUID i, final TriSerialUUID j )
+        public int compare( final TriSerialUDID i, final TriSerialUDID j )
         {
             if( i == j ) return 0; // short cut, optimizing for a common case
 
@@ -48,16 +48,16 @@ public abstract class UUID extends ID implements TriSerialUUID
 
             if( j == null ) return 1;
 
-            return ((UUID)i).compareUniversally( j );
+            return ((UDID)i).compareUniversally( j );
         }
     };
 
 
 
-    /** Constructs a UUID by parsing an identifier in {@linkplain
+    /** Constructs a UDID by parsing an identity tag in {@linkplain
       * #toTriSerialScopedString(StringBuilder) scoped string form}.
       */
-    public static UUID make( final String scopedString ) throws MalformedID
+    public static UDID make( final String scopedString ) throws MalformedID
     {
         final int cLast = scopedString.length() - 1;
         final char charLast = scopedString.charAt( cLast );
@@ -91,10 +91,10 @@ public abstract class UUID extends ID implements TriSerialUUID
    // - C o m p a r a b l e ----------------------------------------------------------------------------
 
 
-    /** Compares this identifier to the other based on the {@linkplain
-      * #compareUniversally(TriSerialUUID) universal comparison}.
+    /** Compares this identity tag to the other based on the {@linkplain
+      * #compareUniversally(TriSerialUDID) universal comparison}.
       */
-    public final int compareTo( final TriSerialUUID other )
+    public final int compareTo( final TriSerialUDID other )
     {
         if( other == this ) return 0; // short cut, optimizing for a common case
 
@@ -110,12 +110,12 @@ public abstract class UUID extends ID implements TriSerialUUID
     {
         if( o == this ) return true;
 
-        if( !(o instanceof TriSerialUUID) /*or if null*/ ) return false;
+        if( !(o instanceof TriSerialUDID) /*or if null*/ ) return false;
 
-        final UUID oUUID = (UUID)o; // all TriSerialUUID implemented as UUID
-        if( scopeByte() != oUUID.scopeByte() ) return false;
+        final UDID oUDID = (UDID)o; // all TriSerialUDID implemented as UDID
+        if( scopeByte() != oUDID.scopeByte() ) return false;
 
-        return equalsNumerically( oUUID );
+        return equalsNumerically( oUDID );
     }
 
 
@@ -134,16 +134,16 @@ public abstract class UUID extends ID implements TriSerialUUID
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    /** Compares this identifier to the other based on both its scope and serial numbers.  Does no
+    /** Compares this identity tag to the other based on both its scope and serial numbers.  Does no
       * preliminary "other == this" short cutting, but instead lets the caller do that.
       *
-      *     @return A negative number, zero, or a positive number as this identifier is less less than,
+      *     @return A negative number, zero, or a positive number as this identity tag is less less than,
       *       equal to, or greater than the other.
       *     @throws NullPointerException if other is null.
       */
-    final int compareUniversally( final TriSerialUUID _other )
+    final int compareUniversally( final TriSerialUDID _other )
     {
-        final UUID other = (UUID)_other; // gain accesss to package-protected scopeByte for faster comparison
+        final UDID other = (UDID)_other; // gain accesss to package-protected scopeByte for faster comparison
         int result = Byte.compare( scopeByte(), other.scopeByte() ); // or throws NullPointerException
         assert Integer.signum(result) == Integer.signum(scope().compareTo(other.scope()));
           // byte-form comparisons are consistent with name form, as name alone is canonical
@@ -153,15 +153,15 @@ public abstract class UUID extends ID implements TriSerialUUID
 
 
 
-    /** Constructs a UUID by adopting a byte array that encodes its serial numbers.  The new identifier
+    /** Constructs a UDID by adopting a byte array that encodes its serial numbers.  The new identity tag
       * will thenceforth own the given array; do not alter its contents.
       *
       *     @see #scopeByte()
       *     @see #numericBytes()
       */
-    static UUID make( final byte scopeByte, final byte[] numericBytes )
+    static UDID make( final byte scopeByte, final byte[] numericBytes )
     {
-        final UUID id;
+        final UDID id;
         if( scopeByte == PipeID.SCOPE_BYTE ) id = new PipeID( numericBytes );
         else if( scopeByte == PersonID.SCOPE_BYTE ) id = new PersonID( numericBytes );
         else throw new IllegalArgumentException( "Bad scope byte: " + scopeByte );
@@ -171,13 +171,13 @@ public abstract class UUID extends ID implements TriSerialUUID
 
 
 
-    /** The encoded value of the {@linkplain #scope() scope} for this identifier in the current version
+    /** The encoded value of the {@linkplain #scope() scope} for this identity tag in the current version
       * of the software.  It may change in a future version.
       */
-    abstract byte scopeByte(); // for sake of speedy, short term serialization, as in AndroidXID.writeUUID
+    abstract byte scopeByte(); // for sake of speedy, short term serialization, as in AndroidXID.writeUDID
 
 
-        /** The encoded form of the scope for a null identifier in this version of the software.
+        /** The encoded form of the scope for a null identity tag in this version of the software.
           */
         static final byte SCOPE_BYTE_NULL = -1; // start of sequence, continues lexically with PersonID
 

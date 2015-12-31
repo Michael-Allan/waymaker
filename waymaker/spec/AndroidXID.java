@@ -4,7 +4,7 @@ import android.os.Parcel;
 import waymaker.gen.ThreadSafe;
 
 
-/** Utilities for working with identifiers in Android applications.
+/** Utilities for working with identity tags in Android applications.
   */
 public @ThreadSafe final class AndroidXID
 {
@@ -13,54 +13,54 @@ public @ThreadSafe final class AndroidXID
 
 
 
-    /** Reads an identifier from a parcel.
+    /** Reads an identity tag from a parcel.
       */
-    public static TriSerialUUID readUUID( final Parcel in )
+    public static TriSerialUDID readUDID( final Parcel in )
     {
-        return UUID.make( in.readByte(), in.createByteArray() );
+        return UDID.make( in.readByte(), in.createByteArray() );
     }
 
 
 
-    /** Reads an identifier or null from a parcel.
+    /** Reads an identity tag or null from a parcel.
       *
-      *     @return The identifier or null.
+      *     @return The identity tag or null.
       */
-    public static TriSerialUUID readUUIDOrNull( final Parcel in )
+    public static TriSerialUDID readUDIDOrNull( final Parcel in )
     {
         final byte scopeByte = in.readByte();
-        if( scopeByte == UUID.SCOPE_BYTE_NULL ) return null;
+        if( scopeByte == UDID.SCOPE_BYTE_NULL ) return null;
 
-        return UUID.make( scopeByte, in.createByteArray() );
+        return UDID.make( scopeByte, in.createByteArray() );
     }
 
 
 
-    /** Writes an identifier to a parcel.
+    /** Writes an identity tag to a parcel.
       */
-    public static void writeUUID( final TriSerialUUID _uuid, final Parcel out )
+    public static void writeUDID( final TriSerialUDID _udid, final Parcel out )
     {
-        final UUID uuid = (UUID)_uuid; // gain access to package-protected members
-        out.writeByte( uuid.scopeByte() );
-        out.writeByteArray( uuid.numericBytes() );
+        final UDID udid = (UDID)_udid; // gain access to package-protected members
+        out.writeByte( udid.scopeByte() );
+        out.writeByteArray( udid.numericBytes() );
     }
 
 
 
-    /** Writes a null identifier to a parcel.
+    /** Writes a null identity tag to a parcel.
       */
-    public static void writeUUIDNull( final Parcel out ) { out.writeByte( UUID.SCOPE_BYTE_NULL ); }
+    public static void writeUDIDNull( final Parcel out ) { out.writeByte( UDID.SCOPE_BYTE_NULL ); }
 
 
 
-    /** Writes an identifier or null to a parcel.
+    /** Writes an identity tag or null to a parcel.
       *
-      *     @param _uuid The identifier or null.
+      *     @param _udid The identity or null.
       */
-    public static void writeUUIDOrNull( final TriSerialUUID _uuid, final Parcel out )
+    public static void writeUDIDOrNull( final TriSerialUDID _udid, final Parcel out )
     {
-        if( _uuid == null ) out.writeByte( UUID.SCOPE_BYTE_NULL );
-        else writeUUID( _uuid, out );
+        if( _udid == null ) out.writeByte( UDID.SCOPE_BYTE_NULL );
+        else writeUDID( _udid, out );
     }
 
 

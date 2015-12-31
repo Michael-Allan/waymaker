@@ -31,7 +31,7 @@ public final class PrecountGround extends PrecountNode
     {
       // a. Vote.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        AndroidXID.writeUUIDOrNull( voter.rootwardInThis().votedID(), out );
+        AndroidXID.writeUDIDOrNull( voter.rootwardInThis().votedID(), out );
 
       // b. Voter.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +45,7 @@ public final class PrecountGround extends PrecountNode
     {
       // a.
       // - - -
-        final VotingID votedID = (VotingID)AndroidXID.readUUIDOrNull( in );
+        final VotingID votedID = (VotingID)AndroidXID.readUDIDOrNull( in );
         final RootwardCast<PrecountNode> cast;
         if( votedID == null ) cast = rootwardHither; // voter is actually a non-voter
         else cast = new RootwardCastB<PrecountNode>( this, votedID ); // voter is barred

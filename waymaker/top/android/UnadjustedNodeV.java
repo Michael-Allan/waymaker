@@ -41,7 +41,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
     {
       // a. Voter ID.
       // - - - - - - -
-        AndroidXID.writeUUID( voter.id(), out );
+        AndroidXID.writeUDID( voter.id(), out );
 
       // b. Voter ordinal.
       // - - - - - - - - - -
@@ -125,7 +125,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
                 {
                     if( voter.rootwardInThis().candidate() == node ) { node.saveVoter( voter, out, kit ); }
                 }
-                AndroidXID.writeUUIDNull( out ); // mark the end of this node's outlying voters
+                AndroidXID.writeUDIDNull( out ); // mark the end of this node's outlying voters
             }
 
             public void restore( final UnadjustedNodeV node, final Parcel in, final RKit kit )
@@ -142,7 +142,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
                     {
                       // a.
                       // - - -
-                        final VotingID id = (VotingID)AndroidXID.readUUID( in );
+                        final VotingID id = (VotingID)AndroidXID.readUDID( in );
 
                       // - - -
                         inlyingVoters[v++] = node.restoreVoter( id, in, kit, rootwardHither );
@@ -153,7 +153,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
               // 2.
               // - - -
-                VotingID id = (VotingID)AndroidXID.readUUIDOrNull( in );
+                VotingID id = (VotingID)AndroidXID.readUDIDOrNull( in );
                 if( id == null ) return; // no outlying voters
 
                 final RootwardCast<UnadjustedNode> rootwardHither = node.rootwardHither_getOrMake();
@@ -163,7 +163,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
                   // a.
                   // - - -
-                    id = (VotingID)AndroidXID.readUUIDOrNull( in );
+                    id = (VotingID)AndroidXID.readUDIDOrNull( in );
                 }
                 while( id != null );
             }

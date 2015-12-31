@@ -183,7 +183,7 @@ if( !waymaker.Waymaker ) {
 
 
 
-    /** The OS identifier, which is either 'mac', 'win' or 'nix'.  The latter means the OS
+    /** The OS identity tag, which is either 'mac', 'win' or 'nix'.  The latter means the OS
       * is assumed (by default) to be a generic variant of Unix.
       *
       *     @return (String)

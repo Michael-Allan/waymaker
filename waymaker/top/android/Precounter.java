@@ -101,7 +101,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
 
 
-    /** A map of all known nodes including the ground pseudo-node, each keyed by identifier.
+    /** A map of all known nodes including the ground pseudo-node, each keyed by identity tag.
       */
     public HashMap<VotingID,UnadjustedNode> nodeMap() { return nodeMap; }
 
@@ -272,8 +272,8 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
 
 
-    /** @return Well formed identifier of voted candidate, or null if no candidate is voted.
-      * @throws CountFailure if identifier is malformed, or identifies self.
+    /** @return Well formed identity tag of voted candidate, or null if no candidate is voted.
+      * @throws CountFailure if identity tag is malformed, or identifies self.
       */
     private VotingID parsePosition( final VotingID voterID, final String docID, final WayrepoReader inWr )
       throws CountFailure, MalformedID
@@ -292,10 +292,10 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
             {
                 if( t != START_TAG || !"vote".equals(p.getName()) ) continue;
 
-                final String uuidString = p.getAttributeValue( null, "candidate" );
-                if( uuidString != null )
+                final String udidString = p.getAttributeValue( null, "candidate" );
+                if( udidString != null )
                 {
-                    candidateID = (VotingID)UUID.make( uuidString );
+                    candidateID = (VotingID)UDID.make( udidString );
                     if( candidateID.equals( voterID ))
                     {
                         throw new CountFailure( "Self voting " + voterID + " in file " + docID );

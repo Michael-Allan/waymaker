@@ -12,7 +12,7 @@ public interface Node
 
 
     /** A comparator that sorts nodes by {@linkplain #peerOrdinal() peer ordinal} (low to high), then by
-      * vote inflow (high to low), and finally {@linkplain UUID#comparatorUniversal by identifier}.  It
+      * vote inflow (high to low), and finally {@linkplain UDID#comparatorUniversal by identity tag}.  It
       * is the comparator used to sort each node’s {@linkplain #voters() voter list}.  It effectively
       * places major (zero ordinal) peers in front according to their inflow, followed by minor peers
       * according to their ordinals.  This matches the order in which data pages are received from the
@@ -25,7 +25,7 @@ public interface Node
             if( n == m ) return 0; // short cut, optimizing for a common case
 
             int result = Integer.compare( n.peerOrdinal(), m.peerOrdinal() ); // or throws NullPointerException
-            if( result == 0 ) result = UUID.comparatorUniversal.compare( n.id(), m.id() );
+            if( result == 0 ) result = UDID.comparatorUniversal.compare( n.id(), m.id() );
             return result;
         }
     };
@@ -35,7 +35,7 @@ public interface Node
    // - N o d e ----------------------------------------------------------------------------------------
 
 
-    /** The identifier of the actor who holds this node, or null if this node is the {@linkplain
+    /** The identity of the actor who holds this node, or null if this node is the {@linkplain
       * NodeCache#ground() ground node}.
       */
     public VotingID id();

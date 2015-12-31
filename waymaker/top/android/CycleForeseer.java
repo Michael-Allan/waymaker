@@ -11,7 +11,7 @@ public final class CycleForeseer implements AutoCloseable
 
     /** The node on the cyclic path to be {@linkplain RootwardCast#isBarred() barred} by the
       * proposed cast, or null if no cycle was detected.  It is the node with the {@linkplain
-      * waymaker.spec.TriSerialUUID#compareTo(Object) highest identifier} in the cycle.
+      * waymaker.spec.TriSerialUDID#compareTo(Object) highest identity tag} in the cycle.
       */
     public PrecountNode1 barNode() { return barNode; }
 
@@ -50,7 +50,7 @@ public final class CycleForeseer implements AutoCloseable
       * silently fail.  A simple form of insurance is to first uncast the origin.</p>
       *
       *     @param o The node ("origin") that would cast the proposed vote.
-      *     @param oVotedID The proposed {@linkplain RootwardCast#votedID() voted identifier},
+      *     @param oVotedID The proposed {@linkplain RootwardCast#votedID() voted identity tag},
       *       identifying the chosen candidate.
       *
       *     @throws IllegalStateException if this foreseer is already open.

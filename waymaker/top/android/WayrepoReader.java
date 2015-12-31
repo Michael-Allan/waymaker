@@ -42,9 +42,9 @@ public final class WayrepoReader implements java.io.Closeable
    // --------------------------------------------------------------------------------------------------
 
 
-    /** Returns the document identifier of the named directory, or null if the directory is not found.
+    /** Returns the document ID of the named directory, or null if the directory is not found.
       *
-      *     @param parentID The document identifier of the parent.
+      *     @param parentID The document ID of the parent.
       */
     public String findDirectory( final String name, final String parentID ) throws WayrepoAccessFailure, InterruptedException
     {
@@ -66,7 +66,7 @@ public final class WayrepoReader implements java.io.Closeable
 
     /** A query projection of three formal parameters:
       * <a href='http://developer.android.com/reference/android/provider/DocumentsContract.Document.html#COLUMN_DOCUMENT_ID'
-      *  target='_top'>document identifier</a> (ID),
+      *  target='_top'>document identity tag</a> (ID),
       * <a href='http://developer.android.com/reference/android/provider/DocumentsContract.Document.html#COLUMN_DISPLAY_NAME'
       *  target='_top'>display name</a> (NAME) and
       * <a href='http://developer.android.com/reference/android/provider/DocumentsContract.Document.html#COLUMN_MIME_TYPE'
@@ -90,7 +90,7 @@ public final class WayrepoReader implements java.io.Closeable
     /** Returns an {@linkplain #proID_NAME_TYPE ID_NAME_TYPE} cursor over the children of the given
       * parent document.  Close the cursor when done with it.
       *
-      *     @param parentID The document identifier of the parent.
+      *     @param parentID The document ID of the parent.
       */
     public Cursor queryChildren( final String parentID ) throws WayrepoAccessFailure, InterruptedException
     {

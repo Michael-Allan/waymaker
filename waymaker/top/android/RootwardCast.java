@@ -53,7 +53,7 @@ public interface RootwardCast<C extends Node>
 
 
 
-    /** The identifier of the voted candidate at time of counting, which is the candidate chosen by the
+    /** The identity of the voted candidate at time of counting, which is the candidate chosen by the
       * reference; or null if the reference chose none.  The voted candidate is identical to the
       * {@linkplain #candidate() cast candidate} unless the cast {@linkplain #isBarred() is barred}.
       */

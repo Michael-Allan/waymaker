@@ -26,7 +26,7 @@ public final class UnadjustedGround extends UnadjustedNodeV
 
       // a. Voter ID.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        AndroidXID.writeUUID( voter.id(), out );
+        AndroidXID.writeUDID( voter.id(), out );
 
       // b. Voter ordinal.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,7 +34,7 @@ public final class UnadjustedGround extends UnadjustedNodeV
 
       // c. Vote.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        AndroidXID.writeUUIDOrNull( voter.rootwardInThis().votedID(), out );
+        AndroidXID.writeUDIDOrNull( voter.rootwardInThis().votedID(), out );
 
       // d. Voter.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,7 +71,7 @@ public final class UnadjustedGround extends UnadjustedNodeV
 
       // c.
       // - - -
-        final VotingID votedID = (VotingID)AndroidXID.readUUIDOrNull( in );
+        final VotingID votedID = (VotingID)AndroidXID.readUDIDOrNull( in );
         final RootwardCast<UnadjustedNode> cast;
         if( votedID == null ) cast = rootwardHither; // voter is actually a non-voter
         else cast = new RootwardCastB<UnadjustedNode>( this, votedID ); // voter is barred

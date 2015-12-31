@@ -38,7 +38,7 @@ public final @ThreadSafe class ServerCount
       * size.  Subsequent {@linkplain #enqueuePeersRequest(VotingID,PeersReceiver,int,int) range
       * requests} may be used to complete the data, as necessary.
       *
-      *     @param rootwardID The identifier of the common node immediately to the rootward of the
+      *     @param rootwardID The identity of the common node immediately to the rootward of the
       *       peers, or null if the peers themselves are roots.
       *     @param receiver The agent to handle any eventual response from the remote count server;
       *       normally this will be either the {@linkplain Forest#receivePeersResponse(Object)
@@ -90,7 +90,7 @@ public final @ThreadSafe class ServerCount
     /** Asynchronously requests the data for a range of minor peers.  The order of peers in the result
       * set is undefined.
       *
-      *     @param rootwardID The identifier of the node immediately to the rootward, or null if the
+      *     @param rootwardID The identity of the node immediately to the rootward, or null if the
       *       peers themselves are roots.
       *     @param receiver The agent to handle any eventual response from the remote count server; normally
       *       this will be either the {@linkplain Forest#receivePeersResponse(Object) forest}, or an
@@ -126,12 +126,10 @@ public final @ThreadSafe class ServerCount
       * necessary; or returns null if the node is uncounted there.
       *
       *     @see Node#id()
-      *     @param nodeMap A map of nodes keyed by voting identifier.  Any candidate in the map is
-      *       reused rather than constructed anew, while all newly constructed candidates are added to
-      *       the map.
+      *     @param nodeMap A map of nodes keyed by identity tag.  Any candidate in the map is reused
+      *       rather than constructed anew, while all newly constructed candidates are added to the map.
       *
-      *     @throws AssertionError if assertions are enabled and nodeMap already keys the given
-      *       identifier.
+      *     @throws AssertionError if assertions are enabled and nodeMap already keys the given tag.
       */
     public UnadjustedNode fetchNode( final VotingID id, final Map<VotingID,UnadjustedNode> nodeMap )
     {
