@@ -71,7 +71,29 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
             {
                 final Button button = new Button( context );
                 x.addView( button );
-                button.setText( "Change poll" );
+                button.setText( "A" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( final View src )
+                    {
+                    }
+                });
+            }
+            {
+                final Button button = new Button( context );
+                x.addView( button );
+                button.setText( "B" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( final View src )
+                    {
+                    }
+                });
+            }
+            {
+                final Button button = new Button( context );
+                x.addView( button );
+                button.setText( "C" ); // change poll
                 button.setOnClickListener( new View.OnClickListener()
                 {
                     public void onClick( final View src )
@@ -79,20 +101,6 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
                         final BelledVariable<String> pollNamer = ((Wayranging)src.getContext()).pollNamer();
                         final String otherName = "end".equals(pollNamer.get())? "wk":"end";
                         pollNamer.set( otherName );
-                    }
-                });
-            }
-            {
-                final Button button = new Button( context );
-                x.addView( button );
-                button.setText( "Extend roots" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( final View src )
-                    {
-                        final Forest forest = ((Wayranging)src.getContext()).forester().forest();
-                        new ServerCount( forest.pollName() ).
-                          enqueuePeersRequest( null/*ground*/, forest, /*paddedLimit*/0 );
                     }
                 });
             }

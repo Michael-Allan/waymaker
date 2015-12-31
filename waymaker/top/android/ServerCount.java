@@ -10,8 +10,8 @@ import waymaker.spec.*;
 public final @ThreadSafe class ServerCount
 {
     /* * *
-    - redundant requests
-        - problem: repeatedly sending the same request
+    - requests for redundant information
+        - problem: requesting information that was already received
         - in case of reusing of whole document for various purposes
             - solution: XMLHttpRequest with responseType 'document'
                 - it will safely parse with "scripting disabled"
@@ -20,25 +20,17 @@ public final @ThreadSafe class ServerCount
                 - can clone any part I need rendered and inject it into the main document
                 - or re-request the whole and have it taken from the browser's cache
         - in case of data requests
-          / - the problem would be complicated here by any multiplexing of requests
+            - example
+                - ForestV will blindly call enqueuePeersRequest whenever it discovers (or rediscovers)
+                  that a peer might be missing
+          / - the problem would be complicated here by any compounding of requests
           / - a possible lead to a solution here:
           /     ( https://msdn.microsoft.com/en-us/library/hh404101.aspx
             - solution: browser cache + SPDY, HTTP/2
-                - sending complex requests only when it will not defeat caching
-                    - i.e. when not also sending the simple components at another time
+                - sending a compound request only when it cannot defeat caching
+                    - i.e. when a simpler component cannot be requested separately at another time
                 - relying on SPDY, HTTP/2 to absorb the cost of numerous requests
       */
-
-
-    /** Constructs a ServerCount.
-      *
-      *     @see #pollName()
-      */
-    public ServerCount( final String pollName ) { this.pollName = pollName; }
-
-
-
-   // --------------------------------------------------------------------------------------------------
 
 
     /** Asynchronously requests the initial data for a group of peers.  The result set will include all
@@ -65,7 +57,10 @@ public final @ThreadSafe class ServerCount
     {
         if( paddedLimit < 0 ) throw new IllegalArgumentException();
 
-        receiver.receivePeersResponse( rootwardID ); // encoding default response, pending real server counts
+        receiver.receivePeersResponse( rootwardID );
+          // Sends an immediate default response in lieu of a real response from the remote server.
+          // When the remote server is implemented and responses might no longer be immediate, some
+          // facility must effeciently handle "requests for redundant information" (q.v. above).
     }
 
         /* * *
@@ -151,15 +146,6 @@ public final @ThreadSafe class ServerCount
       * {@linkplain ID#isSerialForm(String) serial number}.
       */
     public static boolean isPollNameForm( final String string ) { return ID.isSerialForm( string ); }
-
-
-
-    /** The name of the poll that is counted.
-      */
-    public String pollName() { return pollName; }
-
-
-        private final String pollName;
 
 
 }

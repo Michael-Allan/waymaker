@@ -162,6 +162,7 @@ public final class Forest implements PeersReceiver
         {
             final VotingID rootwardID = (VotingID)_in;
             final int peersStart = 0; // request is for initial peers data
+         // final int peersEndBound ... not yet used below
             final boolean exhaustsPeers = true;
         }
         class Response
@@ -209,7 +210,7 @@ public final class Forest implements PeersReceiver
                         ( response overlaps a prior extension
                         - skip
 
-                    - if peer.peerOrdinal >= peersEndBound of request
+                    - if peer.peerOrdinal >= req.peersEndBound
                         - log as anomaly
                         - skip
 
@@ -247,7 +248,7 @@ public final class Forest implements PeersReceiver
                 else
                 {
                     /* * *
-                    - set candidateUna.votersNextOrdinal to request peersEndBound
+                    - set candidateUna.votersNextOrdinal to req.peersEndBound
                       */
                     throw new UnsupportedOperationException(); // for pseudo code above
                 }

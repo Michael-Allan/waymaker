@@ -70,15 +70,8 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         forester.bell().register( new Auditor<Changed>()
         {
             { populate( forester, forester.nodeCache() ); } // populates initially
-            private String pollName;
             private void populate( final Forester forester, final NodeCache _nodeCache )
             {
-                final String _pollName = forester.forest().pollName();
-                if( !_pollName.equals( pollName ))
-                {
-                    pollName = _pollName;
-                    serverCount = new ServerCount( pollName );
-                }
                 nodeCache = _nodeCache;
                 syncViewers( forester );
             }
@@ -255,7 +248,7 @@ System.err.println( " --- depopulating" ); // TEST
 
 
 
-    private ServerCount serverCount;
+    private final ServerCount serverCount = new ServerCount();
 
 
 
@@ -291,9 +284,7 @@ System.err.println( " --- syncPeersViewer, peers modeled: " + pN ); // TEST
         }
         if( candidate.votersMaybeIncomplete() )
         {
-            final Forest forest = wr().forester().forest();
-            assert forest.pollName().equals( serverCount.pollName() );
-            serverCount.enqueuePeersRequest( candidate.id(), forest, /*paddedLimit*/0 );
+            serverCount.enqueuePeersRequest( candidate.id(), wr().forester().forest(), /*paddedLimit*/0 );
         }
     }
 

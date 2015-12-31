@@ -46,7 +46,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
         this.wayrepoTreeLoc = wayrepoTreeLoc;
         nodeMap = new HashMap<>( MapX.hashCapacity(originalUnaCount + NodeCache.INITIAL_HEADROOM),
           MapX.HASH_LOAD_FACTOR );
-        serverCount = new ServerCount( pollName );
+        serverCount = new ServerCount();
         try { xhtmlParserFactory = WaykitUI.xhtmlConfigured( XmlPullParserFactory.newInstance() ); }
         catch( final XmlPullParserException x ) { throw new RuntimeException( x ); }
 
