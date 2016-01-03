@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.content.*;
 import android.net.Uri;
@@ -17,7 +17,8 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
 /** A controller and configurer of those models that can introduce changes read from the user’s local
   * wayrepo, which are yet unknown to public sources, thus anticipating a future public state.
   */
-public @ThreadRestricted("app main") final class WayrepoPreviewController extends LinearLayout
+  @ThreadRestricted("app main") 
+public final class WayrepoPreviewController extends LinearLayout
 {
     /* * *
     - designed for possible use in (among other contexts) a "Refresh" dialogue that floats,
@@ -58,7 +59,7 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
 
     /** Constructs a WayrepoPreviewController.
       */
-    public WayrepoPreviewController( final Wayranging wr )
+    public WayrepoPreviewController( final Wayranging wr, final Destructor destructor )
     {
         super( /*context*/wr );
         setOrientation( VERTICAL );
@@ -70,21 +71,17 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
           // - - - - - - - - - - - -
             final TextView view = new TextView( wr );
             addView( view );
-            preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
+            Android.registerDestructibly( preferences, new OnSharedPreferenceChangeListener()
             {
-                {
-                    relay(); // init
-                    Object unregistrationAgent = wr.unregisterOnDestruction( this );
-                      // no need to unregister the agent itself, its own register does not outlive it
-                }
-                private void relay()
+                { sync(); } // init
+                private void sync()
                 {
                     String text = wk.wayrepoTreeLoc();
                     if( text == null ) text = "Location unspecified";
                     view.setText( text );
                 }
-                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
-            });
+                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
+            }, destructor );
         }
         {
             final LinearLayout x = new LinearLayout( wr );
@@ -131,12 +128,12 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
           // - - - - - -
             final TextView noteView = new TextView( wr );
             addView( noteView );
-            wr.forests().notaryBell().register( new Auditor<Changed>()
-            { // no need to unregister, register does not outlive this registrant
-                { relay(); } // init
-                private void relay() { noteView.setText( wr.forests().refreshNote() ); }
-                public void hear( Changed _ding ) { relay(); }
-            });
+            wr.forests().notaryBell().registerDestructibly( new Auditor<Changed>()
+            {
+                { sync(); } // init
+                private void sync() { noteView.setText( wr.forests().refreshNote() ); }
+                public void hear( Changed _ding ) { sync(); }
+            }, destructor );
         }
         {
             final LinearLayout x = new LinearLayout( wr );
@@ -154,17 +151,13 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
                         wr.forests().startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
                     }
                 });
-                preferences.registerOnSharedPreferenceChangeListener( new OnSharedPreferenceChangeListener()
+                Android.registerDestructibly( preferences, new OnSharedPreferenceChangeListener()
                 {
-                    {
-                        relay(); // init
-                        Object unregistrationAgent = wr.unregisterOnDestruction( this );
-                          // no need to unregister the agent itself, its own register does not outlive it
-                    }
-                    private void relay() { button.setEnabled( wk.wayrepoTreeLoc() != null ); }
+                    { sync(); } // init
+                    private void sync() { button.setEnabled( wk.wayrepoTreeLoc() != null ); }
                       // hint to user that refreshing from a non-existent wayrepo is pointless
-                    public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { relay(); }
-                });
+                    public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
+                }, destructor );
             }
             {
               // Full refresh button, to refresh from all sources.

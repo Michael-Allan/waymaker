@@ -4,8 +4,8 @@ import android.content.Intent;
 import android.os.*;
 import android.view.Window;
 import waymaker.gen.*;
+import waymaker.spec.*;
 
-import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import static waymaker.gen.ActivityLifeStage.*;
 
 
@@ -119,6 +119,28 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
    // --------------------------------------------------------------------------------------------------
 
 
+    /** The identifier of the wayranging actor, if any.
+      */
+    public BelledVariable<VotingID> actorIdentifier() { return actorIdentifier;}
+
+
+        private final BelledVariable<VotingID> actorIdentifier = new BelledVariable<>();
+
+
+        static { stators.add( new Stator<Wayranging>()
+        {
+            public void save( final Wayranging wr, final Parcel out )
+            {
+                AndroidXID.writeUDIDOrNull( wr.actorIdentifier.get(), out );
+            }
+            public void restore( final Wayranging wr, final Parcel in )
+            {
+                wr.actorIdentifier.set( (VotingID)AndroidXID.readUDIDOrNull(in) );
+            }
+        });}
+
+
+
     /** The forester of this wayranging activity.
       */
     public Forester forester() { return forester; }
@@ -173,41 +195,12 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    /** The namer of the poll on which wayranging now focuses.
+    /** The namer of the poll on which wayranging now focuses.  There is always a poll, do not null it.
       */
     public BelledVariable<String> pollNamer() { return pollNamer;}
 
 
         private BelledVariable<String> pollNamer; // final after create2, which adds stator
-
-
-
- // /** Adds a change listener to the {@linkplain Application#preferences() general preference store}
- //   * and holds its reference in this activity.  This convenience method is a workaround for the
- //   * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
- //   * target='_top'>weak register</a> in the store.
- //   */
- // public void registerStrongly( final OnSharedPreferenceChangeListener l )
- // {
- //     wk.preferences().registerOnSharedPreferenceChangeListener( l );
- //     preferencesStrongRegister.add( l );
- // }
- //
- //
- //     private final ArrayList<OnSharedPreferenceChangeListener> preferencesStrongRegister =
- //       new ArrayList<>();
- //
- //
- //     /** Removes a change listener from the {@linkplain Application#preferences() general preference
- //       * store} and releases its reference from this activity.
- //       */
- //     public void unregisterStrongly( final OnSharedPreferenceChangeListener l )
- //     {
- //         wk.preferences().unregisterOnSharedPreferenceChangeListener( l );
- //         preferencesStrongRegister.remove( l );
- //     }
- //
- /// all unregistration yet, as by unregisterOnDestruction, already strongly holds registrant
 
 
 
@@ -254,32 +247,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    /** Schedules the given preference listener to be unregistered
-      * from the {@linkplain Application#preferences() general preference store}
-      * when this activity is destroyed.  This convenience method happens also to defeat the
-      * <a href='http://developer.android.com/reference/android/content/SharedPreferences.html#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)'
-      * target='_top'>weak register</a> in the store by holding a strong reference to the listener.
-      *
-      *     @return The agent that is responsible soley for unregistering the listener.  The agent is
-      *       implemented as an auditor of the {@linkplain #lifeStageBell() life stage bell}.
-      */
-    public Auditor<Changed> unregisterOnDestruction( final OnSharedPreferenceChangeListener l )
-    {
-        final Auditor<Changed> auditor = new Auditor<Changed>()
-        {
-            public void hear( Changed _ding )
-            {
-                if( lifeStage != DESTROYING ) return;
-
-                wk.preferences().unregisterOnSharedPreferenceChangeListener( l );
-            }
-        };
-        lifeStageBell.register( auditor );
-        return auditor;
-    }
-
-
-
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -292,7 +259,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    private final WaykitUI wk = WaykitUI.i();
+    private static final WaykitUI wk = WaykitUI.i();
 
 
 

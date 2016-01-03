@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import java.util.Set;
 import waymaker.gen.CopyOnResizeArraySet;
@@ -44,6 +44,14 @@ public final class ReRinger<D extends Ding<D>> implements Bell<D>
 
 
     public void register( final Auditor<D> auditor ) { register.add( auditor ); }
+
+
+
+    public void registerDestructibly( final Auditor<D> auditor, final Destructor destructor )
+    {
+        register.add( auditor );
+        destructor.add( new Destructible() { public void close() { unregister( auditor ); } });
+    }
 
 
 

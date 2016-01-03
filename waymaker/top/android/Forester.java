@@ -21,7 +21,7 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
       *
       *     @see #forest()
       */
-    public Forester( final Wayranging wr )
+    public @Warning("wr co-construct") Forester( final Wayranging wr )
     {
         final ForestCache forests = wr.forests();
         forest = forests.getOrMakeForest( wr.pollNamer().get() );
@@ -37,7 +37,7 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
                 nodeCache( forest.nodeCache() );
                 bell.ring();
             }
-        });
+        }); // no need to unregister from wr co-construct
         forests.nodeCacheBell().register( new Auditor<Changed>()
         {
             public void hear( Changed _ding )
@@ -48,7 +48,7 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
                 nodeCache( _nodeCache );
                 bell.ring();
             }
-        });
+        }); // no need to unregister from wr co-construct
     }
 
 

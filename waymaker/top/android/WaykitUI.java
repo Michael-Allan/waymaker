@@ -11,7 +11,7 @@ import static java.util.logging.Level.WARNING;
 
 /** A waykit user interface in the form of an Android application.
   */
-public @ThreadRestricted("app main") final class WaykitUI extends Application
+public @ThreadSafe final class WaykitUI extends Application
 {
 
 
@@ -30,7 +30,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
 
     /** The single instance of WaykitUI as created by the Anroid runtime, or null if there is none.
       */
-    public static @ThreadSafe WaykitUI i() { return instanceA.get(); }
+    public static @Warning("thread restricted object") WaykitUI i() { return instanceA.get(); }
 
 
         private static final AtomicReference<WaykitUI> instanceA = new AtomicReference<>();
@@ -47,7 +47,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
       *     @see <a href='https://developer.android.com/about/versions/android-5.0.html#DirectorySelection'
       *       target='_top'>Android 5.0 § Directory selection</a>
       */
-    public String wayrepoTreeLoc()
+    public @ThreadRestricted("app main") String wayrepoTreeLoc()
     {
         return preferences().getString( "wayrepoTreeLoc", /*default*/null );
     }
@@ -56,7 +56,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
 
     /** Sets the access location of the user’s wayrepo.
       */
-    public void wayrepoTreeLoc( final Uri uri )
+    public @ThreadRestricted("app main") void wayrepoTreeLoc( final Uri uri )
     {
         final ContentResolver r = getContentResolver();
         final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
@@ -97,7 +97,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
       *
       *     @see #wayrepoTreeLoc()
       */
-    public static @ThreadSafe String wayrepoTreeLoc_message( final String loc )
+    public static String wayrepoTreeLoc_message( final String loc )
     {
         return "Cannot access wayrepo via " + loc
           + "\nTry using the wayrepo preview to reselect its location";
@@ -109,8 +109,7 @@ public @ThreadRestricted("app main") final class WaykitUI extends Application
       *
       *     @return The same parser factory.
       */
-    public static @ThreadSafe XmlPullParserFactory xhtmlConfigured( XmlPullParserFactory f )
-      throws XmlPullParserException
+    public static XmlPullParserFactory xhtmlConfigured( XmlPullParserFactory f ) throws XmlPullParserException
     {
         f.setFeature( XmlPullParser.FEATURE_PROCESS_NAMESPACES, true );
         f.setFeature( XmlPullParser.FEATURE_PROCESS_DOCDECL, true );

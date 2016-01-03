@@ -8,7 +8,7 @@ import android.widget.*;
 import waymaker.gen.*;
 
 
-/** A dialogue showing the general menu of the waykit user interface.
+/** A one-shot dialogue to show the general menu of the waykit user interface.
   */
 public @ThreadRestricted("app main") final class MenuDF extends DialogFragment // grep AutoRestore-public
 {

@@ -60,7 +60,7 @@ public final @ThreadSafe class ServerCount
         receiver.receivePeersResponse( rootwardID );
           // Sends an immediate default response in lieu of a real response from the remote server.
           // When the remote server is implemented and responses might no longer be immediate, some
-          // facility must effeciently handle "requests for redundant information" (q.v. above).
+          // facility must efficiently handle "requests for redundant information" (q.v. above).
     }
 
         /* * *

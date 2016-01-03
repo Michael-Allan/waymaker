@@ -19,19 +19,22 @@ public final class Holder1<C> implements Holder<C>
 
 
 
-   // - H o l d e r ----------------------------------------------------------------------
+   // --------------------------------------------------------------------------------------------------
+
+
+    /** Sets the content held.
+      */
+    public void set( final C content ) { this.content = content; }
+
+
+
+   // - H o l d e r ------------------------------------------------------------------------------------
 
 
     public C get() { return content; }
 
 
         private C content;
-
-
-
-    /** Sets the content held.
-      */
-    public void set( final C content ) { this.content = content; }
 
 
 }

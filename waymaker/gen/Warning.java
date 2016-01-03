@@ -1,9 +1,18 @@
-package waymaker.gen; // Copyright 2009, 2011, 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2009, 2011, 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import java.lang.annotation.*;
 
 
 /** Conveys one or more warnings.  The following specific warnings are documented:
+  *
+  * <h3>Co-construction</h3>
+  * <pre>
+  *     &#064;Warning("<var>co-extant</var> co-construct")
+  *         // on constructor or factory method</pre>
+  *
+  * <p>Warns not to discard the construct and create a replacement during the life of the named
+  * co-extant, because currently the construct does not unregister its callbacks from the co-extant, or
+  * otherwise clean up after itself.</p>
   *
   * <h3>Dead code</h3>
   * <pre>
@@ -14,7 +23,7 @@ import java.lang.annotation.*;
   * <h3>Init call</h3>
   * <pre>
   *     &#064;Warning("init call")
-  *         // final method of non-final class</pre>
+  *         // on final method of non-final class</pre>
   *
   * <p>Warns that the method is called from a constructor or other initializer where the call cannot be
   * bound dynamically.  In addition to the warning, the method should also have a final modifier to
@@ -22,15 +31,16 @@ import java.lang.annotation.*;
   *
   * <h3>No hold</h3>
   * <pre>
-  *     &#064;Warning("no hold")</pre>
+  *     &#064;Warning("no hold")
+  *         // on class</pre>
   *
-  * <p>Warns not to indefinitely hold an instance.  Apply to a class.  Insert into the source code
-  * comments that explicitly reference the "no hold" annotation, explaining the reason for it.</p>
+  * <p>Warns not to indefinitely hold an instance.  In addition to the warning, comments in the source
+  * code should also reference the "no hold" annotation and explain the reason for it.</p>
   *
   * <h3>Non-API</h3>
   * <pre>
   *     &#064;Warning("non-API")
-  *         // non-private member</pre>
+  *         // on public member</pre>
   *
   * <p>Warns that the member is not part of the general application programming interface.  It is
   * exposed for internal use only; it should not be used by ordinary API clients.</p>
@@ -38,9 +48,9 @@ import java.lang.annotation.*;
   * <h3>Thread restricted</h3>
   * <pre>
   *     &#064;Warning("thread restricted object")
-  *         // field, constructor, method
+  *         // on field, constructor, method
   *     &#064;Warning("thread restricted elements")
-  *         // field, constructor, method that dispenses an array
+  *         // on field, constructor, method that dispenses an array
   *         // or collection of elements</pre>
   *
   * <p>The first version warns that objects read from the field, or created by the constructor, or
@@ -51,13 +61,13 @@ import java.lang.annotation.*;
   * of the object.</p>
   *
   * <pre>
-  *     &#064;Warning("thread restricted object, <em>restriction</em>")
-  *         // field, constructor, method
-  *     &#064;Warning("thread restricted elements, <em>restriction</em>")
-  *         // field, constructor, method that dispenses an array
+  *     &#064;Warning("thread restricted object, <var>restriction</var>")
+  *         // on field, constructor, method
+  *     &#064;Warning("thread restricted elements, <var>restriction</var>")
+  *         // on field, constructor, method that dispenses an array
   *         // or collection of elements</pre>
   *
-  * <p>These are the same as the previous warnings, only they specify the restriction.</p>
+  * <p>These are like the previous warnings, except they specify the restriction.</p>
   *
   * <h3>Untested</h3>
   * <pre>

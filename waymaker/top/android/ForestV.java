@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.widget.*;
 import java.util.*;
@@ -34,7 +34,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
     /** Constructs a ForestV.
       */
-    public ForestV( final Wayranging wr )
+    public @Warning("wr co-construct") ForestV( final Wayranging wr )
     {
         super( /*context*/wr );
 
@@ -70,6 +70,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         forester.bell().register( new Auditor<Changed>()
         {
             { populate( forester, forester.nodeCache() ); } // populates initially
+            private NodeCache nodeCache;
             private void populate( final Forester forester, final NodeCache _nodeCache )
             {
                 nodeCache = _nodeCache;
@@ -84,7 +85,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
                 depopulateViewers();
                 populate( forester, _nodeCache );
             }
-        });
+        }); // no need to unregister from wr co-construct
 
       // Extend peers viewer when model extends.
       // - - - - - - - - - - - - - - - - - - - - -
@@ -92,14 +93,14 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         {
             public void hear( Changed _ding )
             {
-                final Node candidate = candidateViewed();
+                final Node candidate = candidateViewed( wr().forester() );
                 final List<? extends Node> _peers = candidate.voters();
                 if( peerCount == _peers.size() ) return;
 
                 assert peerCount < _peers.size(); // forest.nodeCache guarantees no node is ever removed
                 syncPeersViewer( candidate, _peers );
             }
-        });
+        }); // no need to unregister from wr co-construct
     }
 
 
@@ -107,7 +108,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
    // - V i e w ----------------------------------------------------------------------------------------
 
 
-    protected void onLayout( final boolean isChanged, final int left, final int top, final int right,
+    protected @Override void onLayout( final boolean isChanged, final int left, final int top, final int right,
       final int bottom )
     {
         super.onLayout( isChanged, left, top, right, bottom );
@@ -128,9 +129,10 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
 
 
-    private Node candidateViewed() // topmost node of candidates viewer, or ground if viewer is grounded
+    private Node candidateViewed( final Forester forester )
     {
-        return candidateCount > 0? getChildNodeV(cTopCandidate()).node(): nodeCache.ground();
+        // topmost node of candidates viewer, or ground if viewer is grounded
+        return candidateCount > 0? getChildNodeV(cTopCandidate()).node(): forester.nodeCache().ground();
     }
 
 
@@ -199,10 +201,6 @@ System.err.println( " --- depopulating" ); // TEST
 
 
     private NodeV getChildNodeV( final int c ) { return (NodeV)getChildAt( c ); }
-
-
-
-    private NodeCache nodeCache;
 
 
 
@@ -312,7 +310,7 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
             return;
         }
 
-        final Node candidate = candidateViewed();
+        final Node candidate = candidateViewed( forester );
 
       // Or lower than model
       // - - - - - - - - - - -

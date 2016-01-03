@@ -2,10 +2,10 @@ package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Way
 
 import android.os.Bundle;
 import android.view.*;
-import waymaker.gen.ThreadRestricted;
+import waymaker.gen.*;
 
 
-/** A dialogue for the {@linkplain WayrepoPreviewController control of wayrepo previews}.
+/** A one-shot dialogue to show a {@linkplain WayrepoPreviewController wayrepo preview controller}.
   */
   @ThreadRestricted("app main")
 public final class WayrepoPreviewControlDF extends android.app.DialogFragment // grep AutoRestore-public
@@ -17,8 +17,23 @@ public final class WayrepoPreviewControlDF extends android.app.DialogFragment //
 
     public @Override View onCreateView( LayoutInflater _inf, ViewGroup _group, Bundle _in )
     {
-        return new WayrepoPreviewController( (Wayranging)getActivity() );
+        return new WayrepoPreviewController( (Wayranging)getActivity(), destructor );
     }
+
+
+
+    public @Override void onDestroyView()
+    {
+        destructor.close();
+        super.onDestroyView();
+    }
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    private final Destructor destructor = new Destructor1();
 
 
 }

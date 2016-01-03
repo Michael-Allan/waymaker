@@ -63,7 +63,7 @@ if( !waymaker.Waymaker ) {
               our.slashed(userHomeLoc) + '.config' + our.F + 'waymaker' + our.F + 'build';
         }
 
-      // Predefine all namespaces eagerly.  Simpler than defining them lazily, ad hoc.
+      // Predefine all namespaces.  Simpler than defining them on demand.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         waymaker.spec = {};
         waymaker.spec.build = {};
