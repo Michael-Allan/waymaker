@@ -10,7 +10,6 @@ import waymaker.gen.*;
   * are {@linkplain CountNode node} views (lettered).  These it divides vertically between a peers viewer for
   * showing the forester’s {@linkplain Forester#ascendTo(CountNode) leafward paths}, and a candidates viewer
   * for showing its {@linkplain Forester#descend() rootward paths}.</p>
-
   * <pre>
   *                     ◢◣    --- Up climber
   *                    ————   --- Up pager for peers

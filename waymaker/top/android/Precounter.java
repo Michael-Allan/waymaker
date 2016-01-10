@@ -337,32 +337,26 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
             {
                 if( t != START_TAG || !"wayscript".equals(p.getName()) ) continue;
 
-                for( t = p.next(); t != END_TAG || !"wayscript".equals(p.getName()); t = p.next() )
+              // Summary.
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                t = p.next();
+                if( t == TEXT )
+                {
+                    jig.summary = p.getText().trim();
+                    t = p.next();
+                }
+
+              // Handle.
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                for(; t != END_TAG || !"wayscript".equals(p.getName()); t = p.next() )
                 {
                     if( t != START_TAG || !"handle".equals(p.getName()) ) continue;
 
-                    handle: for( t = p.next(); t != END_TAG || !"handle".equals(p.getName()); t = p.next() )
+                    for( t = p.next(); t != END_TAG || !"handle".equals(p.getName()); t = p.next() )
                     {
                         if( t != TEXT ) continue;
 
-                        final String str = p.getText();
-                        int cEnd = str.length();
-                        if( cEnd == 0 ) break;
-
-                        int c = 0;
-                        while( Character.isWhitespace( str.charAt( c ))) // strip leading whitepace
-                        {
-                            ++c;
-                            if( c >= cEnd ) break handle;
-                        }
-
-                        while( Character.isWhitespace( str.charAt( cEnd - 1 ))) // strip trailing whitepace
-                        {
-                            --cEnd;
-                            if( c >= cEnd ) break handle;
-                        }
-
-                        final String handle = str.substring( c, cEnd );
+                        final String handle = p.getText().trim();
                         if( !parseWaynode_matcher.reset(handle).matches() )
                         {
                             throw new CountFailure( "Malformed handle '" + handle + "' in file " + docID );

@@ -1,16 +1,32 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.content.Context;
-import android.graphics.*;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.*;
 import waymaker.gen.*;
 
+import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
 
-/** A view of a count node.
+
+/** <p>A view of a count node in a {@linkplain ForestV forest view}.  Though situated in a count-based
+  * forest, its main subviews are modeled not on properties of the count node itself, but rather its
+  * associated waynode:</p>
+  * <pre>
+  *      handle
+  *       /
+  *      /
+  *    lo  Lorem ipsum dolor sit amet
+  *                /
+  *               /
+  *            summary
+  * </pre>
   */
-public @ThreadRestricted("app main") final class NodeV extends TextView
+public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 {
+    /* * *
+    - wayscope to somehow eclipse the summary subview when zoomed in
+        - leaving handle alone visible
+      */
 
 
     /** Constructs a NodeV with a null node.  Set a node before using it.
@@ -26,13 +42,12 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
     public @Warning("wr co-construct") NodeV( final Wayranging wr, final CountNode _node )
     {
         super( /*context*/wr );
-        setPadding( 0, 0, PX_ACTOR_MARKER_WIDTH * 2, 0 ); // LTRB
+        assert getChildCount() == C_HANDLE;
+        addView( new HandleV(wr) );
+        assert getChildCount() == C_SUMMARY;
+        addView( new TextView(wr) );
         node( _node );
     }
-
-
-
-    private static final WaykitUI wk = WaykitUI.i(); // early def
 
 
 
@@ -55,14 +70,15 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
             if( _node == node ) return;
 
             node = _node;
-            final String text;
+            final Waynode waynode;
             if( node == null )
             {
                 assert getParent() == null;
-                text = ""; // default (source level 23)
+                waynode = EMPTY_WAYNODE;
             }
-            else text = node.waynode().handle() + " [" + node.id() + "]";
-            setText( text );
+            else waynode = node.waynode();
+            handleV().setText( waynode.handle() );
+            summaryV().setText( waynode.summary() );
             isActor_sync();
         }
 
@@ -83,7 +99,17 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
 
 
 
-    private boolean isActor;
+    private static final int C_HANDLE = 0; // child index
+
+    private static final int C_SUMMARY = 1;
+
+
+
+    private HandleV handleV() { return (HandleV)getChildAt( C_HANDLE ); }
+
+
+
+    boolean isActor;
 
 
         {
@@ -102,12 +128,12 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
             if( _isActor == isActor ) return;
 
             isActor = _isActor;
-            invalidate();
+            handleV().invalidate();
         }
 
 
 
-    private static final int PX_ACTOR_MARKER_WIDTH = Math.max( Math.round(wk.pxSP()), /*at least*/1 );
+    private TextView summaryV() { return (TextView)getChildAt( C_SUMMARY ); }
 
 
 
@@ -119,25 +145,6 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
 
 
     protected @Override void onAttachedToWindow() { assert node != null; }
-
-
-
-    protected @Override void onDraw( final Canvas canvas )
-    {
-        super.onDraw( canvas );
-        if( !isActor ) return;
-
-        final Rect bounds = wk.rect();
-        if( !canvas.getClipBounds( bounds )) return;
-
-        bounds.left = bounds.right - PX_ACTOR_MARKER_WIDTH; // shrink to thin right border
-        final Paint paint = onDraw_paint;
-        paint.setColor( getCurrentTextColor() );
-        canvas.drawRect( bounds, paint );
-    }
-
-
-        private static final Paint onDraw_paint = new Paint(); // fill styled, for isolated reuse
 
 
 }

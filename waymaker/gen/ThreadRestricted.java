@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2006-2009, 2013, 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2006-2009, 2013, 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import java.lang.annotation.*;
 

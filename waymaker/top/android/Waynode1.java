@@ -20,19 +20,20 @@ public @ThreadSafe final class Waynode1 implements Waynode
     /** Constructs a Waynode1.
       *
       *     @see #handle()
-      *     @throws NullPointerException if _handle is null.
+      *     @see #summary()
+      *     @throws NullPointerException if _handle or _summary is null.
       */
-    public Waynode1( final String _handle )
+    public Waynode1( final String _handle, final String _summary )
     {
-        this( _handle, /*inP*/null );
-        if( handle == null ) throw new NullPointerException();
+        this( _handle, _summary, /*inP*/null );
+        if( _handle == null || _summary == null ) throw new NullPointerException();
     }
 
 
 
     /** Constructs a Waynode1 by copying another waynode.
       */
-    public Waynode1( final Waynode wn ) { this( wn.handle(), /*inP*/null ); }
+    public Waynode1( final Waynode wn ) { this( wn.handle(), wn.summary(), /*inP*/null ); }
 
 
 
@@ -42,7 +43,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
       *       openToThread restriction is lifted.
       */
       @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.restore
-    private Waynode1( final String _handle, final Parcel inP/*grep CtorRestore*/ )
+    private Waynode1( final String _handle, final String _summary, final Parcel inP/*grep CtorRestore*/ )
     {
         final boolean toInitClass;
         if( wasConstructorCalled ) toInitClass = false;
@@ -54,14 +55,26 @@ public @ThreadSafe final class Waynode1 implements Waynode
         if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
           // at coding time this had no effect, the only stator being the StateSaver added just below
 
-      // Poll namer.
-      // - - - - - - -
+      // Final fields.
+      // - - - - - - - -
         if( toInitClass ) stators.add( new StateSaver<Waynode1>()
         {
-            public void save( final Waynode1 wn, final Parcel out ) { out.writeString( wn.handle() ); }
+            public void save( final Waynode1 wn, final Parcel out )
+            {
+                out.writeString( wn.handle() );
+                out.writeString( wn.summary() );
+            }
         });
-        if( inP == null ) handle = _handle;
-        else handle = inP.readString(); // CtorRestore to restore a final field
+        if( inP == null )
+        {
+            handle = _handle;
+            summary = _summary;
+        }
+        else
+        {
+            handle = inP.readString(); // CtorRestore to restore final fields
+            summary = inP.readString();
+        }
 
       // - - -
         if( toInitClass ) stators.seal();
@@ -84,7 +97,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
       // 2.
       // - - -
-        return new Waynode1( null, in );
+        return new Waynode1( null, null, in );
     }
 
 
@@ -124,6 +137,13 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
 
 
+    public String summary() { return summary; }
+
+
+        private final String summary;
+
+
+
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -134,7 +154,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
         if( !(o2 instanceof Waynode) /*or if null*/ ) return false;
 
         final Waynode w2 = (Waynode)o2;
-        return w1.handle().equals( w2.handle() );
+        return w1.handle().equals(w2.handle()) && w1.summary().equals(w2.summary());
     }
 
 

@@ -6,7 +6,11 @@ final class WaynodeJig implements Waynode
 {
 
 
-    void clear() { handle = EMPTY_WAYNODE.handle(); }
+    void clear()
+    {
+        handle = EMPTY_WAYNODE.handle();
+        summary = EMPTY_WAYNODE.summary();
+    }
 
 
 
@@ -24,6 +28,13 @@ final class WaynodeJig implements Waynode
 
 
         String handle = EMPTY_WAYNODE.handle();
+
+
+
+    public String summary() { return summary; }
+
+
+        String summary = EMPTY_WAYNODE.summary();
 
 
 }

@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 public interface Waynode
 {
     /* * *
+    - end|transnorm|act.xht form: http://reluk.ca/100-0/tool/xhwsPretty/pretty.js
     - unlike count nodes, waynodes need not be compiled to any kind of whole on a server
         - they have no equivalent of vote sums
       */
@@ -16,7 +17,7 @@ public interface Waynode
 
     /** An immutable instance of an empty waynode.
       */
-    public static final Waynode1 EMPTY_WAYNODE = new Waynode1( "" );
+    public static final Waynode1 EMPTY_WAYNODE = new Waynode1( "", "" );
 
 
 
@@ -36,9 +37,16 @@ public interface Waynode
    // - W a y n o d e ----------------------------------------------------------------------------------
 
 
-    /** The symbolic name of the waynode, from zero to two characters in length (never null).
+    /** The symbolic name of this waynode, from zero to two characters in length (never null).
       */
     public String handle();
+
+
+
+    /** A short summary of the answer that this waynode gives to the question of the poll.  It may be
+      * empty, but is never null.
+      */
+    public String summary();
 
 
 }

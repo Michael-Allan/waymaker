@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
 import java.util.*;
