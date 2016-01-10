@@ -26,7 +26,7 @@ public final class PrecountGround extends PrecountNode
    // --------------------------------------------------------------------------------------------------
 
 
-      @Override/*to allow for voters that are barred*/
+      @Override/*to allow for "voters" who are barred as such, and so instead roots*/
     public void saveVoter( final PrecountNode1 voter, final Parcel out, final SKit kit )
     {
       // a. Vote.
@@ -63,6 +63,13 @@ public final class PrecountGround extends PrecountNode
 
 
     public boolean isGround() { return true; }
+
+
+
+    public Waynode waynode() { return Waynode.EMPTY_WAYNODE; }
+
+
+        public void waynode( Waynode1 _waynode ) { throw new UnsupportedOperationException(); }
 
 
 

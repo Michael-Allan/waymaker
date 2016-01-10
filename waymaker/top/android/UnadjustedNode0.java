@@ -79,7 +79,7 @@ public final class UnadjustedNode0 extends UnadjustedNode
 
 
 
-    public List<? extends UnadjustedNode1> voters() { return Collections.emptyList(); }
+    public List<? extends UnadjustedNode> voters() { return Collections.emptyList(); }
 
 
 
@@ -88,6 +88,10 @@ public final class UnadjustedNode0 extends UnadjustedNode
 
 
     public int votersNextOrdinal() { return Integer.MAX_VALUE; }
+
+
+
+    public Waynode1 waynode() { return Waynode.EMPTY_WAYNODE; }
 
 
 

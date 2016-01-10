@@ -122,10 +122,10 @@ public final @ThreadSafe class ServerCount
 
 
     /** Synchronously connects to the remote count server and returns from the latest count the identified
-      * node complete with its {@linkplain Node#rootwardInThis() candidates}, constructing those too as
+      * node complete with its {@linkplain CountNode#rootwardInThis() candidates}, constructing those too as
       * necessary; or returns null if the node is uncounted there.
       *
-      *     @see Node#id()
+      *     @see CountNode#id()
       *     @param nodeMap A map of nodes keyed by identity tag.  Any candidate in the map is reused
       *       rather than constructed anew, while all newly constructed candidates are added to the map.
       *

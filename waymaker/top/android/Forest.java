@@ -34,8 +34,10 @@ public final class Forest implements PeersReceiver
       *
       *     @see #pollName()
       *     @see #forestCache()
-      *     @param inP Parceled state to restore.
+      *     @param inP The parceled state to restore, or null to restore none, in which case the
+      *       openToThread restriction is lifted.
       */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
     public Forest( final String pollName, final ForestCache forestCache, final Parcel inP )
     {
         this( pollName, forestCache, inP, /*nodeCache*/null );
@@ -56,23 +58,24 @@ public final class Forest implements PeersReceiver
 
 
 
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
     private Forest( final String pollName, final ForestCache forestCache,
       final Parcel inP/*grep CtorRestore*/, NodeCacheF nodeCache )
     {
         this.pollName = pollName;
         this.forestCache = forestCache;
-        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
-        final boolean isFirstConstruction;
-        if( wasConstructorCalled ) isFirstConstruction = false;
+        final boolean toInitClass;
+        if( wasConstructorCalled ) toInitClass = false;
         else
         {
-            isFirstConstruction = true;
+            toInitClass = true;
             wasConstructorCalled = true;
         }
+        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
 
-      // Node cache.
+      // CountNode cache.
       // - - - - - - -
-        if( isFirstConstruction ) stators.add( new StateSaver<Forest>()
+        if( toInitClass ) stators.add( new StateSaver<Forest>()
         {
             public void save( final Forest f, final Parcel out )
             {
@@ -103,7 +106,7 @@ public final class Forest implements PeersReceiver
         this.nodeCache = nodeCache;
 
       // - - -
-        if( isFirstConstruction ) stators.seal();
+        if( toInitClass ) stators.seal();
     }
 
 
@@ -152,7 +155,7 @@ public final class Forest implements PeersReceiver
 
 
     /** {@inheritDoc} Ultimately this may extend a voter list and possibly
-      * {@linkplain Node#votersMaybeIncomplete() complete it}.
+      * {@linkplain CountNode#votersMaybeIncomplete() complete it}.
       */
     public @ThreadSafe void receivePeersResponse( final Object _in )
     {
@@ -304,7 +307,7 @@ public final class Forest implements PeersReceiver
         {
             nodeMap = precounter.nodeMap();
             groundUna = precounter.ground();
-            final Node groundPre = groundUna.precounted(); // if any
+            final CountNode groundPre = groundUna.precounted(); // if any
             if( groundPre != null )
             {
                 outlyingVotersPre = new ArrayList<>();
@@ -387,9 +390,9 @@ public final class Forest implements PeersReceiver
 
         /** @return The precount adjusted ground if any, else the unadjusted ground.
           */
-        public Node ground() { return ground; }
+        public CountNode ground() { return ground; }
 
-            private final Node ground;
+            private final CountNode ground;
 
 
        // - P r e c o u n t - N o d e . R - K i t ------------------------------------------------------

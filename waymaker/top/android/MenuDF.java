@@ -71,12 +71,10 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
             {
                 final Button button = new Button( context );
                 x.addView( button );
-                button.setText( "A" );
+                button.setText( "A" ); // test  a s s e r t  facility (hide from preprocessor)
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( final View src )
-                    {
-                    }
+                    public void onClick( final View src ) { assert false; }
                 });
             }
             {

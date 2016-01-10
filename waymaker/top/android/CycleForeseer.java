@@ -78,12 +78,12 @@ public final class CycleForeseer implements AutoCloseable
 
         UnadjustedNode oVotedUna = precounter.getOrFetchUnadjusted( oVotedID );
         if( oVotedUna == null ) oVotedUna = UnadjustedNode0.makeMapped( oVotedID, precounter );
-        Node highestNod = oComp > 0? o: oVotedUna; // thus far
-        for( Node nod = oVotedUna;; ) // begin with chosen candidate
+        CountNode highestNod = oComp > 0? o: oVotedUna; // thus far
+        for( CountNode nod = oVotedUna;; ) // begin with chosen candidate
         {
             // Trace path of would-be vote.  Trace by cast candidates, not by voted candidates, and so
             // avoid becoming trapped downstream in a pre-existing cycle among the candidates.
-            final Node nextNod = nod.rootwardInPrecount().candidate();
+            final CountNode nextNod = nod.rootwardInPrecount().candidate();
             final VotingID nextID = nextNod.id();
             if( nextID == null ) // this candidate nod casts for ground, ∴ no cycle:
             {

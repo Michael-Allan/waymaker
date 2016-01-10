@@ -7,7 +7,7 @@ import android.widget.TextView;
 import waymaker.gen.*;
 
 
-/** A view of a counting node.
+/** A view of a count node.
   */
 public @ThreadRestricted("app main") final class NodeV extends TextView
 {
@@ -23,7 +23,7 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
       *
       *     @see #node()
       */
-    public @Warning("wr co-construct") NodeV( final Wayranging wr, final Node _node )
+    public @Warning("wr co-construct") NodeV( final Wayranging wr, final CountNode _node )
     {
         super( /*context*/wr );
         setPadding( 0, 0, PX_ACTOR_MARKER_WIDTH * 2, 0 ); // LTRB
@@ -42,15 +42,15 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
     /** The node to view, or null if there is none.  Avoid using this view without a node; it may throw
       * an exception or otherwise fail.
       */
-    public Node node() { return node; }
+    public CountNode node() { return node; }
 
 
-        private Node node;
+        private CountNode node;
 
 
         /** Sets the node.
           */
-        public void node( final Node _node )
+        public void node( final CountNode _node )
         {
             if( _node == node ) return;
 
@@ -61,7 +61,7 @@ public @ThreadRestricted("app main") final class NodeV extends TextView
                 assert getParent() == null;
                 text = ""; // default (source level 23)
             }
-            else text = node.id().toString();
+            else text = node.waynode().handle() + " [" + node.id() + "]";
             setText( text );
             isActor_sync();
         }

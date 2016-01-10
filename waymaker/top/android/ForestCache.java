@@ -10,7 +10,6 @@ import waymaker.gen.*;
 
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
 import static java.util.logging.Level.WARNING;
-import static waymaker.gen.KittedPolyStatorSR.COMPOSITION_LOCK;
 import static waymaker.top.android.Forest.NodeCacheF;
 
 
@@ -18,7 +17,8 @@ import static waymaker.top.android.Forest.NodeCacheF;
   * storage and singleton referencing forest instances, which together reduce the frequency of slow
   * communications with the remote data source (count server).
   */
-public @ThreadRestricted("app main") final class ForestCache // effectively so restricted by "dives" into "app main"
+  @ThreadRestricted("app main") // effectively so by "dives" into "app main"
+public final class ForestCache
 {
 
     static final PolyStator<ForestCache> stators = new PolyStator<>();
@@ -28,26 +28,28 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
 
     /** Constructs a ForestCache.
       *
-      *     @param inP The parceled state to restore, or null to restore none.
+      *     @param inP The parceled state to restore, or null to restore none, in which case the
+      *       openToThread restriction is lifted.
       */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
     public ForestCache( final Parcel inP/*grep CtorRestore*/ )
     {
         // A CtorRestore is a state-component restoration that is coded within a constructor or factory
         // method, as opposed to the restore method of a stator.  Coordinating it with the whole save
         // and restore procedure complicates its code.  CtorRestore is therefore used only where reason
         // demands.  The reason in each case is documented by a comment labeled "CtorRestore".
-        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
-        final boolean isFirstConstruction;
-        if( wasConstructorCalled ) isFirstConstruction = false;
+        final boolean toInitClass;
+        if( wasConstructorCalled ) toInitClass = false;
         else
         {
-            isFirstConstruction = true;
+            toInitClass = true;
             wasConstructorCalled = true;
         }
+        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
 
       // Forest map.
       // - - - - - - -
-        if( isFirstConstruction ) stators.add( new StateSaver<ForestCache>()
+        if( toInitClass ) stators.add( new StateSaver<ForestCache>()
         {
             public void save( final ForestCache c, final Parcel out )
             {
@@ -96,7 +98,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         else forestMap = new HashMap<>( 10, MapX.HASH_LOAD_FACTOR );
 
       // - - -
-        if( isFirstConstruction ) stators.seal();
+        if( toInitClass ) stators.seal();
     }
 
 
@@ -187,7 +189,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
 
 
 
-    /** A bell that rings when a nodal {@linkplain Node#voters() voter list} is extended.
+    /** A bell that rings when a nodal {@linkplain CountNode#voters() voter list} is extended.
       */
     public ReRinger<Changed> voterListingBell() { return voterListingBell; }
 
@@ -214,12 +216,11 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
 
 
 
-    private static Thread startNewWorkerThread( final String name, final int serial, final Runnable runnable )
+    private static Thread newWorkerThread( final String name, final int serial, final Runnable runnable )
     {
         final Thread t = new Thread( runnable, name + " forest cache worker " + serial );
         t.setPriority( Thread.NORM_PRIORITY ); // or to limit of group
         t.setDaemon( true );
-        t.start();
         return t;
     }
 
@@ -242,6 +243,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
       // Scope the general refresh demands that are determinable from "app main".
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final ArrayList<RefreshDemand> demands = new ArrayList<>();
+        KittedPolyStatorSR.openToThread(); // (a) before snapOriginalState (b) now in r1 and later in r3
         final boolean toStrip = !toClear; /* No point stripping if cache to be entirely cleared.  The
           only type of demand yet determinable is one that will later be converted to a precount demand
           if precounting is possible, or will otherwise default to a strip demand.  Therefore scope no
@@ -249,10 +251,10 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         if( toStrip ) for( final Forest forest: forestMap.values() )
         {
             final NodeCacheF nC = forest.nodeCacheF();
-            if( nC.groundUna().precounted() != null ) // then must refresh, wether by precount or strip
+            if( nC.groundUna().precounted() != null ) // then must refresh, whether by precount or strip
             {
                 final RefreshDemand demand = new RefreshDemand( forest.pollName() );
-                demand.snapOriginalState( nC );
+                demand.snapOriginalState( nC ); // (b) after (a)
                 demands.add( demand );
             }
         }
@@ -273,10 +275,11 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
 
       // Start worker thread.
       // - - - - - - - - - - -
-        startNewWorkerThread( "r2t", serial, new Runnable() // grep StartSync
+        tRefresh = newWorkerThread( "r2t", serial, new Runnable() // grep StartSync
         {
             public void run() { r2t( toClear, wayrepoTreeLoc, serial, demands, cResolver ); }
         });
+        tRefresh.start();
     }
 
 
@@ -296,9 +299,9 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
 
 
         private Thread tRefresh;
-          // Reference of worker thread as interrupt handle.  Fielded only to synchronize (TermSync) and
-          // to conserve resources; running a worker thread to completion is harmless.  On thread
-          // termination, null the reference to enable garbage collection.
+          // Reference of worker thread as interrupt handle.  Interrupted only to synchronize (TermSync)
+          // and to conserve resources.  Otherwise, running a worker thread to completion is harmless.
+          // On thread termination, null this reference to enable garbage collection.
 
 
 
@@ -380,7 +383,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         else
         {
             final ArrayList<StripDemand> strips = new ArrayList<>( /*initialCapacity*/sN );
-            synchronized( COMPOSITION_LOCK ) {} // (a) before UnadjustedGround.restore (b)
+            KittedPolyStatorSR.openToThread(); // (a) before UnadjustedGround.restore (b)
             for( int s = 0; s < sN; ++s )
             {
                 final StripDemand strip = new StripDemand( demands.get( s ));
@@ -439,6 +442,8 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
     {
       // Take snapshot of unadjusted ground state for each precount demand.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     // KittedPolyStatorSR.openToThread(); // (a) before snapOriginalState (b)
+     /// already called in r1
         for( final PrecountDemand demand: precountDemands )
         {
             if( demand.groundUnaState != null ) continue; // cached forest, snapshot already taken in r1
@@ -446,7 +451,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
             final Forest forest = get( demand.pollName );
             if( forest == null ) continue; // will precount it from scratch
 
-            demand.snapOriginalState( forest.nodeCacheF() );
+            demand.snapOriginalState( forest.nodeCacheF() ); // (b) after (a)
         }
 
       // Make reference for use outside "app main".
@@ -455,7 +460,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
 
       // Start worker thread.
       // - - - - - - - - - - -
-        startNewWorkerThread( "r4t", serial, new Runnable() // grep StartSync
+        tRefresh = newWorkerThread( "r4t", serial, new Runnable() // grep StartSync
         {
             public void run()
             {
@@ -463,6 +468,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
                   failureH );
             }
         });
+        tRefresh.start();
     }
 
 
@@ -477,14 +483,14 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
 
       // Precount (expensive).
       // - - - - - - - - - - - -
-        if( !toClear) synchronized( COMPOSITION_LOCK ) {} // (a) before (b)
+        if( !toClear) KittedPolyStatorSR.openToThread(); // (a) before (b)
         for( final PrecountDemand demand: precountDemands )
         {
             final String pollName = demand.pollName;
             final byte[] groundUnaState = demand.groundUnaState;
             final int originalUnaCount = demand.originalUnaCount;
             assert groundUnaState == null && originalUnaCount == 0 || !toClear;
-              // ground state is null when clearing, and when skipping sync (a), as Precounter expects
+              // ground state is null when clearing, and when skipping restriction (a), as Precounter expects
             final Precounter precounter = new Precounter( pollName, groundUnaState, originalUnaCount,
               cResolver, wayrepoTreeLoc ); // (b) after (a), as per Precounter
             try { precounter.precount(); }
@@ -704,7 +710,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
         final String pollName;
 
 
-          @ThreadRestricted("app main")/*for stators access without sync*/
+          @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.save
         final void snapOriginalState( final NodeCacheF nC ) // sets groundUnaState & originalUnaCount
         {
             final UnadjustedGround ground = nC.groundUna();
@@ -729,7 +735,7 @@ public @ThreadRestricted("app main") final class ForestCache // effectively so r
    // ==================================================================================================
 
 
-    /** A demand to strip a potentially obsolete precount from a cached forest.
+    /** A demand to strip a potentially obsolete precount and its adjusted nodes from a cached forest.
       */
     private static final class StripDemand extends RefreshDemand
     {

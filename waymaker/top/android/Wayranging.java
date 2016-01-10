@@ -72,18 +72,22 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       */
     private void create2( final Parcel inP/*grep CtorRestore*/ ) // see Recreating an Activity [RA]
     {
-        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
-        final boolean isFirstConstruction;
-        if( wasConstructorCalled ) isFirstConstruction = false;
+        final boolean toInitClass;
+        if( wasConstructorCalled ) toInitClass = false;
         else
         {
-            isFirstConstruction = true;
+            toInitClass = true;
             wasConstructorCalled = true;
+        }
+        if( inP != null )
+        {
+            KittedPolyStatorSR.openToThread();
+            stators.restore( this, inP ); // saved by stators in static inits further below
         }
 
       // Forests.
       // - - - - -
-        if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
+        if( toInitClass ) stators.add( new StateSaver<Wayranging>()
         {
             public void save( final Wayranging wr, final Parcel out )
             {
@@ -91,11 +95,11 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             }
         });
         forests = new ForestCache( inP/*by CtorRestore*/ );
-        if( isFirstConstruction ) forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
+        if( inP == null ) forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
 
       // Poll namer.
       // - - - - - - -
-        if( isFirstConstruction ) stators.add( new StateSaver<Wayranging>()
+        if( toInitClass ) stators.add( new StateSaver<Wayranging>()
         {
             public void save( final Wayranging wr, final Parcel out )
             {
@@ -111,7 +115,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         setContentView( new WayrangingV( this ));
 
       // - - -
-        if( isFirstConstruction ) stators.seal();
+        if( toInitClass ) stators.seal();
     }
 
 
@@ -308,11 +312,12 @@ System.err.println( " --- onActivityResult wk.isMainThread()=" + wk.isMainThread
     {
         logger.info( "Saving activity state to bundle" );
         super.onSaveInstanceState( outB ); // at least in order to reopen any open dialogues
+        KittedPolyStatorSR.openToThread(); // (a) before stators.save (b)
         final byte[] state;
         final Parcel outP = Parcel.obtain();
         try
         {
-            stators.save( this, outP ); // save all state variables to parcel
+            stators.save( this, outP ); // save all state variables to parcel, (b) after (a)
             state = outP.marshall(); // (sic) form parcel into state
         }
         finally { outP.recycle(); }

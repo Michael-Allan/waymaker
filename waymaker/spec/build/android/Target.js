@@ -266,7 +266,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
               + ' -d ' + javacOutDir
               + ' -encoding UTF-8' // of source; instead of platform default, whatever that might be
               + ' -source 1.7' // Java API version, cannot exceed -target
-              + ' -sourcepath ' + waymakerLoc
+              + ' -sourcepath ' + javacSourceInDir
               + ' -target 1.7' // JVM version, currently limited by Android to 1.7
               + ' -Werror' // terminate compilation when a warning occurs
               + ' -Xdoclint:all,-missing' /* verify all javadoc comments, but allow their omission;

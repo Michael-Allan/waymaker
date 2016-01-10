@@ -7,7 +7,7 @@ import waymaker.gen.ThreadSafe;
 /** An original node as read from a server count engine, not adjusted by any
   * {@linkplain Precounter precount}.
   */
-public abstract class UnadjustedNode implements Node
+public abstract class UnadjustedNode implements CountNode
 {
 
 
@@ -54,7 +54,7 @@ public abstract class UnadjustedNode implements Node
    // - N o d e ----------------------------------------------------------------------------------------
 
 
-    public final RootwardCast<? extends Node> rootwardInPrecount()
+    public final RootwardCast<? extends CountNode> rootwardInPrecount()
     {
         return precounted == null? rootwardInThis(): precounted.rootwardInThis();
     }
@@ -66,6 +66,10 @@ public abstract class UnadjustedNode implements Node
 
 
     public abstract @Override List<? extends UnadjustedNode> voters();
+
+
+
+    public abstract @Override Waynode1 waynode();
 
 
 }

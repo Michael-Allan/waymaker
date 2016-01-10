@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
 import java.util.*;
@@ -37,6 +37,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
     /** Saves state from the voter, writing out to the parcel.
       */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.save
     public void saveVoter( final UnadjustedNode1 voter, final Parcel out, final SKit kit )
     {
       // a. Voter ID.
@@ -47,7 +48,11 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
       // - - - - - - - - - -
         out.writeInt( voter.peerOrdinal() );
 
-      // c. Voter.
+      // c. Waynode.
+      // - - - - - - -
+        Waynode1.saveEmptily( voter.waynode(), out );
+
+      // d. Voter.
       // - - - - - -
         UnadjustedNode1.stators.save( voter, out, kit );
     }
@@ -56,6 +61,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
     /** Reconstructs a voter and restores its state, reading in from the parcel.
       */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
     public UnadjustedNode1 restoreVoter( final VotingID id, final Parcel in, final RKit kit,
       final RootwardCast<UnadjustedNode> rootwardHither )
     {
@@ -65,7 +71,11 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
       // c.
       // - - -
-        final UnadjustedNode1 voter = new UnadjustedNode1( id, peerOrdinal, rootwardHither );
+        final Waynode1 waynode = Waynode1.restoreEmptily( in );
+
+      // d.
+      // - - -
+        final UnadjustedNode1 voter = new UnadjustedNode1( id, peerOrdinal, rootwardHither, waynode );
         kit.encache( voter );
         UnadjustedNode1.stators.restore( voter, in, kit );
         return voter;

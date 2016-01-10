@@ -1,5 +1,6 @@
 package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
+import android.os.Parcel;
 import waymaker.gen.*;
 import waymaker.spec.VotingID;
 
@@ -8,6 +9,11 @@ import waymaker.spec.VotingID;
   */
 public final class PrecountNode1 extends PrecountNode
 {
+
+    static final KittedPolyStatorSR<PrecountNode1,SKit,RKit> stators =
+      new KittedPolyStatorSR<>( PrecountNode.stators );
+
+///////
 
 
     /** Contructs a PrecountNode1 and {@linkplain UnadjustedNode#precounted(PrecountNode) attaches it}
@@ -22,6 +28,7 @@ public final class PrecountNode1 extends PrecountNode
     public PrecountNode1( final UnadjustedNode unadjusted )
     {
         super( unadjusted, /*toCopyVoters*/true );
+        waynode = unadjusted.waynode();
 
       // Ensure that all rootward candidates are precount adjustable, too.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,7 +57,8 @@ public final class PrecountNode1 extends PrecountNode
     public PrecountNode1( final UnadjustedNode unadjusted, final RootwardCast<PrecountNode> _rootwardInThis )
     {
         super( unadjusted, /*toCopyVoters*/false );
-        assert !unadjusted.isGround(); // matching this.isGround
+        assert !unadjusted.isGround(); // else this.isGround is wrong
+        waynode = unadjusted.waynode();
         rootwardInThis = _rootwardInThis;
     }
 
@@ -60,6 +68,35 @@ public final class PrecountNode1 extends PrecountNode
 
 
     public boolean isGround() { return false; }
+
+
+
+    public Waynode waynode() { return waynode; }
+
+
+        private Waynode1 waynode;
+
+
+        static { stators.add( new Stator<PrecountNode1>()
+        {
+            public void save( final PrecountNode1 node, final Parcel out )
+            {
+                Waynode1.saveEmptily( node.waynode, out );
+            }
+            public void restore( final PrecountNode1 node, final Parcel in )
+            {
+                node.waynode = Waynode1.restoreEmptily( in );
+            }
+        });}
+
+
+        public void waynode( final Waynode1 _waynode )
+        {
+            if( _waynode == null ) throw new NullPointerException();
+
+            assert !_waynode.equals( waynode );
+            waynode = _waynode;
+        }
 
 
 
@@ -87,7 +124,6 @@ public final class PrecountNode1 extends PrecountNode
     public void rootwardInThis( final VotingID _votedID, final Precounter precounter )
     {
         // the tense of _VARNAME is future, while VARNAME is present
-
         final VotingID thisID = id();
         final VotingID votedID = rootwardInThis.votedID();
         logger.info( "(poll " + precounter.pollName() + ") Precounting " + thisID + ", changing vote from " + votedID + " to " + _votedID );
@@ -400,5 +436,9 @@ public final class PrecountNode1 extends PrecountNode
 
     private static final int VOTER_OUTFLOW = 0; // not yet coded
 
+
+///////
+
+    static { stators.seal(); }
 
 }

@@ -3,9 +3,9 @@ package waymaker.gen; // Copyright 2006-2009, 2013, 2015, Michael Allan.  Licenc
 import java.lang.annotation.*;
 
 
-/** Warns that access to a field, constructor or method is restricted to a particular
-  * thread, or to a thread that holds a particular lock.  The opposite of ThreadRestricted
-  * is {@linkplain ThreadSafe ThreadSafe}.
+/** Warns that access to a field, constructor or method is restricted to a particular thread,
+  * or to a thread that holds a particular lock, or meets some other particular constraint.
+  * The opposite of ThreadRestricted is {@linkplain ThreadSafe ThreadSafe}.
   *
   * <p>The restriction applies to a field, constructor or method.  It does not necessarily
   * apply to any associated object that is read from the field, or created by the
@@ -20,9 +20,18 @@ import java.lang.annotation.*;
   *
   * <p>Any non-private constructor or method that lacks a ThreadRestricted or ThreadSafe annotation is
   * instead bound by the restriction of its declaring type (class or interface). See the <a
-  * href='ThreadSafe.html#ctor-method-test'>step-by-step rules</a> in this case.
+  * href='ThreadSafe.html#ctor-method-test'>step-by-step rules</a> in this case.  The effect is
+  * equivalent to repeating the type annotation on the constructor or method:
   *
-  * <p>If the type lacks annotation, then the restriction is <a href='#unspecified'>unspecified</a>.</p>
+  * <pre>
+  *     &#064;ThreadRestricted("<var>type restriction</var>")</pre>
+  *
+  * <p>The default restriction of the type may be qualified by a further restriction, such that both
+  * apply.  The following forms of annotation are therefore equivalent:</p>
+  *
+  * <pre>
+  *     &#064;ThreadRestricted("further <var>restriction</var>")
+  *     &#064;ThreadRestricted("<var>type restriction</var>, <var>further restriction</var>")</pre>
   *
   * <h3>Restriction to a particular thread</h3>
   *

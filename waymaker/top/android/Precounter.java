@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.content.*;
 import android.content.res.AssetFileDescriptor;
@@ -8,6 +8,7 @@ import android.os.RemoteException;
 import android.provider.DocumentsContract; // grep DocumentsContract-TS
 import java.io.*;
 import java.util.HashMap;
+import java.util.regex.Matcher;
 import org.xmlpull.v1.*;
 import waymaker.gen.*;
 import waymaker.spec.*;
@@ -15,7 +16,10 @@ import waymaker.spec.*;
 import static android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME;
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
 import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+import static org.xmlpull.v1.XmlPullParser.END_TAG;
 import static org.xmlpull.v1.XmlPullParser.START_TAG;
+import static org.xmlpull.v1.XmlPullParser.TEXT;
+import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
 
 
 /** A count engine that uses a {@linkplain WayrepoPreviewController wayrepo preview} to form an
@@ -31,13 +35,13 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
       *     @see #pollName()
       *     @param groundUnaState The {@linkplain UnadjustedGround#restore(byte[],UnadjustedNodeV.RKit)
       *       marshalled state} of the unadjusted ground on which to base the precount, or null to base
-      *       it on nothing, in which case the COMPOSITION_LOCK synchronization may be skipped.
+      *       it on nothing, in which case the openToThread restriction is lifted.
       *     @param originalUnaCount The number of unadjusted nodes in the original groundUnaState cache,
       *        or zero if groundUnaState is null.  The value serves only to enlarge the initial capacity
       *        of the node map in order to avoid forseeable rehashes.
       *     @see WaykitUI#wayrepoTreeLoc()
       */
-      @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per UnadjustedGround.restore
+     @ThreadRestricted("KittedPolyStatorSR.openToThread") // for ground.restore
    public Precounter( final String pollName, final byte[] groundUnaState, final int originalUnaCount,
      final ContentResolver contentResolver, final String wayrepoTreeLoc )
     {
@@ -69,9 +73,9 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
 
 
-    /** Returns the identified node from the local node map, or a newly constructed one whose
-      * properties are initialized from the latest count on the remote count server, or null if the
-      * identified node is both unmapped and uncounted.
+    /** Returns the identified node from the local node map, or a newly constructed one whose properties
+      * are initialized from the latest count on the remote count server, or null if the identified node
+      * is both unmapped and uncounted.
       */
     public UnadjustedNode getOrFetchUnadjusted( final VotingID id )
     {
@@ -150,7 +154,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
         if( wayrepoTreeLoc == null ) throw new CountFailure( "User has set no wayrepo location" );
 
         final PersonID ownerID; // owner of wayrepo, typically the user
-        VotingID ownerCandidateNewID = null; // thus far
+        VotingID _votedID_owner = null; // thus far
         final Uri wayrepoTreeUri = Uri.parse( wayrepoTreeLoc );
         read: try( final WayrepoReader inWr = new WayrepoReader( wayrepoTreeUri, contentResolver ))
         {
@@ -190,13 +194,13 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
             {
                 personalPositionFiles: while( cPos.moveToNext() )
                 {
-                    final String name = cPos.getString( 1 );
+                    final String filename = cPos.getString( 1 );
                     final boolean isDirectory = MIME_TYPE_DIR.equals( cPos.getString( 2 ));
-                    if( !isDirectory && "position.xht".equals(name) )
+                    if( !isDirectory && "position.xht".equals(filename) )
                     {
-                        ownerCandidateNewID = parsePosition( ownerID, /*docID*/cPos.getString(0), inWr );
+                        _votedID_owner = parseVote( /*docID*/cPos.getString(0), inWr, ownerID );
                     }
-                    else if( isDirectory && "pipe".equals(name) )
+                    else if( isDirectory && "pipe".equals(filename) )
                     {
                         docID = cPos.getString( 0 );
                         try( final Cursor cPP/*proID_NAME_TYPE*/ = inWr.queryChildren( docID ); )
@@ -210,27 +214,31 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
                                   // Ensure pipe is precounted.
                                   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                                    VotingID candidateNewID = null; // thus far
+                                    VotingID _votedID = null;        // thus far
+                                    Waynode _waynode = EMPTY_WAYNODE; // "
                                     try( final Cursor cPipe/*pro same*/ = inWr.queryChildren( docID ); )
                                     {
                                         pipePositionFiles: while( cPipe.moveToNext() )
                                         {
-                                            if( !MIME_TYPE_DIR.equals(cPipe.getString(2))
-                                              && "position.xht".equals(cPipe.getString(1)) )
+                                            if( MIME_TYPE_DIR.equals(cPipe.getString(2)) ) continue;
+
+                                            final String fn = cPipe.getString( 1 );
+                                            if( "position.xht".equals(fn) )
                                             {
-                                                candidateNewID = parsePosition( pipeID,
-                                                  /*docID*/cPipe.getString(0), inWr );
-                                                break;
+                                                _votedID = parseVote( /*docID*/cPipe.getString(0), inWr,
+                                                  pipeID );
+                                            }
+                                            else if( "end.xht".equals(fn) || "transnorm.xht".equals(fn)
+                                                  || "act.xht".equals(fn) )
+                                            {
+                                                _waynode = parseWaynode( /*docID*/cPipe.getString(0), inWr );
                                             }
                                         }
                                     }
-                                    final PrecountNode pipePre = PrecountNode.getOrMakeIfVoteChanged( pipeID,
-                                      this, /*toForceNode*/true, candidateNewID ); /* Forcibly include pipe
-                                      in forest regardless of whether it yet participates in vote flow.
-                                      Unlike a person, a pipe is useful only as candidate to vote for,
-                                      and voting is easier when the candidate is already in the forest. */
-                                    if( pipePre != null ) pipePre.rootwardInThis( candidateNewID, this );
-                                      // else candidateNewID is unchanged, not really new
+                                    precountIfChanged( pipeID, _votedID, _waynode, /*allowStubRoot*/true );
+                                      // Let pipe be stub root.  Unlike a person, a pipe is useful only
+                                      // as a candidate to vote for, and voting is easier when the
+                                      // candidate is already in the forest.
                                 }
                             }
                         }
@@ -242,10 +250,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
       // Ensure owner is precounted.
       // - - - - - - - - - - - - - - -
-        final PrecountNode ownerPre = PrecountNode.getOrMakeIfVoteChanged( ownerID, this,
-          /*toForceNode*/false, ownerCandidateNewID );
-        if( ownerPre != null ) ownerPre.rootwardInThis( ownerCandidateNewID, this );
-          // else ownerCandidateNewID is unchanged, not really new
+        precountIfChanged( ownerID, _votedID_owner, EMPTY_WAYNODE, /*allowStubRoot*/false );
     }
 
 
@@ -268,22 +273,23 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
 
 
-    private final ServerCount serverCount;
+    private static final java.util.logging.Logger logger = LoggerX.getLogger( Precounter.class );
 
 
 
-    /** @return Well formed identity tag of voted candidate, or null if no candidate is voted.
-      * @throws CountFailure if identity tag is malformed, or identifies self.
+    /** @return Identity tag of vote, or null if there is none.  Instead throws CountFailure if identity
+      *   tag is malformed or identifies self.
       */
-    private VotingID parsePosition( final VotingID voterID, final String docID, final WayrepoReader inWr )
+    private VotingID parseVote( final String docID, final WayrepoReader inWr, final VotingID actorID )
       throws CountFailure, MalformedID
     {
-        VotingID candidateID = null; // thus far
+        // position.xht form: http://reluk.ca/100-0/  (view source)
+        VotingID votedID = null; // thus far
         final Uri fileUri = DocumentsContract.buildDocumentUriUsingTree( inWr.wayrepoTreeUri(), docID );
         try
         (
-            final AssetFileDescriptor aFD = inWr.provider().
-              openTypedAssetFileDescriptor( fileUri, /*type, any*/"*/*", /*options*/null );
+            final AssetFileDescriptor aFD = inWr.provider().openTypedAssetFileDescriptor( fileUri,
+              /*type, any*/"*/*", /*options*/null );
             final InputStream in = new BufferedInputStream( aFD.createInputStream() );
         ){
             final XmlPullParser p = xhtmlParserFactory.newPullParser();
@@ -295,10 +301,10 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
                 final String udidString = p.getAttributeValue( null, "candidate" );
                 if( udidString != null )
                 {
-                    candidateID = (VotingID)UDID.make( udidString );
-                    if( candidateID.equals( voterID ))
+                    votedID = (VotingID)UDID.make( udidString );
+                    if( votedID.equals( actorID ))
                     {
-                        throw new CountFailure( "Self voting " + voterID + " in file " + docID );
+                        throw new CountFailure( "Self voting " + actorID + " in file " + docID );
                           // demand correction of this senseless vote
                     }
                 }
@@ -307,13 +313,148 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
         }
         catch( IOException|RemoteException|XmlPullParserException x ) { throw new CountFailure( x ); }
 
-        return candidateID;
+        return votedID;
+    }
+
+
+
+    private WaynodeJig parseWaynode( final String docID, final WayrepoReader inWr )
+      throws CountFailure
+    {
+        // end|transnorm|act.xht form: http://reluk.ca/100-0/tool/xhwsPretty/pretty.js
+        final WaynodeJig jig = parseWaynode_jig;
+        jig.clear();
+        final Uri fileUri = DocumentsContract.buildDocumentUriUsingTree( inWr.wayrepoTreeUri(), docID );
+        try
+        (
+            final AssetFileDescriptor aFD = inWr.provider().openTypedAssetFileDescriptor( fileUri,
+              /*type, any*/"*/*", /*options*/null );
+            final InputStream in = new BufferedInputStream( aFD.createInputStream() );
+        ){
+            final XmlPullParser p = xhtmlParserFactory.newPullParser();
+            p.setInput( in, /*encoding, self detect*/null );
+            for( int t = p.getEventType(); t != END_DOCUMENT; t = p.next() )
+            {
+                if( t != START_TAG || !"wayscript".equals(p.getName()) ) continue;
+
+                for( t = p.next(); t != END_TAG || !"wayscript".equals(p.getName()); t = p.next() )
+                {
+                    if( t != START_TAG || !"handle".equals(p.getName()) ) continue;
+
+                    handle: for( t = p.next(); t != END_TAG || !"handle".equals(p.getName()); t = p.next() )
+                    {
+                        if( t != TEXT ) continue;
+
+                        final String str = p.getText();
+                        int cEnd = str.length();
+                        if( cEnd == 0 ) break;
+
+                        int c = 0;
+                        while( Character.isWhitespace( str.charAt( c ))) // strip leading whitepace
+                        {
+                            ++c;
+                            if( c >= cEnd ) break handle;
+                        }
+
+                        while( Character.isWhitespace( str.charAt( cEnd - 1 ))) // strip trailing whitepace
+                        {
+                            --cEnd;
+                            if( c >= cEnd ) break handle;
+                        }
+
+                        final String handle = str.substring( c, cEnd );
+                        if( !parseWaynode_matcher.reset(handle).matches() )
+                        {
+                            throw new CountFailure( "Malformed handle '" + handle + "' in file " + docID );
+                        }
+
+                        jig.handle = handle;
+                        break;
+                    }
+                    break;
+                }
+                break;
+            }
+        }
+        catch( IOException|RemoteException|XmlPullParserException x ) { throw new CountFailure( x ); }
+        return jig;
+    }
+
+
+        private final WaynodeJig parseWaynode_jig = new WaynodeJig(); // cache for reuse
+
+        private final Matcher parseWaynode_matcher = Waynode.HANDLE_PATTERN.matcher( "" );
+
+
+
+    /** Ensures that any change of position in the local wayrepo is cached in a precount-adjustable
+      * node.  This may involve communication with the remote count server.
+      *
+      *     @param _votedID The {@linkplain RootwardCast#votedID() vote} from the local wayrepo, which
+      *       may be null.
+      *     @param waynodeTmp A copy of the {@linkplain CountNode#waynode() way contribution} from the
+      *       local wayrepo, for temporary access only (it might be a mutable WaynodeJig).
+      *     @param allowStubRoot Ensures the node is cached even if the position is missing from both
+      *       the original count and the local wayrepo (_votedID is null and _waynode is empty).  This
+      *       creates a “stub root” that will appear in the forest, even though it does not participate
+      *       in vote flow.
+      */
+    private void precountIfChanged( final VotingID id, final VotingID _votedID, final Waynode waynodeTmp,
+      final boolean allowStubRoot )
+    {
+        final PrecountNode pre;
+        final boolean isVoteChanged;
+        final boolean isWaynodeChanged;
+        UnadjustedNode una = getOrFetchUnadjusted( id );
+        if( una == null )
+        {
+            isVoteChanged = _votedID != null;
+            isWaynodeChanged = !waynodeTmp.equals( EMPTY_WAYNODE );
+            if( !isVoteChanged && !isWaynodeChanged )
+            {
+                if( allowStubRoot )
+                {
+                    logger.info( "(poll " + pollName() + ") Precounting " + id + " as stub root" );
+                    UnadjustedNode0.makeMappedPrecounted( id, this );
+                      // adds a precount-adjustable node that ensures visibility as a root (stub root)
+                      // in the precount ground
+                }
+                return;
+            }
+
+            una = UnadjustedNode0.makeMapped( id, this );
+            pre = new PrecountNode1( una );
+        }
+        else
+        {
+            final PrecountNode p = una.precounted();
+            if( p == null )
+            {
+                isVoteChanged = !ObjectX.equals( _votedID, una.rootwardInThis().votedID() );
+                isWaynodeChanged = !waynodeTmp.equals( una.waynode() );
+                if( !isVoteChanged && !isWaynodeChanged ) return;
+
+                pre = new PrecountNode1( una );
+            }
+            else
+            {
+                pre = p;
+                isVoteChanged = !ObjectX.equals( _votedID, pre.rootwardInThis().votedID() );
+                isWaynodeChanged = !waynodeTmp.equals( pre.waynode() );
+            }
+        }
+        if( isVoteChanged ) pre.rootwardInThis( _votedID, this );
+        if( isWaynodeChanged ) pre.waynode( new Waynode1( waynodeTmp ));
     }
 
 
 
     private static final String[] proNAME = new String[] { COLUMN_DISPLAY_NAME };
       // query projection of one formal parameter: display name
+
+
+
+    private final ServerCount serverCount;
 
 
 

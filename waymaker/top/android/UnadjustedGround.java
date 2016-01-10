@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
 import waymaker.gen.*;
@@ -20,7 +20,7 @@ public final class UnadjustedGround extends UnadjustedNodeV
    // --------------------------------------------------------------------------------------------------
 
 
-      @Override/*to allow for voters that are barred*/
+      @Override/*to allow for "voters" who are barred as such, and so instead roots*/
     public void saveVoter( final UnadjustedNode1 voter, final Parcel out, final SKit kit )
     {
 
@@ -32,11 +32,15 @@ public final class UnadjustedGround extends UnadjustedNodeV
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         out.writeInt( voter.peerOrdinal() );
 
-      // c. Vote.
+      // c. Waynode.
+      // - - - - - - -
+        Waynode1.saveEmptily( voter.waynode(), out );
+
+      // d. Vote.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         AndroidXID.writeUDIDOrNull( voter.rootwardInThis().votedID(), out );
 
-      // d. Voter.
+      // e. Voter.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         UnadjustedNode1.stators.save( voter, out, kit );
     }
@@ -47,7 +51,7 @@ public final class UnadjustedGround extends UnadjustedNodeV
       *
       *     @param state The state as marshalled from the {@linkplain stators stators}.
       */
-      @ThreadRestricted("touch stators.COMPOSITION_LOCK before") // as per stators.restore
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
     public void restore( final byte[] state, final UnadjustedNodeV.RKit kit )
     {
         final Parcel in = Parcel.obtain(); // grep Parcel-TS
@@ -71,14 +75,18 @@ public final class UnadjustedGround extends UnadjustedNodeV
 
       // c.
       // - - -
+        final Waynode1 waynode = Waynode1.restoreEmptily( in );
+
+      // d.
+      // - - -
         final VotingID votedID = (VotingID)AndroidXID.readUDIDOrNull( in );
         final RootwardCast<UnadjustedNode> cast;
         if( votedID == null ) cast = rootwardHither; // voter is actually a non-voter
         else cast = new RootwardCastB<UnadjustedNode>( this, votedID ); // voter is barred
 
-      // d.
+      // e.
       // - - -
-        final UnadjustedNode1 voter = new UnadjustedNode1( id, peerOrdinal, cast );
+        final UnadjustedNode1 voter = new UnadjustedNode1( id, peerOrdinal, cast, waynode );
         kit.encache( voter );
         UnadjustedNode1.stators.restore( voter, in, kit );
         return voter;
@@ -90,6 +98,10 @@ public final class UnadjustedGround extends UnadjustedNodeV
 
 
     public boolean isGround() { return true; }
+
+
+
+    public Waynode1 waynode() { return Waynode.EMPTY_WAYNODE; }
 
 
 

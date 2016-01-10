@@ -6,10 +6,10 @@ import waymaker.gen.*;
 import waymaker.spec.*;
 
 
-/** A node that a {@linkplain Precounter precounter} may adjust in order to include changes read from
-  * the user’s local wayrepo.
+/** A precount-adjusted node, one that a {@linkplain Precounter precounter} adjusts in order to include
+  * changes read from the user’s local wayrepo.
   */
-public abstract class PrecountNode implements Node
+public abstract class PrecountNode implements CountNode
 {
 
     static final KittedPolyStatorSR<PrecountNode,SKit,RKit> stators = new KittedPolyStatorSR<>();
@@ -150,48 +150,6 @@ public abstract class PrecountNode implements Node
 
 
 
-    /** Returns the identified precount node from the cache; or a newly constructed and cached one,
-      * which may entail connecting to the remote count server; or null if _votedID is discovered to be the
-      * identity tag of the current vote.
-      *
-      *     @param toForceNode Ensures that the node is cached.  If missing from the original,
-      *       unadjusted count, then toForceNode will construct and cache it.  This is done even if the
-      *       vote is unchanged (_votedID is null) and consequently this method will return null (see
-      *       _votedID below).
-      *     @param _votedID An identity tag that might differ from that of the current vote.  If the
-      *       tags are discovered actually to be equal, then this method returns null.
-      */
-    public static PrecountNode getOrMakeIfVoteChanged( final VotingID id, final Precounter precounter,
-      final boolean toForceNode, final VotingID _votedID )
-    {
-        UnadjustedNode una = precounter.getOrFetchUnadjusted( id );
-        if( una == null )
-        {
-            if( _votedID == null )
-            {
-                if( toForceNode )
-                {
-                    UnadjustedNode0.makeMappedPrecounted( id, precounter );
-                    logger.info( "(poll " + precounter.pollName() + ") Precounting " + id + " as bare root" );
-                }
-                return null;
-            }
-
-            una = UnadjustedNode0.makeMappedPrecounted( id, precounter );
-            return una.precounted();
-        }
-
-        PrecountNode pre = una.precounted();
-        if( pre == null )
-        {
-            if( !ObjectX.equals( _votedID, una.rootwardInThis().votedID() )) pre = make( una );
-        }
-        else if( ObjectX.equals( _votedID, pre.rootwardInThis().votedID() )) pre = null;
-        return pre;
-    }
-
-
-
     /** Removes the given node as a voter and adjusts the flow registers and their dependencies at
       * this node (present candidate) and each node down the root path.  Changes the content of
       * the voters list insofar as it’s complete, and possibly the content and order of downstream
@@ -248,6 +206,7 @@ public abstract class PrecountNode implements Node
 
     /** Saves state from the precount-adjusted voter, writing out to the parcel.
       */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.save
     public void saveVoter( final PrecountNode1 voter, final Parcel out, final SKit kit )
     {
         PrecountNode1.stators.save( voter, out, kit );
@@ -256,6 +215,7 @@ public abstract class PrecountNode implements Node
 
         /** Reconstructs a precount-adjusted voter and restores its state, reading in from the parcel.
           */
+          @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
         public PrecountNode1 restoreVoter( final UnadjustedNode voterUna, final Parcel in, final RKit kit,
           final RootwardCast<PrecountNode> rootwardHither )
         {
@@ -342,6 +302,18 @@ public abstract class PrecountNode implements Node
 
 
 
+    /** Sets the waynode to reflect a change in the local wayrepo.
+      *
+      *     @throws AssertionError if assertions are enabled and the change would be redundant, _waynode
+      *       being equal to the current waynode.  The caller is expected to guard against such an
+      *       inefficient call.
+      *     @throws NullPointerException if _waynode is null.
+      *     @throws UnsupportedOperationException if this node is the ground.
+      */
+    public abstract void waynode( Waynode1 _waynode );
+
+
+
    // - N o d e ----------------------------------------------------------------------------------------
 
 
@@ -394,14 +366,14 @@ public abstract class PrecountNode implements Node
           *       against such an inefficient call.
           *     @throws UnsupportedOperationException if this node is the ground.
           */
-        abstract void rootwardInThis( VotingID votedID, Precounter precounter );
+        public abstract void rootwardInThis( VotingID votedID, Precounter precounter );
 
 
 
-    public final List<Node> voters() { return voters; }
+    public final List<CountNode> voters() { return voters; }
 
 
-        private final ArrayList<Node> voters;
+        private final ArrayList<CountNode> voters;
 
 
         static { stators.add( new KittedStatorSR<PrecountNode,SKit,RKit>()
@@ -414,12 +386,12 @@ public abstract class PrecountNode implements Node
               // 1. Inlying voters.
               // - - - - - - - - - -
                 {
-                    final List<Node> inlyingVoters = node.voters;
+                    final List<CountNode> inlyingVoters = node.voters;
                     final int vN = inlyingVoters.size();
                     out.writeInt( vN );
                     for( int v = 0; v < vN; ++v )
                     {
-                        final Node voter = inlyingVoters.get( v );
+                        final CountNode voter = inlyingVoters.get( v );
 
                       // 1a. Voter ID.
                       // - - - - - - - -
@@ -481,7 +453,7 @@ public abstract class PrecountNode implements Node
                 if( vN != 0 )
                 {
                     final RootwardCast<PrecountNode> rootwardHither = node.rootwardHither_getOrMake();
-                    final ArrayList<Node> inlyingVoters = node.voters;
+                    final ArrayList<CountNode> inlyingVoters = node.voters;
                     inlyingVoters.ensureCapacity( vN );
                     int v = 0;
                     do
@@ -493,7 +465,7 @@ public abstract class PrecountNode implements Node
                       // 1b.
                       // - - -
                         final boolean isPrecountVoter = ParcelX.readBoolean( in );
-                        final Node voter;
+                        final CountNode voter;
                         if( isPrecountVoter )
                         {
                           // 1c.
@@ -631,10 +603,6 @@ public abstract class PrecountNode implements Node
 
         return true;
     }
-
-
-
-    private static final java.util.logging.Logger logger = LoggerX.getLogger( PrecountNode.class );
 
 
 

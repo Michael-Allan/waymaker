@@ -9,11 +9,12 @@ import waymaker.gen.*;
   * nodal position} within the forest that obeys the following controls:
   *
   * <ul>
-  *     <li>{@linkplain #ascendTo(Node) ascendTo}</li>
+  *     <li>{@linkplain #ascendTo(CountNode) ascendTo}</li>
   *     <li>{@linkplain #descend() descend}</li>
   *     </ul>
   */
-public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
+  @ThreadRestricted("app main") // in particular, for use of ForestCache
+public final class Forester
 {
 
 
@@ -64,7 +65,7 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
       *
       *     @throws NoSuchElementException if _position is not in position.voters.
       */
-    public void ascendTo( Node _position ) { throw new UnsupportedOperationException(); }
+    public void ascendTo( CountNode _position ) { throw new UnsupportedOperationException(); }
 
 
 
@@ -132,10 +133,10 @@ public @ThreadRestricted("app main"/*uses ForestCache*/) final class Forester
       *
       *     @return Either a real node or the {@linkplain NodeCache#ground() ground pseudo-node}.
       */
-    public Node position() { return position; }
+    public CountNode position() { return position; }
 
 
-        private Node position;
+        private CountNode position;
 
 
 }

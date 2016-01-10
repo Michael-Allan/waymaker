@@ -17,8 +17,7 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
 /** A controller and configurer of those models that can introduce changes read from the user’s local
   * wayrepo, which are yet unknown to public sources, thus anticipating a future public state.
   */
-  @ThreadRestricted("app main") 
-public final class WayrepoPreviewController extends LinearLayout
+public @ThreadRestricted("app main") final class WayrepoPreviewController extends LinearLayout
 {
     /* * *
     - designed for possible use in (among other contexts) a "Refresh" dialogue that floats,

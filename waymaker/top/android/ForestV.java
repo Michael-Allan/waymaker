@@ -7,8 +7,8 @@ import waymaker.gen.*;
 
 
 /** <p>A forest view oriented by the {@linkplain Wayranging#forester() forester}.  Its main components
-  * are {@linkplain Node node} views (lettered).  These it divides vertically between a peers viewer for
-  * showing the forester’s {@linkplain Forester#ascendTo(Node) leafward paths}, and a candidates viewer
+  * are {@linkplain CountNode node} views (lettered).  These it divides vertically between a peers viewer for
+  * showing the forester’s {@linkplain Forester#ascendTo(CountNode) leafward paths}, and a candidates viewer
   * for showing its {@linkplain Forester#descend() rootward paths}.</p>
 
   * <pre>
@@ -93,8 +93,8 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         {
             public void hear( Changed _ding )
             {
-                final Node candidate = candidateViewed( wr().forester() );
-                final List<? extends Node> _peers = candidate.voters();
+                final CountNode candidate = candidateViewed( wr().forester() );
+                final List<? extends CountNode> _peers = candidate.voters();
                 if( peerCount == _peers.size() ) return;
 
                 assert peerCount < _peers.size(); // forest.nodeCache guarantees no node is ever removed
@@ -129,7 +129,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
 
 
-    private Node candidateViewed( final Forester forester )
+    private CountNode candidateViewed( final Forester forester )
     {
         // topmost node of candidates viewer, or ground if viewer is grounded
         return candidateCount > 0? getChildNodeV(cTopCandidate()).node(): forester.nodeCache().ground();
@@ -255,7 +255,7 @@ System.err.println( " --- depopulating" ); // TEST
       *     @param candidate The viewed candidate.
       *     @param _peers The modeled peers, viz. candidate.voters.
       */
-    private void syncPeersViewer( final Node candidate, final List<? extends Node> _peers )
+    private void syncPeersViewer( final CountNode candidate, final List<? extends CountNode> _peers )
     {
         final int pN = _peers.size(); // modeled
 System.err.println( " --- syncPeersViewer, peers modeled: " + pN ); // TEST
@@ -268,7 +268,7 @@ System.err.println( " --- syncPeersViewer, peers modeled: " + pN ); // TEST
             assert _peers instanceof RandomAccess;
             for(; p >= pStart; --p, ++c ) // close gap between viewed and modeled
             {
-                final Node peer = _peers.get( p );
+                final CountNode peer = _peers.get( p );
                 final NodeV peerV;
                 if( pool.size() > 0 )
                 {
@@ -291,7 +291,7 @@ System.err.println( " --- syncPeersViewer, peers modeled: " + pN ); // TEST
     private void syncViewers( final Forester forester ) // ensures each populated to match forest and forester
     {
         final int _candidateCount = forester.height();
-        final Node _candidate = forester.position();
+        final CountNode _candidate = forester.position();
         final int heightBalance = candidateCount - _candidateCount;
 System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); // TEST
 
@@ -310,13 +310,13 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
             return;
         }
 
-        final Node candidate = candidateViewed( forester );
+        final CountNode candidate = candidateViewed( forester );
 
       // Or lower than model
       // - - - - - - - - - - -
         if( heightBalance < 0 )
         {
-            Node _node = _candidate;
+            CountNode _node = _candidate;
             int b = heightBalance;
             do // drop _node to view height
             {
@@ -339,7 +339,7 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
 
     /** @param _candidate The new immediate candidate, viz. forester.position.
       */
-    private void syncViewersOnDeficit( final int heightBalance, final Node _candidate )
+    private void syncViewersOnDeficit( final int heightBalance, final CountNode _candidate )
     {
         assert heightBalance < 0;
         if( heightBalance == -1 ) // then a deficit of one candidate
@@ -378,7 +378,7 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
     /** @param _candidateCount The new candidate count, viz. forester.height.
       * @param _candidate The new immediate candidate, viz. forester.position.
       */
-    private void syncViewersOnMismatch( final int _candidateCount, final Node _candidate ) // abnormal case
+    private void syncViewersOnMismatch( final int _candidateCount, final CountNode _candidate ) // abnormal case
     {
         depopulateViewers();
         syncViewersOnDeficit( -_candidateCount, _candidate );

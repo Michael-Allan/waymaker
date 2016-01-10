@@ -8,7 +8,7 @@ import waymaker.spec.VotingID;
   *
   *     @param <C> The type of candidate node that is cast to.
   */
-public interface RootwardCast<C extends Node>
+public interface RootwardCast<C extends CountNode>
 {
 
 
@@ -47,7 +47,7 @@ public interface RootwardCast<C extends Node>
 
  // /** The [reference] node from which this cast proceeds.
  //   */
- // public Node node();
+ // public CountNode node();
  //
  /// unmodeled, else cannot have rootwardHither_getOrMake optimization
 

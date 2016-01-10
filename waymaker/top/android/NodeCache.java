@@ -51,13 +51,13 @@ public interface NodeCache
 
 
     /** A pseudo-node that represents a snapshot of the forest floor beneath the root candidates, whom
-      * it models as its ‘{@linkplain Node#voters() voters}’.  Their {@linkplain Node#rootwardInThis()
+      * it models as its ‘{@linkplain CountNode#voters() voters}’.  Their {@linkplain CountNode#rootwardInThis()
       * rootward casts} lead to this ground, which serves formally as the ultimate ‘candidate’.
       * Meanwhile the rootward cast of the ground itself is null.  This modeling simplifies the
       * structure of the forest by reducing it to a single super-tree having the ground as its root,
       * which in turn simplifies the algorithms for navigating that structure.
       */
-    public Node ground();
+    public CountNode ground();
 
 
 }

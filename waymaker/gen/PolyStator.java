@@ -29,21 +29,25 @@ public final class PolyStator<T> extends KittedPolyStatorSR<T,Object,Object>
    // --------------------------------------------------------------------------------------------------
 
 
-    /** Saves state from the thing, writing out to the parcel.
+    /** Saves state from the thing by calling s.{@linkplain Stator#save(Object,Parcel) save}
+      * for each component s of this poly-stator.
       *
-      *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed.
+      *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed, or
+      *       is {@linkplain #openToThread() unopen} to the calling thread.
       */
-      @ThreadRestricted("touch COMPOSITION_LOCK before")
-    public void save( final T t, final Parcel out ) { super.save( t, out, /*kit*/null ); }
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread")
+    public void save( final T t, final Parcel out ) { save( t, out, /*kit*/null ); }
 
 
 
-    /** Restores state to the thing, reading in from the parcel.
+    /** Restores state to the thing by calling s.{@linkplain Stator#restore(Object,Parcel) restore}
+      * for each component s of this poly-stator.
       *
-      *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed.
+      *     @throws AssertionError if assertions are enabled and this poly-stator is
+      *       {@linkplain #openToThread() unopen} to the calling thread.
       */
-      @ThreadRestricted("touch COMPOSITION_LOCK before")
-    public void restore( final T t, final Parcel in ) { super.restore( t, in, /*kit*/null ); }
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread")
+    public void restore( final T t, final Parcel in ) { restore( t, in, /*kit*/null ); }
 
 
 }

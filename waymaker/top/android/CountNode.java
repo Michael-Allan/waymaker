@@ -1,13 +1,18 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import java.util.Comparator;
 import java.util.List;
 import waymaker.spec.*;
 
 
-/** A counting node in the vote flow of a {@linkplain Forest pollar forest}.
+/** A formal element in a {@linkplain Forest pollar forest}.  It summarizes the formal contribution of
+  * {@linkplain #id() one actor’s} position to the poll, particularly his (or her, or its) cast
+  * relations to {@linkplain #rootwardInThis() rootward} candidates and the leafward {@linkplain
+  * #voters() voters}.  These cast relations combine with those of other nodes and harden to form an
+  * arboreal skeleton for the poll, suited for carrying its material content: internally its coalescent
+  * flow of vote sums, and externally its survey of the available {@linkplain #waynode() ways}.
   */
-public interface Node
+public interface CountNode
 {
 
 
@@ -18,9 +23,9 @@ public interface Node
       * according to their ordinals.  This matches the order in which data pages are received from the
       * {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) server count}.
       */
-    public static final Comparator<Node> peersComparator = new Comparator<Node>()
+    public static final Comparator<CountNode> peersComparator = new Comparator<CountNode>()
     {
-        public int compare( final Node n, final Node m )
+        public int compare( final CountNode n, final CountNode m )
         {
             if( n == m ) return 0; // short cut, optimizing for a common case
 
@@ -35,21 +40,21 @@ public interface Node
    // - N o d e ----------------------------------------------------------------------------------------
 
 
-    /** The identity of the actor who holds this node, or null if this node is the {@linkplain
-      * NodeCache#ground() ground node}.
+    /** The identity of the actor who holds the position behind this count node, or null if this is the
+      * {@linkplain NodeCache#ground() ground node}.
       */
     public VotingID id();
 
 
 
-    /** Answers whether this node is the {@linkplain NodeCache#ground() ground node}.
+    /** Answers whether this count node is the {@linkplain NodeCache#ground() ground node}.
       */
     public boolean isGround();
 
 
 
-    /** This node’s ordinal number as a peer.  The ordinal number serves to page the data received from
-      * the {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) server count}.
+    /** This count node’s ordinal number as a peer.  The ordinal number serves to page the data received
+      * from the {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) server count}.
       *
       *     @see <a href='../../../../peer' target='_top'>‘peer’</a>
       *     @see ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int,int)
@@ -58,10 +63,10 @@ public interface Node
 
 
 
-    /** The {@linkplain #rootwardInThis() cast rootward} from this node in the precount-adjusted
-      * version of the forest.  If this node is itself a {@linkplain PrecountNode precount
-      * node} (pre), or has a {@linkplain UnadjustedNode#precounted() precounted version} (pre),
-      * then this method returns pre.rootwardInThis.  Otherwise it returns this.rootwardInThis.
+    /** The {@linkplain #rootwardInThis() cast rootward} from this count node in the precount-adjusted
+      * version of the forest.  If this node is itself a {@linkplain PrecountNode precount node} (pre),
+      * or has a {@linkplain UnadjustedNode#precounted() precounted version} (pre), then this method
+      * returns pre.rootwardInThis.  Otherwise it returns this.rootwardInThis.
       *
       * <p>Most rootward travellers want exactly this switching behaviour.  The forest may diverge
       * rootward between its adjusted and unadjusted versions — picture a railway track forking — and
@@ -76,25 +81,33 @@ public interface Node
       * sharing it between the two versions of the forest.  This is optimal because the shared leafward
       * part may be very large.</p>
       */
-    public RootwardCast<? extends Node> rootwardInPrecount();
+    public RootwardCast<? extends CountNode> rootwardInPrecount();
 
 
 
-    /** The cast rootward from this node, or null if this node is the ground.
+    /** The cast rootward from this count node, or null if this node is the ground.
       */
-    public RootwardCast<? extends Node> rootwardInThis();
+    public RootwardCast<? extends CountNode> rootwardInThis();
 
 
 
     /** An {@linkplain #peersComparator ordered}, extensible listing of the peer group directly leafward
-      * of this node.  Its members are either the immediate voters of this node (a proper node) or the
-      * roots of the forest (if this node is the ground node).  Any change to the list will be signalled
+      * of this count node.  Its members are either the immediate voters (if this is a proper node) or
+      * the roots of the forest (if this is the ground node).  Any change to the list will be signalled
       * by the {@linkplain ForestCache#voterListingBell() listing bell}.  All changes will be pure
       * extensions that leave the number and order of previously listed members unchanged.
       *
       *     @see <a href='../../../../peer' target='_top'>‘peer’</a>
       */
-    public List<? extends Node> voters();
+    public List<? extends CountNode> voters();
+
+
+
+    /** Answers whether the {@linkplain #voters() voter list} might be incomplete.  A change from true
+      * to false will be signalled by the {@linkplain ForestCache#voterListingBell() listing bell}.  No
+      * other change is possible.
+      */
+    public boolean votersMaybeIncomplete();
 
 
 
@@ -105,11 +118,9 @@ public interface Node
 
 
 
-    /** Answers whether the {@linkplain #voters() voter list} might be incomplete.  A change from true
-      * to false will be signalled by the {@linkplain ForestCache#voterListingBell() listing bell}.  No
-      * other change is possible.
+    /**  The way contributions of the position behind this count node.
       */
-    public boolean votersMaybeIncomplete();
+    public Waynode waynode();
 
 
 }
