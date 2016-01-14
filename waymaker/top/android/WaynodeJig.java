@@ -8,8 +8,9 @@ final class WaynodeJig implements Waynode
 
     void clear()
     {
+        answer = EMPTY_WAYNODE.answer();
         handle = EMPTY_WAYNODE.handle();
-        summary = EMPTY_WAYNODE.summary();
+        question = EMPTY_WAYNODE.question();
     }
 
 
@@ -24,6 +25,13 @@ final class WaynodeJig implements Waynode
    // - W a y n o d e ----------------------------------------------------------------------------------
 
 
+    public String answer() { return answer; }
+
+
+        String answer = EMPTY_WAYNODE.answer();
+
+
+
     public String handle() { return handle; }
 
 
@@ -31,10 +39,10 @@ final class WaynodeJig implements Waynode
 
 
 
-    public String summary() { return summary; }
+    public String question() { return question; }
 
 
-        String summary = EMPTY_WAYNODE.summary();
+        String question = EMPTY_WAYNODE.question();
 
 
 }

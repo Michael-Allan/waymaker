@@ -17,7 +17,8 @@ public interface Waynode
 
     /** An immutable instance of an empty waynode.
       */
-    public static final Waynode1 EMPTY_WAYNODE = new Waynode1( "", "" );
+    public static final Waynode1 EMPTY_WAYNODE = new Waynode1( "", Waynode1.DEFAULT_ANSWER,
+      Waynode1.DEFAULT_QUESTION );
 
 
 
@@ -37,16 +38,30 @@ public interface Waynode
    // - W a y n o d e ----------------------------------------------------------------------------------
 
 
+    /** This waynode’s reply to the {@linkplain #question() pollar question} in the form of a title
+      * sentence.  It may be an empty string, but is never null.
+      *
+      *     @see <a href='http://reluk.ca/100-0/tool/xhwsPretty/pretty.js' target='_top'
+      *       >pretty.js § Wayscript § Title sentence</a>
+      */
+    public String answer();
+
+
+
     /** The symbolic name of this waynode, from zero to two characters in length (never null).
       */
     public String handle();
 
 
 
-    /** A short summary of the answer that this waynode gives to the question of the poll.  It may be
-      * empty, but is never null.
+    /** This waynode’s interpretation of the question of the poll.  Its form is a title sentence.  It
+      * may be an empty string, but is never null.  Read the {@linkplain NodeCache#leader() leader’s}
+      * waynode for a consensus interpretation of the same question.
+      *
+      *     @see <a href='http://reluk.ca/100-0/tool/xhwsPretty/pretty.js' target='_top'
+      *       >pretty.js § Wayscript § Title sentence</a>
       */
-    public String summary();
+    public String question();
 
 
 }

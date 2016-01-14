@@ -1,43 +1,44 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.view.View;
 import android.widget.*;
-import waymaker.gen.ThreadRestricted;
+import waymaker.gen.*;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static android.widget.RelativeLayout.ALIGN_PARENT_BOTTOM;
-import static android.widget.RelativeLayout.ALIGN_PARENT_RIGHT;
 import static waymaker.gen.RelativeLayoutJig.jigRelative;
 
 
-/** <p>A wayranging view.  Its greater components are the waypath, forest and wayscope views:</p>
+/** <p>A wayranging view.  Its greater components are subviews to show the waypath, pollar question,
+  * forest, and wayscope:</p>
   * <pre>
   *                                      Waypath
   *                                       /
-  *                          ____        /
+  *                                      /
   *             end ← norm ← norm ···        *act* (=)
+  *                          ————
+  *                   Lorem ipsum et dolore?            --- Question
   *
-  *             ∧
-  *            ---      Lorem ipsum et dolore
-  *   Forest    *       ———————————————————
-  *      \      *       Lorem ipsum dolor sit amet       --- Wayscope
-  *       \     *       Consectetur adipiscing elit  ←
-  *            (*)      Ded do eiusmod tempor
-  *             *       Incididunt ut labore         ←
-  *            ---    ← Et dolore magna aliqua
+  *             ∧           Type  Waynode summary
+  *            ---        Type  Next outer summary
+  *   Forest    *       Type  Next outer summary          --- Wayscope
+  *      \      *     Type  Parent summary
+  *       \     *       Type  First child summary     ←
+  *            (*)      Type  Second child summary
+  *             *       Type  Third child summary     ←
+  *            ---      Type  Fourth child summary
+  *             *     ← Type  Fifth child summary
   *             *
-  *             *
-  *             *                                   (≡)
-  *             ∨                                (-)(+)
+  *             *                                   (-)
+  *             ∨                                (≡)(+)
   * </pre>
-  * <p>Its lesser components are:</p>
+  * <p>Its lesser components are controls:</p>
   * <pre>
-  *   (=)  Waypath chooser summoner
-  *    ←   End/means link
-  *   (≡)  Menu summoner
-  *   (-)  Out zoomer
-  *   (+)  In zoomer
+  *    (=)   Waypath chooser summoner
+  *     ←    End/means link
+  *    (-)   Out zoomer for wayscope
+  *    (+)   In zoomer
+  *    (≡)   Menu summoner
   * </pre>
   */
 public @ThreadRestricted("app main") final class WayrangingV extends RelativeLayout
@@ -177,19 +178,39 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
 
     /** Constructs a WayrangingV.
       */
-    public WayrangingV( final Wayranging wr )
+    public @Warning("wr co-construct") WayrangingV( final Wayranging wr )
     {
         super( /*context*/wr );
 
+      // Question.
+      // - - - - - -
+        {
+            final TextView textV = new TextView( wr );
+            addView( textV,
+              jigRelative().rule(ALIGN_PARENT_LEFT).rule(ALIGN_PARENT_TOP).rule(ALIGN_PARENT_RIGHT).unjig() );
+            textV.setId( QUESTION_VID );
+            final class TextSetter implements Auditor<Changed>
+            {
+                public void hear( Changed _ding ) { sync(); }
+                private void sync()
+                {
+                    textV.setText( wr.forests().getOrMakeForest(wr.pollNamer().get())
+                      .nodeCache().leader().waynode().question() );
+                }
+            };
+            final TextSetter setter = new TextSetter();
+            setter.sync();
+            wr.pollNamer().bell().register( setter ); // no need to unregister from wr co-construct
+            wr.forests().nodeCacheBell().register( setter ); // "
+        }
+
       // Forest view.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        addView( new ForestV(wr),
-       // jigRelative(WRAP_CONTENT,MATCH_PARENT).
-       /// MATCH_PARENT is not exactly correct, but nor is WRAP_CONTENT; default to latter:
-          jigRelative().rule(ALIGN_PARENT_LEFT).rule(ALIGN_PARENT_TOP).rule(ALIGN_PARENT_BOTTOM).unjig() );
+      // - - - - - - -
+        addView( new ForestV(wr)/*wr co-construct*/, jigRelative().rule(ALIGN_PARENT_LEFT)
+          .rule(BELOW,QUESTION_VID).rule(ALIGN_PARENT_BOTTOM).rule(ALIGN_PARENT_RIGHT).unjig() );
 
       // Menu summoner.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - -
         {
             final Button button = new Button( wr );
             addView( button, jigRelative().rule(ALIGN_PARENT_BOTTOM).rule(ALIGN_PARENT_RIGHT).unjig() );
@@ -203,6 +224,13 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
             });
         }
     }
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    private static final int QUESTION_VID = generateViewId();
 
 
 }

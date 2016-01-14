@@ -333,41 +333,60 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
         ){
             final XmlPullParser p = xhtmlParserFactory.newPullParser();
             p.setInput( in, /*encoding, self detect*/null );
-            for( int t = p.getEventType(); t != END_DOCUMENT; t = p.next() )
+            doc: for( int t = p.getEventType(); t != END_DOCUMENT; t = p.next() )
             {
-                if( t != START_TAG || !"wayscript".equals(p.getName()) ) continue;
+                if( t != START_TAG ) continue doc;
 
-              // Summary.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                t = p.next();
-                if( t == TEXT )
+                if( "title".equals(p.getName()) )
                 {
-                    jig.summary = p.getText().trim();
-                    t = p.next();
-                }
-
-              // Handle.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                for(; t != END_TAG || !"wayscript".equals(p.getName()); t = p.next() )
-                {
-                    if( t != START_TAG || !"handle".equals(p.getName()) ) continue;
-
-                    for( t = p.next(); t != END_TAG || !"handle".equals(p.getName()); t = p.next() )
+                  // Pollar prompt.
+                  // - - - - - - - -
+                    title: for( t = p.next(); t != END_TAG || !"title".equals(p.getName()); t = p.next() )
                     {
-                        if( t != TEXT ) continue;
-
-                        final String handle = p.getText().trim();
-                        if( !parseWaynode_matcher.reset(handle).matches() )
+                        if( t == TEXT )
                         {
-                            throw new CountFailure( "Malformed handle '" + handle + "' in file " + docID );
+                            jig.question = p.getText().trim();
+                            break title;
                         }
-
-                        jig.handle = handle;
-                        break;
                     }
-                    break;
+                    continue doc;
                 }
-                break;
+
+                if( "wayscript".equals(p.getName()) )
+                {
+                  // Summary.
+                  // - - - - -
+                    t = p.next();
+                    if( t == TEXT )
+                    {
+                        jig.answer = p.getText().trim();
+                        t = p.next();
+                    }
+
+                  // Handle.
+                  // - - - - -
+                    wayscript: for(; t != END_TAG || !"wayscript".equals(p.getName()); t = p.next() )
+                    {
+                        if( t != START_TAG || !"handle".equals(p.getName()) ) continue wayscript;
+
+                        handle: for( t = p.next(); t != END_TAG || !"handle".equals(p.getName());
+                          t = p.next() )
+                        {
+                            if( t != TEXT ) continue handle;
+
+                            final String handle = p.getText().trim();
+                            if( !parseWaynode_matcher.reset(handle).matches() )
+                            {
+                                throw new CountFailure( "Malformed handle '" + handle + "' in file " + docID );
+                            }
+
+                            jig.handle = handle;
+                            break handle;
+                        }
+                        break wayscript;
+                    }
+                    break doc;
+                }
             }
         }
         catch( IOException|RemoteException|XmlPullParserException x ) { throw new CountFailure( x ); }

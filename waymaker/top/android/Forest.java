@@ -1,7 +1,7 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
-import java.util.*;
+import java.util.List;
 import waymaker.gen.*;
 import waymaker.spec.VotingID;
 
@@ -51,7 +51,7 @@ public final class Forest implements PeersReceiver
       *     @see #forestCache()
       *     @see #nodeCache()
       */
-    public Forest( final String pollName, final ForestCache forestCache, final NodeCacheF nodeCache )
+    public Forest( final String pollName, final ForestCache forestCache, final NodeCache1 nodeCache )
     {
         this( pollName, forestCache, /*inP*/null, nodeCache );
     }
@@ -60,7 +60,7 @@ public final class Forest implements PeersReceiver
 
       @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
     private Forest( final String pollName, final ForestCache forestCache,
-      final Parcel inP/*grep CtorRestore*/, NodeCacheF nodeCache )
+      final Parcel inP/*grep CtorRestore*/, NodeCache1 nodeCache )
     {
         this.pollName = pollName;
         this.forestCache = forestCache;
@@ -73,7 +73,7 @@ public final class Forest implements PeersReceiver
         }
         if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
 
-      // CountNode cache.
+      // Node cache.
       // - - - - - - -
         if( toInitClass ) stators.add( new StateSaver<Forest>()
         {
@@ -85,24 +85,24 @@ public final class Forest implements PeersReceiver
 
               // 2. Has precount adjustments?
               // - - - - - - - - - - - - - - -
-                ParcelX.writeBoolean( f.nodeCache.groundUna.precounted() != null, out );
+                ParcelX.writeBoolean( f.nodeCache.groundUna().precounted() != null, out );
 
               // 3. Cache.
               // - - - - - -
-                NodeCacheF.stators.save( f.nodeCache, out );
+                NodeCache1.stators.save( f.nodeCache, out );
             }
         });
         if( inP != null ) // restore
         {
             assert nodeCache == null; // exclusive parameters
-            nodeCache = new NodeCacheF( /* 1 */inP.readInt(), /* 2 */ParcelX.readBoolean(inP) );
-              // CtorRestore for this config of NodeCacheF construction (q.v.) based on saved state
+            nodeCache = new NodeCache1( /* 1 */inP.readInt(), /* 2 */ParcelX.readBoolean(inP) );
+              // CtorRestore for this config of NodeCache1 construction (q.v.) based on saved state
 
           // 3.
           // - - -
-            NodeCacheF.stators.restore( nodeCache, inP );
+            NodeCache1.stators.restore( nodeCache, inP );
         }
-        else if( nodeCache == null ) nodeCache = new NodeCacheF( 0, /*hasPrecountAdjustments*/false );
+        else if( nodeCache == null ) nodeCache = new NodeCache1( 0, /*hasPrecountAdjustments*/false );
         this.nodeCache = nodeCache;
 
       // - - -
@@ -114,7 +114,7 @@ public final class Forest implements PeersReceiver
    // --------------------------------------------------------------------------------------------------
 
 
-    /** The store of this forest.
+    /** The store that holds this forest.
       */
     public ForestCache forestCache() { return forestCache; }
 
@@ -123,22 +123,22 @@ public final class Forest implements PeersReceiver
 
 
 
-    /** The cache of nodes that defines the forest structure.  No content is ever removed or replaced,
+    /** The store of nodes that defines the forest structure.  No content is ever removed or replaced,
       * but the whole cache may be replaced at any time by an instance with different content.  Each
       * replacement will be signalled by the {@linkplain ForestCache#nodeCacheBell() node cache bell}.
       */
     public NodeCache nodeCache() { return nodeCache; }
 
 
-        private NodeCacheF nodeCache; // constructor adds stator
+        private NodeCache1 nodeCache; // constructor adds stator
 
 
         /** Sets the cache of nodes.  Does not ring the node cache bell, leaving that to the caller.
           */
-        @Warning("non-API") void nodeCache( final NodeCacheF _nodeCache ) { nodeCache = _nodeCache; }
+        @Warning("non-API") void nodeCache( final NodeCache1 _nodeCache ) { nodeCache = _nodeCache; }
 
 
-        @Warning("non-API") NodeCacheF nodeCacheF() { return nodeCache; }
+        @Warning("non-API") NodeCache1 nodeCache1() { return nodeCache; }
 
 
 
@@ -203,7 +203,7 @@ public final class Forest implements PeersReceiver
 
               // Extend with unadjusted voters from response.
               // - - - - - - - - - - - - - - - - - - - - - - -
-                boolean isChanged = false; // so far
+                boolean areVotersChanged = false;
                 /* * *
                 - for each peer in response
                     - if peer reveals serial inconstency (RepocastSer)
@@ -225,7 +225,7 @@ public final class Forest implements PeersReceiver
                     - ensure peer orderly inserted into tail of candidateUna.voters
                         ( cannot already be present
                         ( no need to search in head (pre-existing members), list contracted to grow by pure extension
-                    - set isChanged true
+                    - set areVotersChanged true
                     - if candidateUna.precounted
                         - if no peer.precounted
                             - ensure peer orderly inserted into tail of candidateUna.precounted.voters
@@ -238,7 +238,7 @@ public final class Forest implements PeersReceiver
                 if( req.exhaustsPeers )
                 {
                     candidateUna.votersNextOrdinal( Integer.MAX_VALUE );
-                    isChanged = true;
+                    areVotersChanged = true;
                     /* * *
                     - sum outflow of all candidateUna.voters (or inflow if voters are actually roots)
                     - if sum does not equal candidateUna inflow (or poll turnout)
@@ -256,29 +256,40 @@ public final class Forest implements PeersReceiver
                     throw new UnsupportedOperationException(); // for pseudo code above
                 }
 
-              // Extend with any adjusted voters from precount.
-              // - - - - - - - - - - - - - - - - - - - - - - - -
-                precount: if( votersNextOrdinal == 0 ) // this is initial extension covering major voters
+                final boolean isLeaderChanged;
+                if( votersNextOrdinal == 0 ) // this is initial extension covering major voters
                 {
-                    assert candidateUna.votersNextOrdinal() != 0; // will do just once
+                    assert candidateUna.votersNextOrdinal() != 0; // this happens just once
+
+                  // Extend with any adjusted voters from precount.
+                  // - - - - - - - - - - - - - - - - - - - - - - - -
                     final PrecountNode candidatePre = candidateUna.precounted();
-                    if( candidatePre == null ) break precount; // no adjusted candidate, no adjusted voters
-
-                    final List<PrecountNode1> outlyingVoters = nodeCache.outlyingVotersPre;
-                    for( int v = outlyingVoters.size() - 1; v >= 0; --v )
+                    if( candidatePre != null )
                     {
-                        final PrecountNode outlyingVoter = outlyingVoters.get( v );
-                        if( outlyingVoter.rootwardInThis().candidate() != candidatePre ) continue;
+                        final List<PrecountNode1> outlyingVoters = nodeCache.outlyingVotersPre();
+                        for( int v = outlyingVoters.size() - 1; v >= 0; --v )
+                        {
+                            final PrecountNode outlyingVoter = outlyingVoters.get( v );
+                            if( outlyingVoter.rootwardInThis().candidate() != candidatePre ) continue;
 
-                        assert outlyingVoter.peerOrdinal() == 0; // major voter, okay for initial extension
-                        candidatePre.enlistVoter( outlyingVoter );
-                        ListX.removeUroboros( v, outlyingVoters ); // no longer outlying
-                        isChanged = true;
+                            assert outlyingVoter.peerOrdinal() == 0; // major voter, okay for initial extension
+                            candidatePre.enlistVoter( outlyingVoter );
+                            ListX.removeUroboros( v, outlyingVoters ); // no longer outlying
+                            areVotersChanged = true;
+                        }
                     }
-                }
+                    // else no adjusted candidate, ∴ no adjusted voters
 
-              // - - -
-                if( isChanged ) forestCache.voterListingBell().ring();
+                  // - - -
+                    isLeaderChanged = candidateUna.isGround() && !nodeCache.leader().isGround();
+                      // the initial extension of ground voters (forest roots) exposes actual root as leader
+                }
+                else isLeaderChanged = false;
+
+              // Ring out any changes.
+              // - - - - - - - - - - - - - - - - - - - - - - - -
+                if( areVotersChanged ) forestCache.voterListingBell().ring();
+                if( isLeaderChanged ) forestCache.nodeCacheBell().ring();
             }
         });
     }
@@ -289,188 +300,6 @@ public final class Forest implements PeersReceiver
 
 
     private static volatile boolean wasConstructorCalled;
-
-
-
-   // ==================================================================================================
-
-
-    static final class NodeCacheF implements NodeCache,
-      PrecountNode.SKit, PrecountNode.RKit, UnadjustedNodeV.RKit, UnadjustedNodeV.SKit
-    {
-        static final PolyStator<NodeCacheF> stators = new PolyStator<>();
-    ///////
-
-        /** Contructs a NodeCacheF based on the results of a precount.
-          */
-        @ThreadSafe/*grep FreezeSync*/ NodeCacheF( final Precounter precounter )
-        {
-            nodeMap = precounter.nodeMap();
-            groundUna = precounter.ground();
-            final CountNode groundPre = groundUna.precounted(); // if any
-            if( groundPre != null )
-            {
-                outlyingVotersPre = new ArrayList<>();
-                outlyingVotersUna = new ArrayList<>();
-                for( final UnadjustedNode una: nodeMap.values() )
-                {
-                    if( una.getClass() != UnadjustedNode0.class )
-                    {
-                        final RootwardCast<UnadjustedNode> castUna = una.rootwardInThis();
-                        if( castUna == null ) continue; // ground
-
-                        if( una.peerOrdinal() >= castUna.candidate().votersNextOrdinal() )
-                        {
-                            outlyingVotersUna.add( (UnadjustedNode1)una );
-                        }
-                    }
-                    // else cannot become an inlier, ∴ is not a proper outlier
-                    final PrecountNode pre = una.precounted();
-                    if( pre == null ) continue;
-
-                    assert pre.peerOrdinal() == 0;
-                    if( 0 >= pre.rootwardInThis().candidate().votersNextOrdinal() )
-                    {
-                        outlyingVotersPre.add( (PrecountNode1)pre );
-                    }
-                }
-                ground = groundPre;
-            }
-            else // no precount adjustments
-            {
-                outlyingVotersPre = Collections.emptyList();
-                outlyingVotersUna = Collections.emptyList();
-                ground = groundUna;
-            }
-        }
-
-
-        /** Contructs a NodeCacheF.
-          *
-          *     @param originalUnaCount Zero if the new cache is to be an original construction; else
-          *        the number of unadjusted nodes in the original.  The value serves only to enlarge the
-          *        initial capacity of the cache and speed the subsequent restoration of its state.
-          *     @param hasPrecountAdjustments Whether to construct a precount ground for the node cache,
-          *       and generally to allow for the subsequent restoration of precount adjustments.
-          */
-        @ThreadSafe NodeCacheF( final int originalUnaCount, final boolean hasPrecountAdjustments )
-        {
-            nodeMap = new HashMap<>( MapX.hashCapacity(originalUnaCount + INITIAL_HEADROOM),
-              MapX.HASH_LOAD_FACTOR );
-            encache( groundUna = new UnadjustedGround() );
-            if( hasPrecountAdjustments )
-            {
-                outlyingVotersPre = new ArrayList<>();
-                outlyingVotersUna = new ArrayList<>();
-                ground = new PrecountGround( groundUna );
-            }
-            else
-            {
-                outlyingVotersPre = Collections.emptyList(); // outliers impossible without a precount
-                outlyingVotersUna = Collections.emptyList();
-                ground = groundUna;
-            }
-        }
-
-
-        /** A map of all cached nodes including the ground pseudo-node, each keyed by its identity tag.
-          */
-        private final HashMap<VotingID,UnadjustedNode> nodeMap;
-          // content persisted by groundUna stator via node stators
-
-
-       // ----------------------------------------------------------------------------------------------
-
-        /** The number of unadjusted nodes in this cache.
-          */
-        int size() { return nodeMap.size(); }
-
-
-       // - N o d e - C a c h e ------------------------------------------------------------------------
-
-        /** @return The precount adjusted ground if any, else the unadjusted ground.
-          */
-        public CountNode ground() { return ground; }
-
-            private final CountNode ground;
-
-
-       // - P r e c o u n t - N o d e . R - K i t ------------------------------------------------------
-
-        public void encache( final UnadjustedNode node ) { nodeMap.put( node.id(), node ); }
-
-
-        public UnadjustedNode certainlyCached( final VotingID id )
-        {
-            final UnadjustedNode node = nodeMap.get( id );
-            if( node == null ) throw new IllegalStateException();
-
-            return node;
-        }
-
-
-        public void enlistOutlyingVoter( final PrecountNode1 node ) { outlyingVotersPre.add( node ); }
-
-
-        public UnadjustedGround groundUna() { return groundUna; }
-
-            private final UnadjustedGround groundUna;
-
-            static { stators.add( new Stator<NodeCacheF>()
-            {
-                public void save( final NodeCacheF nodeCache, final Parcel out )
-                {
-                  // 1. Unadjusted nodes.
-                  // - - - - - - - - - - -
-                    final UnadjustedGround groundUna = nodeCache.groundUna;
-                    UnadjustedGround.stators.save( groundUna, out, nodeCache );
-
-                  // 2. Precount nodes.
-                  // - - - - - - - - - -
-                    final PrecountGround groundPre = groundUna.precounted();
-                    if( groundPre != null ) PrecountGround.stators.save( groundPre, out, nodeCache );
-                      // else cache constructed without precount adjustments
-                }
-                public void restore( final NodeCacheF nodeCache/*precountless construction*/, final Parcel in )
-                {
-                  // 1.
-                  // - - -
-                    final UnadjustedGround groundUna = nodeCache.groundUna;
-                    UnadjustedGround.stators.restore( groundUna, in, nodeCache );
-
-                  // 2.
-                  // - - -
-                    final PrecountGround groundPre = groundUna.precounted();
-                    if( groundPre != null ) PrecountGround.stators.restore( groundPre, in, nodeCache );
-                      // else nodeCache constructed without precount adjustments
-                }
-            });}
-
-
-       // - P r e c o u n t - N o d e . S - K i t ------------------------------------------------------
-
-        public List<PrecountNode1> outlyingVotersPre() { return outlyingVotersPre; }
-
-            private final List<PrecountNode1> outlyingVotersPre;
-              // persisted by groundUna stator via precount node stators
-
-
-       // - U n a d j u s t e d - N o d e - V . R - K i t ----------------------------------------------
-
-        public void enlistOutlyingVoter( final UnadjustedNode1 node ) { outlyingVotersUna.add( node ); }
-
-
-       // - U n a d j u s t e d - N o d e - V . S - K i t ----------------------------------------------
-
-        public List<UnadjustedNode1> outlyingVotersUna() { return outlyingVotersUna; }
-
-            private final List<UnadjustedNode1> outlyingVotersUna; /* Unadjusted counterparts of
-              precount nodes, they are cached for that purpose though they happen to be outliers.
-              Persisted by groundUna stator via unadjusted node stators. */
-
-    ///////
-        static { stators.seal(); }
-    };
 
 
 }

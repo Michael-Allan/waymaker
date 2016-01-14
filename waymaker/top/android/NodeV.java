@@ -18,13 +18,13 @@ import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
   *    lo  Lorem ipsum dolor sit amet
   *                /
   *               /
-  *            summary
+  *            answer
   * </pre>
   */
 public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 {
     /* * *
-    - wayscope to somehow eclipse the summary subview when zoomed in
+    - wayscope to somehow eclipse the answer subview when zoomed in
         - leaving handle alone visible
       */
 
@@ -43,8 +43,8 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
     {
         super( /*context*/wr );
         assert getChildCount() == C_HANDLE;
-        addView( new HandleV(wr) );
-        assert getChildCount() == C_SUMMARY;
+        addView( new HandleV(wr) ); // wr co-construct
+        assert getChildCount() == C_ANSWER;
         addView( new TextView(wr) );
         node( _node );
     }
@@ -78,7 +78,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
             }
             else waynode = node.waynode();
             handleV().setText( waynode.handle() );
-            summaryV().setText( waynode.summary() );
+            answerV().setText( waynode.answer() );
             isActor_sync();
         }
 
@@ -101,7 +101,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 
     private static final int C_HANDLE = 0; // child index
 
-    private static final int C_SUMMARY = 1;
+    private static final int C_ANSWER = 1;
 
 
 
@@ -133,7 +133,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 
 
 
-    private TextView summaryV() { return (TextView)getChildAt( C_SUMMARY ); }
+    private TextView answerV() { return (TextView)getChildAt( C_ANSWER ); }
 
 
 

@@ -211,9 +211,9 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     /** Launches an activity that returns a result to the given receiver.  Use this method in preference
       * to its namesake alternatives, which afford no means of passing the result to the caller.
       *
-      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent,+int)'
+      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent,%20int)'
       *       target='_top'>startActivityForResult</a>(Intent,int)
-      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent,+int,+android.os.Bundle)'
+      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#startActivityForResult(android.content.Intent,%20int,%20android.os.Bundle)'
       *       target='_top'>startActivityForResult</a>(Intent,int,Bundle)
       */
     public void startActivityForResult( final Intent request, final ActivityResultReceiver resultReceiver )

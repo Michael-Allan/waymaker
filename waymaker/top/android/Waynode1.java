@@ -20,20 +20,21 @@ public @ThreadSafe final class Waynode1 implements Waynode
     /** Constructs a Waynode1.
       *
       *     @see #handle()
-      *     @see #summary()
-      *     @throws NullPointerException if _handle or _summary is null.
+      *     @see #answer()
+      *     @see #question()
+      *     @throws NullPointerException if any argument is null.
       */
-    public Waynode1( final String _handle, final String _summary )
+    public Waynode1( final String _handle, final String _answer, final String _question )
     {
-        this( _handle, _summary, /*inP*/null );
-        if( _handle == null || _summary == null ) throw new NullPointerException();
+        this( _handle, _answer, _question, /*inP*/null );
+        if( _handle == null || _answer == null || _question == null ) throw new NullPointerException();
     }
 
 
 
     /** Constructs a Waynode1 by copying another waynode.
       */
-    public Waynode1( final Waynode wn ) { this( wn.handle(), wn.summary(), /*inP*/null ); }
+    public Waynode1( final Waynode wn ) { this( wn.handle(), wn.answer(), wn.question(), /*inP*/null ); }
 
 
 
@@ -43,7 +44,8 @@ public @ThreadSafe final class Waynode1 implements Waynode
       *       openToThread restriction is lifted.
       */
       @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.restore
-    private Waynode1( final String _handle, final String _summary, final Parcel inP/*grep CtorRestore*/ )
+    private Waynode1( final String _handle, final String _answer, final String _question,
+      final Parcel inP/*grep CtorRestore*/ )
     {
         final boolean toInitClass;
         if( wasConstructorCalled ) toInitClass = false;
@@ -62,18 +64,21 @@ public @ThreadSafe final class Waynode1 implements Waynode
             public void save( final Waynode1 wn, final Parcel out )
             {
                 out.writeString( wn.handle() );
-                out.writeString( wn.summary() );
+                ParcelX.writeString( wn.answer(), out, DEFAULT_ANSWER );
+                ParcelX.writeString( wn.question(), out, DEFAULT_QUESTION );
             }
         });
         if( inP == null )
         {
             handle = _handle;
-            summary = _summary;
+            answer = _answer;
+            question = _question;
         }
         else
         {
             handle = inP.readString(); // CtorRestore to restore final fields
-            summary = inP.readString();
+            answer = ParcelX.readString( inP, DEFAULT_ANSWER );
+            question = ParcelX.readString( inP, DEFAULT_QUESTION );
         }
 
       // - - -
@@ -97,7 +102,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
       // 2.
       // - - -
-        return new Waynode1( null, null, in );
+        return new Waynode1( null, null, null, in );
     }
 
 
@@ -110,7 +115,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
     {
       // 1. Is empty?
       // - - - - - - -
-        final boolean isEmpty = wn == EMPTY_WAYNODE;
+        final boolean isEmpty = wn == EMPTY_WAYNODE; // == for speed, not equals
         ParcelX.writeBoolean( isEmpty, out );
 
       // 2. Waynode
@@ -137,10 +142,23 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
 
 
-    public String summary() { return summary; }
+    public String answer() { return answer; }
 
 
-        private final String summary;
+        static final String DEFAULT_ANSWER = "This is the answer";
+
+
+        private final String answer;
+
+
+
+    public String question() { return question; }
+
+
+        static final String DEFAULT_QUESTION = "What is the answer?";
+
+
+        private final String question;
 
 
 
@@ -154,7 +172,8 @@ public @ThreadSafe final class Waynode1 implements Waynode
         if( !(o2 instanceof Waynode) /*or if null*/ ) return false;
 
         final Waynode w2 = (Waynode)o2;
-        return w1.handle().equals(w2.handle()) && w1.summary().equals(w2.summary());
+        return w1.handle().equals(w2.handle()) && w1.answer().equals(w2.answer())
+          && w1.question().equals(w2.question());
     }
 
 

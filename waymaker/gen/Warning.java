@@ -11,8 +11,9 @@ import java.lang.annotation.*;
   *         // on constructor or factory method</pre>
   *
   * <p>Warns not to discard the construct and create a replacement during the life of the named
-  * co-extant, because currently the construct does not unregister its callbacks from the co-extant, or
-  * otherwise clean up after itself.</p>
+  * co-extant, because currently the construct does not unregister its callbacks from the co-extant, nor
+  * otherwise clean up after itself.  A further search in the source code for ‘co-construct’ should
+  * reveal the exact cause.</p>
   *
   * <h3>Dead code</h3>
   * <pre>
@@ -34,8 +35,8 @@ import java.lang.annotation.*;
   *     &#064;Warning("no hold")
   *         // on class</pre>
   *
-  * <p>Warns not to indefinitely hold an instance.  In addition to the warning, comments in the source
-  * code should also reference the "no hold" annotation and explain the reason for it.</p>
+  * <p>Warns not to indefinitely hold an instance.  A further search in the source code for “no hold”
+  * should reveal the reason.</p>
   *
   * <h3>Non-API</h3>
   * <pre>

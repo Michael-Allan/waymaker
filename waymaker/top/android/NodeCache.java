@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
 import waymaker.spec.VotingID;
@@ -50,14 +50,22 @@ public interface NodeCache
    // - N o d e - C a c h e ----------------------------------------------------------------------------
 
 
-    /** A pseudo-node that represents a snapshot of the forest floor beneath the root candidates, whom
-      * it models as its ‘{@linkplain CountNode#voters() voters}’.  Their {@linkplain CountNode#rootwardInThis()
-      * rootward casts} lead to this ground, which serves formally as the ultimate ‘candidate’.
-      * Meanwhile the rootward cast of the ground itself is null.  This modeling simplifies the
-      * structure of the forest by reducing it to a single super-tree having the ground as its root,
-      * which in turn simplifies the algorithms for navigating that structure.
+    /** A pseudo-node that represents a snapshot of the forest floor beneath the roots, whom it models
+      * as its ‘{@linkplain CountNode#voters() voters}’.  Their {@linkplain CountNode#rootwardInThis()
+      * rootward casts} lead to this ground, which serves formally as the ultimate ‘root’ and
+      * ‘candidate’.  Meanwhile the rootward cast of the ground itself is null.  This modeling
+      * simplifies the structure of the forest by reducing it to a single super-tree having the ground
+      * as its root, which in turn simplifies the algorithms for navigating that structure.
       */
     public CountNode ground();
+
+
+
+    /** The forest’s first root in {@linkplain CountNode#peersComparator peer order}, or the ground if
+      * the forest is yet without roots.  Any subsequent change to the return value will be signalled by
+      * the {@linkplain ForestCache#nodeCacheBell() node cache bell}.  It will change at most once.
+      */
+    public CountNode leader();
 
 
 }

@@ -47,9 +47,9 @@ public final class RelativeLayoutJig
     /** Constructs a set of layout parameters, lays them in the {@linkplain #i() single instance} of the
       * jig, and returns the jig.
       *
-      *     @see <a href='http://developer.android.com/reference/android/widget/RelativeLayout.LayoutParams.html#RelativeLayout.LayoutParams(int,+int)'
+      *     @see <a href='http://developer.android.com/reference/android/widget/RelativeLayout.LayoutParams.html#RelativeLayout.LayoutParams(int,%20int)'
       *       target='_top'>RelativeLayout.LayoutParams(int, int)</a>
-      *     @see <a href='http://developer.android.com/reference/android/view/ViewGroup.LayoutParams.html#ViewGroup.LayoutParams(int,+int)'
+      *     @see <a href='http://developer.android.com/reference/android/view/ViewGroup.LayoutParams.html#ViewGroup.LayoutParams(int,%20int)'
       *       target='_top'>ViewGroup.LayoutParams(int, int)</a>
       */
     public static RelativeLayoutJig jigRelative( final int width, final int height )
@@ -66,9 +66,23 @@ public final class RelativeLayoutJig
       *       target='_top'>addRule(int)</a>
       *     @throws NullPointerException if this jig {@linkplain #jigRelative() holds no parameters}.
       */
-    public RelativeLayoutJig rule( int verb )
+    public RelativeLayoutJig rule( final int verb )
     {
         params.addRule( verb );
+        return this;
+    }
+
+
+
+    /** Adds a rule to the parameters held in this jig, and returns the jig.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/widget/RelativeLayout.LayoutParams.html#addRule(int,%20int)'
+      *       target='_top'>addRule(int,int)</a>
+      *     @throws NullPointerException if this jig {@linkplain #jigRelative() holds no parameters}.
+      */
+    public RelativeLayoutJig rule( final int verb, final int anchor )
+    {
+        params.addRule( verb, anchor );
         return this;
     }
 

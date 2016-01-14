@@ -34,7 +34,7 @@ public @ThreadRestricted("app main") abstract class ActivityResultReceiver imple
       *         target='_top'>RESULT_CANCELED</a>.
       *     @param result The result of the activity in data form.
       *
-      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#onActivityResult(int,+int,+android.content.Intent)'
+      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#onActivityResult(int,%20int,%20android.content.Intent)'
       *       target='_top'>onActivityResult</a>(int,int,Intent)
       */
     public abstract void receive( int resultCode, Intent result );

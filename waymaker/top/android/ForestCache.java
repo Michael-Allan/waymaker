@@ -10,7 +10,6 @@ import waymaker.gen.*;
 
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
 import static java.util.logging.Level.WARNING;
-import static waymaker.top.android.Forest.NodeCacheF;
 
 
 /** A store of pollar forests.  Its main purpose is to speed execution.  It does this by persistent
@@ -106,14 +105,6 @@ public final class ForestCache
    // --------------------------------------------------------------------------------------------------
 
 
-    /** Returns the named forest from this cache, or null if there is none.
-      *
-      *     @see Forest#pollName()
-      */
-    public Forest get( final String pollName ) { return forestMap.get( pollName ); }
-
-
-
     /** Returns the named forest either by retrieving it from this cache, or by constructing and caching
       * a new one.
       *
@@ -121,7 +112,7 @@ public final class ForestCache
       */
     public Forest getOrMakeForest( final String pollName )
     {
-        Forest forest = get( pollName );
+        Forest forest = forestMap.get( pollName );
         if( forest == null )
         {
             forest = new Forest( pollName, this );
@@ -132,9 +123,10 @@ public final class ForestCache
 
 
 
-    /** A bell that rings when a forest {@linkplain Forest#nodeCache() node cache} is replaced.
+    /** A bell that rings on each replacement of a forest {@linkplain Forest#nodeCache() node cache}, or
+      * change of a node cache {@linkplain NodeCache#leader() leader}.
       */
-    public Bell<Changed> nodeCacheBell() { return nodeCacheBell; }
+    public ReRinger<Changed> nodeCacheBell() { return nodeCacheBell; }
 
 
         private final ReRinger<Changed> nodeCacheBell = Changed.newReRinger();
@@ -250,7 +242,7 @@ public final class ForestCache
           demand here if stripping will not actually occur. */
         if( toStrip ) for( final Forest forest: forestMap.values() )
         {
-            final NodeCacheF nC = forest.nodeCacheF();
+            final NodeCache1 nC = forest.nodeCache1();
             if( nC.groundUna().precounted() != null ) // then must refresh, whether by precount or strip
             {
                 final RefreshDemand demand = new RefreshDemand( forest.pollName() );
@@ -388,7 +380,7 @@ public final class ForestCache
             {
                 final StripDemand strip = new StripDemand( demands.get( s ));
                 strips.add( strip );
-                final NodeCacheF nC = new NodeCacheF( strip.originalUnaCount,
+                final NodeCache1 nC = new NodeCache1( strip.originalUnaCount,
                   /*hasPrecountAdjustments*/false/*they being stripped*/ );
                 strip.newNodeCache = nC;
                 nC.groundUna().restore( strip.groundUnaState, /*kit*/nC ); // (b) after (a)
@@ -448,10 +440,10 @@ public final class ForestCache
         {
             if( demand.groundUnaState != null ) continue; // cached forest, snapshot already taken in r1
 
-            final Forest forest = get( demand.pollName );
+            final Forest forest = forestMap.get( demand.pollName );
             if( forest == null ) continue; // will precount it from scratch
 
-            demand.snapOriginalState( forest.nodeCacheF() ); // (b) after (a)
+            demand.snapOriginalState( forest.nodeCache1() ); // (b) after (a)
         }
 
       // Make reference for use outside "app main".
@@ -506,7 +498,7 @@ public final class ForestCache
                 return;
             }
 
-            demand.newNodeCache = new NodeCacheF( precounter ); // collate results of precount
+            demand.newNodeCache = new NodeCache1( precounter ); // collate results of precount
         }
 
       // Dive back into "app main" thread.
@@ -549,14 +541,14 @@ public final class ForestCache
                         if( !demand.pollName.equals(pollName) ) continue;
 
                         demand.wereResultsApplied = true;
-                        final NodeCacheF newNodeCache = demand.newNodeCache;
+                        final NodeCache1 newNodeCache = demand.newNodeCache;
                         if( newNodeCache == null ) break; // precount failed, so default to clearing node cache
 
                         forest.nodeCache( newNodeCache ); // precount succeeded, so set resulting node cache
                         continue forests;
                     }
 
-                    forest.nodeCache( new NodeCacheF( /*originalUnaCount*/0,
+                    forest.nodeCache( new NodeCache1( /*originalUnaCount*/0,
                       /*hasPrecountAdjustments*/false )); // thus entirely clearing the forest
                 } while( f.hasNext() );
                 replacedNodeCache = true; // all were replaced
@@ -566,7 +558,7 @@ public final class ForestCache
             {
                 if( demand.wereResultsApplied ) continue; // results were applied above
 
-                final NodeCacheF newNodeCache = demand.newNodeCache;
+                final NodeCache1 newNodeCache = demand.newNodeCache;
                 if( newNodeCache == null ) continue; // precount failed
 
                 final String name = demand.pollName;
@@ -598,11 +590,11 @@ public final class ForestCache
             boolean replacedNodeCache = false;
             for( final RefreshDemand demand: demands )
             {
-                final NodeCacheF newNodeCache = demand.newNodeCache;
+                final NodeCache1 newNodeCache = demand.newNodeCache;
                 if( newNodeCache == null ) continue;
 
                 final String name = demand.pollName;
-                final Forest forest = get( name );
+                final Forest forest = forestMap.get( name );
                 if( forest == null ) forestMap.put( name, new Forest(name,this,newNodeCache) );
                 else
                 {
@@ -704,14 +696,14 @@ public final class ForestCache
 
        // ----------------------------------------------------------------------------------------------
 
-        NodeCacheF newNodeCache; // after refresh, or null if PrecountDemand and precount failed
+        NodeCache1 newNodeCache; // after refresh, or null if PrecountDemand and precount failed
 
 
         final String pollName;
 
 
           @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.save
-        final void snapOriginalState( final NodeCacheF nC ) // sets groundUnaState & originalUnaCount
+        final void snapOriginalState( final NodeCache1 nC ) // sets groundUnaState & originalUnaCount
         {
             final UnadjustedGround ground = nC.groundUna();
             final Parcel out = Parcel.obtain();
@@ -721,7 +713,7 @@ public final class ForestCache
                 groundUnaState = out.marshall(); // sic
             }
             finally { out.recycle(); } // grep ParcelReuse
-            originalUnaCount = nC.size();
+            originalUnaCount = nC.nodeMap.size();
         }
 
             byte[] groundUnaState; // before refresh, or null to demand a precount from scratch

@@ -24,16 +24,15 @@ public interface RootwardCast<C extends CountNode>
 
 
     /** Answers whether this cast is barred.  When barred, the {@linkplain #votedID() voted candidate}
-      * is always a real, non-ground node (<code>votedID != null</code>), but the vote is uncounted
-      * and therefore the {@linkplain #candidate() cast candidate} is the ground (<code>candidate.id ==
-      * null</code>).  When unbarred, the two nodes (voted and cast) are identical.  Casts are
-      * barred in order to break vote cycles, each bar forcing the would-be caster to serve instead as
-      * the root candidate of its tree.
+      * is always a real, non-ground node (<code>votedID != null</code>), but the vote is uncounted and
+      * therefore the {@linkplain #candidate() cast candidate} is the ground (<code>candidate.id ==
+      * null</code>).  When unbarred, the two nodes (voted and cast) are identical.  Casts are barred in
+      * order to break vote cycles, each bar forcing the would-be caster to serve instead as the root of
+      * his own tree.
       *
       *     @see CycleForeseer#barNode()
       */
     public boolean isBarred();
-
 
         /* * *
         - why break vote cycles?

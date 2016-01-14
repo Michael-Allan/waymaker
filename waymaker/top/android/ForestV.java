@@ -211,8 +211,8 @@ System.err.println( " --- depopulating" ); // TEST
 
 
 
-    private final ArrayDeque<NodeV> pool = new ArrayDeque<>(); // ∀ node null
-
+    private final ArrayDeque<NodeV> pool = new ArrayDeque<>(); /* Pool because they're wr co-constructs.
+      ∀ pooled node views, node model must be null to allow garbage collection. */
 
         private void enpool( final NodeV nodeV )
         {
