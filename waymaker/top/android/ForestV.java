@@ -29,6 +29,28 @@ import waymaker.gen.*;
   */
 public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 {
+    /* * *
+    = constrain candidate addition
+    = constrain peer addition
+        - also using the constraint to guard and constrain call to enqueuePeersRequest
+    = reconstrain on calibration change
+        - direct call from calibrator
+    = allow for case of overconstrained parent in ForestVCalibrator
+        ( deferred from above, for realistic test
+        - detected by squeezed height of down climber (bottom component) compared to up climber
+        - calibrated by (somehow) measuring height parent wants, compared with actual height available
+    - peer paging
+        ( notebook 2015.12.14, 15
+        - long press to enable paging control
+            - to prevent accidental paging
+          / - enabling is linked inversely to node specification
+          /     ( notebook 2015.12.16
+          /     - to prevent depaging of specific node
+          // then must do same for descent control
+                - rather: automatically despecify in both cases
+                    - and respecify in back cases, provided nothing else specified meantime
+            - any other press will reveal a fading cue that explains the mechanism
+      */
 
 
     /** Constructs a ForestV.
@@ -68,7 +90,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         final Forester forester = wr.forester();
         forester.bell().register( new Auditor<Changed>()
         {
-            { populate( forester, forester.nodeCache() ); } // populates initially
+            { populate( forester, forester.nodeCache() ); } // populate initially
             private NodeCache nodeCache;
             private void populate( final Forester forester, final NodeCache _nodeCache )
             {

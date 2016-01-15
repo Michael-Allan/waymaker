@@ -428,7 +428,7 @@ public @ThreadSafe class ID implements TriSerialID
           /             - i.e. collision avoidance is not enforced
           /             - only the following instance serial is predefined:
           /                 [ 1
-          /                     - universal end
+          /                     - ultimate end
           /                     - predefinition required by top/android issue train
           // not clear how 00p-* form will be useful
           */
