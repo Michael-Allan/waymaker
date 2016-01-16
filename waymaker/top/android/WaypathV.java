@@ -106,7 +106,7 @@ public @ThreadRestricted("app main") final class WaypathV extends LinearLayout
             addView( view );
             wr.pollNamer().bell().register( new Auditor<Changed>()
             {
-                { sync(); } // initially
+                { sync(); } // init
                 private void sync() { view.setText( wr.pollNamer().get() ); }
                 public void hear( Changed _ding ) { sync(); }
             }); // no need to unregister from wr co-construct

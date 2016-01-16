@@ -5,7 +5,6 @@ import java.util.*;
 import waymaker.gen.*;
 
 
-
 /** <p>A forest view oriented by the {@linkplain Wayranging#forester() forester}.  Its main components
   * are {@linkplain CountNode node} views (lettered).  These it divides vertically between a peers viewer for
   * showing the forester’s {@linkplain Forester#ascendTo(CountNode) leafward paths}, and a candidates viewer

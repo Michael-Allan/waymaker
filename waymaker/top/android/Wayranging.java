@@ -251,6 +251,28 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
+    /** The wayscope zoomer of this wayranging activity.
+      */
+    public WayscopeZoomer wayscopeZoomer() { return wayscopeZoomer; }
+
+
+        private final WayscopeZoomer wayscopeZoomer = new WayscopeZoomer();
+
+
+        static { stators.add( new Stator<Wayranging>()
+        {
+            public void save( final Wayranging wr, final Parcel out )
+            {
+                WayscopeZoomer.stators.save( wr.wayscopeZoomer, out );
+            }
+            public void restore( final Wayranging wr, final Parcel in )
+            {
+                WayscopeZoomer.stators.restore( wr.wayscopeZoomer, in );
+            }
+        });}
+
+
+
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
