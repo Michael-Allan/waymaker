@@ -179,8 +179,8 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
                 outZoomButton.setEnabled( zoomer.outZoomEnabled() );
                 inZoomButton.setEnabled( zoomer.inZoomEnabled() );
 
-              // Scope in regard to poll level.
-              // - - - - - - - - - - - - - - - -
+              // Maintain visibility of components.
+              // - - - - - - - - - - - - - - - - - -
                 final int vis = zoomer.zoom() == WayscopeZoom.POLL? INVISIBLE: VISIBLE;
                 waypathV.setVisibility( vis );
                 forestV.setVisibility( vis );

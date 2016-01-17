@@ -54,6 +54,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             }
             finally { inP.recycle(); }
         }
+        create3();
         lifeStage = CREATED;
         lifeStageBell.ring();
     }
@@ -85,6 +86,18 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             stators.restore( this, inP ); // saved by stators in static inits further below
         }
 
+      // Actor identifier.
+      // - - - - - - - - - -
+        if( toInitClass ) stators.add( new StateSaver<Wayranging>()
+        {
+            public void save( final Wayranging wr, final Parcel out )
+            {
+                AndroidXID.writeUDIDOrNull( wr.actorIdentifier.get(), out );
+            }
+        });
+        actorIdentifier = new BelledVariable<VotingID>( inP == null? null:
+          (VotingID)AndroidXID.readUDIDOrNull(inP) ); // CtorRestore to cleanly construct with restored state
+
       // Forests.
       // - - - - -
         if( toInitClass ) stators.add( new StateSaver<Wayranging>()
@@ -106,16 +119,20 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 out.writeString( wr.pollNamer.get() );
             }
         });
-        pollNamer = new BelledVariable<String>( inP == null? "end": inP.readString() );
+        pollNamer = new BelledNonNull<String>( inP == null? "end": inP.readString() );
           // CtorRestore to cleanly construct with restored state
-
-      // Dependents of above.
-      // - - - - - - - - - - -
-        forester = new Forester( this );
-        setContentView( new WayrangingV( this ));
 
       // - - -
         if( toInitClass ) stators.seal();
+    }
+
+
+
+    private void create3()
+    {
+        forester = new Forester( this );
+        new PollIntroducer( this );
+        setContentView( new WayrangingV( this ));
     }
 
 
@@ -124,24 +141,13 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
     /** The identifier of the wayranging actor, if any.
+      *
+      *     @see #position(String,VotingID)
       */
     public BelledVariable<VotingID> actorIdentifier() { return actorIdentifier;}
 
 
-        private final BelledVariable<VotingID> actorIdentifier = new BelledVariable<>();
-
-
-        static { stators.add( new Stator<Wayranging>()
-        {
-            public void save( final Wayranging wr, final Parcel out )
-            {
-                AndroidXID.writeUDIDOrNull( wr.actorIdentifier.get(), out );
-            }
-            public void restore( final Wayranging wr, final Parcel in )
-            {
-                wr.actorIdentifier.set( (VotingID)AndroidXID.readUDIDOrNull(in) );
-            }
-        });}
+        private BelledVariable<VotingID> actorIdentifier; // final after create2, which adds stator
 
 
 
@@ -150,7 +156,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     public Forester forester() { return forester; }
 
 
-        private Forester forester; // final after create2
+        private Forester forester; // final after create3
 
 
 
@@ -199,12 +205,28 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    /** The namer of the poll on which wayranging now focuses.  There is always a poll, do not null it.
+    /** The namer of the poll on which wayranging now focuses.
+      *
+      *     @see #position(String,VotingID)
       */
-    public BelledVariable<String> pollNamer() { return pollNamer;}
+    public BelledNonNull<String> pollNamer() { return pollNamer;}
 
 
-        private BelledVariable<String> pollNamer; // final after create2, which adds stator
+        private BelledNonNull<String> pollNamer; // final after create2, which adds stator
+
+
+
+    /** Atomically sets the poll position on which wayranging now focuses by setting,
+      * in effect simultaneously, both the {@linkplain #pollNamer() poll name}
+      * and {@linkplain #actorIdentifier() actor identity}.
+      */
+    public void position( final String pollName, final VotingID actorID )
+    {
+        final boolean p = pollNamer.setSilently( pollName );
+        final boolean a = actorIdentifier.setSilently( actorID );
+        if( p ) pollNamer.bell().ring();
+        if( a ) actorIdentifier.bell().ring();
+    }
 
 
 

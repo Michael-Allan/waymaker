@@ -1,11 +1,11 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 
 /** A variable with a change bell.
   *
   *     @param <V> The type of variable.
   */
-public final class BelledVariable<V>
+public class BelledVariable<V>
 {
 
 
@@ -26,7 +26,7 @@ public final class BelledVariable<V>
 
      /** A bell that rings when the value of this variable changes.
       */
-    public Bell<Changed> bell() { return bell; }
+    public final ReRinger<Changed> bell() { return bell; }
 
 
         private final ReRinger<Changed> bell = Changed.newReRinger();
@@ -35,10 +35,10 @@ public final class BelledVariable<V>
 
    /** The value of this variable.
       */
-    public V get() { return v; }
+    public final V get() { return v; }
 
 
-        private V v;
+        V v;
 
 
 
@@ -47,12 +47,21 @@ public final class BelledVariable<V>
       *
       *     @see ObjectX#equals(Object,Object)
       */
-    public void set( final V _v )
+    public final void set( final V _v ) { if( setSilently( _v )) bell.ring(); }
+
+
+
+    /** Assigns the given value to this variable if it does not ‘equal’ the present value.  Returns true
+      * if the value is changed as a result, false otherwise.
+      *
+      *     @see ObjectX#equals(Object,Object)
+      */
+    public boolean setSilently( final V _v )
     {
-        if( ObjectX.equals( _v, v )) return;
+        if( ObjectX.equals( _v, v )) return false;
 
         v = _v;
-        bell.ring();
+        return true;
     }
 
 
