@@ -270,7 +270,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
               + ' -target 1.7' // JVM version, currently limited by Android to 1.7
               + ' -Werror' // terminate compilation when a warning occurs
               + ' -Xdoclint:all,-missing' /* verify all javadoc comments, but allow their omission;
-                    changing? change also in ../javadoc/Target.js */
+                    changing?  change also in ../javadoc/Target.js */
               + ' -Xlint'
               + ' @' + javacArgInFile
               + ' @' + javaInFile;

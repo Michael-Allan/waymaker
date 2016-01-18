@@ -98,7 +98,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             out.println( '-use' );
             out.println( "-windowtitle 'Waymaker Java API'" );
             out.println( ' -Xdoclint:all,-missing' ); /* verify all javadoc comments, but allow their omission;
-              changing? change also in ../android/Target.js */
+              changing?  change also in ../android/Target.js */
             out.close();
         }
         var command = Build.javadocTested() + ' @' + argInFile;

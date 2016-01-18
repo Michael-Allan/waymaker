@@ -4,6 +4,8 @@ import android.widget.*;
 import java.util.*;
 import waymaker.gen.*;
 
+import static waymaker.top.android.ForestVCalibrator.Calibration;
+
 
 /** <p>A forest view oriented by the {@linkplain Wayranging#forester() forester}.  Its main components
   * are {@linkplain CountNode node} views (lettered).  These it divides vertically between a peers viewer for
@@ -23,8 +25,12 @@ import waymaker.gen.*;
   *                     ··    --- Ellipsis for omitted candidates
   *                     fd
   *                     ◥◤    --- Down climber
+  *
+  *                           --- Spaces
   * </pre>
-  * <p>The peers viewer alone is paged; the candidates viewer is ellipsed.</p>
+  * <p>The peers viewer alone is paged; the candidates viewer is ellipsed.  The spaces pseudo-viewer is
+  * populated at the bottom with unused candidate spaces to achieve a rough, vertical centering that
+  * animates easily with LinearLayout.</p>
   */
 public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 {
@@ -79,13 +85,22 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         ellipsis.setText( "··" );
         addView( downClimber = new TextView(wr) );
         downClimber.setText( "◥◤" );
+        // changing floaters?  maybe change c* indexing methods
 
 
       // / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
         calibrator = new ForestVCalibrator( this );
 
-      // Populate viewers initially.  Replace population when forester replaces node cache.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // Initialize population of spaces pseudo-viewer.
+      // - - - - - - - - - - - - - - - - - - - - - - - -
+        spaceLayoutParams_sync();
+        {
+            final int target = spaceCountTarget( calibration() );
+            if( target > 0 ) syncSpacesUp( target );
+        }
+
+      // Initialize population of node viewers.  Replace population when forester replaces node cache.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final Forester forester = wr.forester();
         forester.bell().register( new Auditor<Changed>()
         {
@@ -102,7 +117,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
                 final NodeCache _nodeCache = forester.nodeCache();
                 if( _nodeCache == nodeCache ) return;
 
-                depopulateViewers();
+                depopulateNodeViewers();
                 populate( forester, _nodeCache );
             }
         }); // no need to unregister from wr co-construct
@@ -141,6 +156,11 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
+    private Calibration calibration() { return calibrator.calibration; }
+      // only default calibration is used, till ellipse is supported
+
+
+
     private final ForestVCalibrator calibrator;
 
 
@@ -152,12 +172,12 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
     private CountNode candidateViewed( final Forester forester )
     {
         // topmost node of candidates viewer, or ground if viewer is grounded
-        return candidateCount > 0? getChildNodeV(cTopCandidate()).node(): forester.nodeCache().ground();
+        return candidateCount > 0? getNodeChild(cTopCandidate()).node(): forester.nodeCache().ground();
     }
 
 
 
-    private int cBottomCandidate() { return getChildCount() + CN_BOTTOM_CANDIDATE; }
+    private int cBottomCandidate() { return cCandidatesEndBound() - 1; }
       // child index of bottom-most view in candidates viewer, assuming candidateCount > 0
 
 
@@ -167,13 +187,18 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
 
 
-    private int cCandidatesEndBound() { return getChildCount() + CN_BOTTOM_CANDIDATE + 1; }
+    private int cBottomSpace() { return cSpacesEndBound() - 1; }
+      // child index of bottom-most view in spaces pseudo-viewer, assuming spaceCount > 0
+
+
+
+    private int cCandidatesEndBound() { return cSpacesEndBound() - spaceCount; }
       // child index of first view after candidates viewer
 
 
 
-    private static final int CN_BOTTOM_CANDIDATE = -2;
-      // negative child index of bottom-most view in candidates viewer, assuming candidateCount > 0
+    private int cSpacesEndBound() { return getChildCount(); }
+      // child index of first view after spaces pseudo-viewer; being none, returns end bound of all children
 
 
 
@@ -186,24 +211,44 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
 
 
-    private void depopulateViewers()
+    private void depopulateNodeViewers() // backward for faster removals
     {
-System.err.println( " --- depopulating" ); // TEST
-      // Peers, cf. syncViewersOnDeficit.
-      // - - - - - - - - - - - - - - - - -
-        if( peerCount > 0 ) for( int c = cBottomPeer();; --c ) // backward for fast removals
+      // Depopulate candidates.
+      // - - - - - - - - - - - -
+        if( candidateCount > 0 ) for( int c = cBottomCandidate();; --c )
         {
-            removePeerToPool( c, getChildNodeV(c) );
+            removeCandidateToPool( c, getNodeChild(c) );
+            if( candidateCount == 0 ) break;
+        }
+
+      // Depopulate peers, cf. syncViewersOnDeficit.
+      // - - - - - - - - - - - - - - - - - - - - - - -
+        if( peerCount > 0 ) for( int c = cBottomPeer();; --c )
+        {
+            removePeerToPool( c, getNodeChild(c) );
             if( peerCount == 0 ) break;
         }
 
-      // Candidates.
+      // Sync spaces.
       // - - - - - - -
-        if( candidateCount > 0 ) for( int c = cBottomCandidate();; --c ) // backward for fast removals
-        {
-            removeCandidateToPool( c, getChildNodeV(c) );
-            if( candidateCount == 0 ) break;
-        }
+        final int target = spaceCountTarget( calibration() );
+        if( spaceCount == target ) return;
+
+        if( spaceCount < target ) syncSpacesUp( target );
+        else syncSpacesDown( target );
+    }
+
+
+
+    private void depopulateViewers() // backward for faster removals
+    {
+      // Depopulate spaces pseudo-viewer.
+      // - - - - - - - - - - - - - - - - -
+        if( spaceCount > 0 ) syncSpacesDown( 0 );
+
+      // Depopulate other viewers.
+      // - - - - - - - - - - - - - -
+        depopulateNodeViewers();
     }
 
 
@@ -220,11 +265,29 @@ System.err.println( " --- depopulating" ); // TEST
 
 
 
-    private NodeV getChildNodeV( final int c ) { return (NodeV)getChildAt( c ); }
+    private NodeV getNodeChild( final int c ) { return (NodeV)getChildAt( c ); }
 
 
 
-    int nodeCount() { return peerCount + candidateCount; }
+    private Space getSpaceChild( final int c ) { return (Space)getChildAt( c ); } // hoping for Barbarella
+
+
+
+    int nodeCountForCalibration() { return peerCount + candidateCount + spaceCount; }
+
+
+
+    private final ArrayDeque<NodeV> nodePool = new ArrayDeque<>(); /* Pool because they're wr co-constructs.
+      ∀ pooled node views, node model must be null to allow garbage collection. */
+
+        private void enpool( final NodeV nodeV )
+        {
+            assert nodeV.node() == null;
+            nodePool.add( nodeV );
+        }
+
+
+        private NodeV expoolNode() { return nodePool.remove(); }
 
 
 
@@ -232,17 +295,12 @@ System.err.println( " --- depopulating" ); // TEST
 
 
 
-    private final ArrayDeque<NodeV> pool = new ArrayDeque<>(); /* Pool because they're wr co-constructs.
-      ∀ pooled node views, node model must be null to allow garbage collection. */
-
-        private void enpool( final NodeV nodeV )
-        {
-            assert nodeV.node() == null;
-            pool.add( nodeV );
-        }
-
-
-        private NodeV expool() { return pool.remove(); }
+    void reconstrain() // called on calibration change
+    {
+        spaceLayoutParams_sync();
+        depopulateViewers(); // including spaces, whose dimensions may now be obsolete
+        syncViewers( wr().forester() );
+    }
 
 
 
@@ -266,7 +324,51 @@ System.err.println( " --- depopulating" ); // TEST
 
 
 
+    private void removeSpaceToPool( final int cSpace, final Space space )
+    {
+        removeViewAt( cSpace );
+        --spaceCount;
+        enpool( space );
+    }
+
+
+
     private final ServerCount serverCount = new ServerCount();
+
+
+
+    private int spaceCount; // count of nodes in spaces pseudo-viewer
+
+
+
+    private int spaceCountTarget( final Calibration cal )
+    {
+        int target = cal.candidateCount - candidateCount;
+        if( target < 0 ) target = 0; // likely impossible
+        return target;
+    }
+
+
+
+    private LayoutParams spaceLayoutParams;
+
+
+        private void spaceLayoutParams_sync()
+        {
+            int height = calibrator.nodeHeight;
+            if( height == ForestVCalibrator.NODE_HEIGHT_DEFAULT ) height = 0; // pending calibration
+            spaceLayoutParams = new LayoutParams( /*width*/0, height );
+        }
+
+
+
+    private final ArrayDeque<Space> spacePool = new ArrayDeque<>(); // pool for efficiency
+
+
+        private void enpool( final Space space ) { spacePool.add( space ); }
+
+
+        private Space expoolSpace() { return spacePool.remove(); }
 
 
 
@@ -278,7 +380,6 @@ System.err.println( " --- depopulating" ); // TEST
     private void syncPeersViewer( final CountNode candidate, final List<? extends CountNode> _peers )
     {
         final int pN = _peers.size(); // modeled
-System.err.println( " --- syncPeersViewer, peers modeled: " + pN ); // TEST
         if( pN > 0 ) // guarding against frequent, initial case of unextended voters
         {
             final Wayranging wr = wr();
@@ -290,9 +391,9 @@ System.err.println( " --- syncPeersViewer, peers modeled: " + pN ); // TEST
             {
                 final CountNode peer = _peers.get( p );
                 final NodeV peerV;
-                if( pool.size() > 0 )
+                if( nodePool.size() > 0 )
                 {
-                    peerV = expool();
+                    peerV = expoolNode();
                     peerV.node( peer );
                 }
                 else peerV = new NodeV( wr, peer );
@@ -308,12 +409,37 @@ System.err.println( " --- syncPeersViewer, peers modeled: " + pN ); // TEST
 
 
 
+    private void syncSpacesDown( final int target )
+    {
+        assert spaceCount > target;
+        for( int c = cBottomSpace();; --c ) // backward for faster removals
+        {
+            removeSpaceToPool( c, getSpaceChild(c) );
+            if( spaceCount == target ) break;
+        }
+    }
+
+
+
+    private void syncSpacesUp( final int target )
+    {
+        assert spaceCount < target;
+        for( int c = cSpacesEndBound();; ++c )
+        {
+            final Space space = spacePool.size() > 0? expoolSpace(): new Space(getContext());
+            addView( space, c, spaceLayoutParams );
+            ++spaceCount;
+            if( spaceCount == target ) break;
+        }
+    }
+
+
+
     private void syncViewers( final Forester forester ) // ensures each populated to match forest and forester
     {
         final int _candidateCount = forester.height();
         final CountNode _candidate = forester.position();
         final int heightBalance = candidateCount - _candidateCount;
-System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); // TEST
 
       // View may be higher than model
       // - - - - - - - - - - - - - - - -
@@ -322,7 +448,7 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
             if( _candidateCount == 0 ) syncViewersOnSurplus();
             else
             {
-                final NodeV _candidateV = getChildNodeV( cCandidatesEndBound() - _candidateCount );
+                final NodeV _candidateV = getNodeChild( cCandidatesEndBound() - _candidateCount );
                   // candidate view at model height
                 if( _candidateV.node() == _candidate ) syncViewersOnSurplus();
                 else syncViewersOnMismatch( _candidateCount, _candidate );
@@ -364,11 +490,11 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
         assert heightBalance < 0;
         if( heightBalance == -1 ) // then a deficit of one candidate
         {
-          // Depopulate peers viewer, cf. depopulateViewers().
+          // Depopulate peers viewer, cf. depopulateNodeViewers().
           // - - - - - - - - - - - - - - - - - - - - - - - - - -
             if( peerCount > 0 ) for( int c = cBottomPeer();; --c ) // backward for fast removals
             {
-                final NodeV peerV = getChildNodeV( c );
+                final NodeV peerV = getNodeChild( c );
                 if( peerV.node() == _candidate )
                 {
                   // Moving new candidate to candidates viewer.
@@ -378,6 +504,11 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
                     addView( downPager, c ); // just above peerV, leaving peerV atop candidates viewer
                     --peerCount;
                     ++candidateCount;
+
+                  // Removing one space from spaces viewer.
+                  // - - - - - - - - - - - - - - - - - - - -
+                    final int cSpace = cBottomSpace();
+                    removeSpaceToPool( cSpace, getSpaceChild(cSpace) );
                 }
                 else removePeerToPool( c, peerV );
                 if( peerCount == 0 ) break;
@@ -398,9 +529,10 @@ System.err.println( " --- syncing viewers, heightBalance=" + heightBalance ); //
     /** @param _candidateCount The new candidate count, viz. forester.height.
       * @param _candidate The new immediate candidate, viz. forester.position.
       */
-    private void syncViewersOnMismatch( final int _candidateCount, final CountNode _candidate ) // abnormal case
+    private void syncViewersOnMismatch( final int _candidateCount, final CountNode _candidate )
     {
-        depopulateViewers();
+        // abnormal case, no need of finesse
+        depopulateNodeViewers();
         syncViewersOnDeficit( -_candidateCount, _candidate );
     }
 

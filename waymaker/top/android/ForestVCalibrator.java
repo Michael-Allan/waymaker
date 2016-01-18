@@ -31,11 +31,7 @@ import static waymaker.top.android.ForestV.C_TOP_PEER;
    // - R u n n a b l e --------------------------------------------------------------------------------
 
 
-    public void run()
-    {
-        final boolean toReconstrain = calibrate();
-        System.err.println( " --- to reconstrain forest view: " + toReconstrain ); // TEST
-    }
+    public void run() { if( calibrate() ) forestV.reconstrain(); }
 
 
 
@@ -131,7 +127,7 @@ import static waymaker.top.android.ForestV.C_TOP_PEER;
         int spareHeight = forestV.getChildAt(0).getTop();
         if( ellipsis.getParent() == null ) // then layout excludes ellipsis
         {
-            int nodeCount = forestV.nodeCount();
+            int nodeCount = forestV.nodeCountForCalibration();
             final Calibration _calibration = makeCalibration( /*actual*/nodeCount, spareHeight );
             if( !_calibration.equals( calibration/*maybe null*/ ))
             {
@@ -150,7 +146,7 @@ import static waymaker.top.android.ForestV.C_TOP_PEER;
         }
         else // layout includes ellipsis
         {
-            final int nodeCount = forestV.nodeCount();
+            final int nodeCount = forestV.nodeCountForCalibration();
             final Calibration _calibrationEllipsed = makeCalibration( /*actual*/nodeCount, spareHeight );
             if( !_calibrationEllipsed.equals( calibrationEllipsed/*maybe null*/ ))
             {
@@ -160,9 +156,6 @@ import static waymaker.top.android.ForestV.C_TOP_PEER;
             spareHeight += ellipsisHeight;
             calibration = makeCalibration( /*actual*/nodeCount, spareHeight );
         }
-
-System.err.println( " ---         calibration=" + calibration ); // TEST
-System.err.println( " --- calibrationEllipsed=" + calibrationEllipsed ); // TEST
         return isWorkingCalibrationChanged;
     }
 
@@ -219,7 +212,11 @@ System.err.println( " --- calibrationEllipsed=" + calibrationEllipsed ); // TEST
 
 
 
-    private int nodeHeight = Integer.MAX_VALUE << 3; // init to (likely) most constrained case
+    int nodeHeight = NODE_HEIGHT_DEFAULT;
+
+
+
+    static final int NODE_HEIGHT_DEFAULT = Integer.MAX_VALUE << 3; // yielding (likely) a maximum constraint
 
 
 
@@ -233,7 +230,7 @@ System.err.println( " --- calibrationEllipsed=" + calibrationEllipsed ); // TEST
    // ==================================================================================================
 
 
-    @SuppressWarnings("overrides") final class Calibration // overrides equals, but not hashCode
+    static @SuppressWarnings("overrides") final class Calibration // overrides equals, but not hashCode
     {
 
         private Calibration( final int nodeCountMaxAllowed )
