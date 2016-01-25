@@ -67,7 +67,7 @@ public @ThreadSafe class Application extends android.app.Application
 
 
 
-    /** The single instance of Application as created by the Anroid runtime, or null if there is none.
+    /** The single instance of Application as created by the Android runtime, or null if there is none.
       */
     public static Application i() { return instanceA.get(); }
 
@@ -88,6 +88,25 @@ public @ThreadSafe class Application extends android.app.Application
         return Thread.currentThread() == mainLooper.getThread();
 
     }
+
+
+
+    /** Answers whether an application might run remotely from a server, as during normal use, as
+      * opposed to local testing.
+      *
+      *     @see #setRemotelyUsable()
+      */
+    public static boolean isRemotelyUsable() { return isRemotelyUsable; }
+
+
+        private static volatile boolean isRemotelyUsable; // TEST
+
+
+        /** Establishes that an application might run remotely from a server.
+          *
+          *     @see #isRemotelyUsable()
+          */
+        public static void setRemotelyUsable() { isRemotelyUsable = true; }
 
 
 

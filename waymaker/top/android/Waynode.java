@@ -18,7 +18,7 @@ public interface Waynode
     /** An immutable instance of an empty waynode.
       */
     public static final Waynode1 EMPTY_WAYNODE = new Waynode1( "", Waynode1.DEFAULT_ANSWER,
-      Waynode1.DEFAULT_QUESTION );
+      Waynode1.DEFAULT_QUESTION, /*questionBackImageLoc*/null );
 
 
 
@@ -62,6 +62,14 @@ public interface Waynode
       *       >pretty.js § Wayscript § Title sentence</a>
       */
     public String question();
+
+
+
+    /** The location of an image of the question suited for the backdrop of a user interface, or null if
+      * there is no image.  The purpose is to bridge visual gaps in the user interface, and to
+      * illustrate the question.
+      */
+    public String questionBackImageLoc();
 
 
 }

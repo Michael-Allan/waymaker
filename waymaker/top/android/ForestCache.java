@@ -16,7 +16,7 @@ import static java.util.logging.Level.WARNING;
   * storage and singleton referencing forest instances, which together reduce the frequency of slow
   * communications with the remote data source (count server).
   */
-  @ThreadRestricted("app main") // effectively so by "dives" into "app main"
+  @ThreadRestricted("app main") // effectively so by "joins" into "app main"
 public final class ForestCache
 {
 
@@ -229,7 +229,7 @@ public final class ForestCache
     {
       // Coordinate with refresh series.
       // - - - - - - - - - - - - - - - - -
-        final int serial = ++refreshSerialLast; // signal any prior refresh, "you're superceded"
+        final int serial = ++refreshSerialLast; // raise signal to any prior refresh, "you're superceded"
         if( tRefresh != null ) tRefresh.interrupt(); // tap on shoulder, "no longer wanted"
 
       // Scope the general refresh demands that are determinable from "app main".
@@ -409,14 +409,12 @@ public final class ForestCache
             return;
         }
 
-      // Else must dive back into "app main" thread.
+      // Else must join back into "app main" thread.
       // - - - - - - - - - - - - - - - - - - - - - - -
-        Application.i().handler().post( new JointRunnable( serial, /*threadToJoin*/t )
+        Application.i().handler().post( new MainJoin( /*threadToJoin*/t, serial )
         {
-            void runAfterJoin() // on "app main", grep TermSync
+            public void runAfterJoin() // on "app main", reading r2t variables above by TermSync
             {
-                assert t.equals( tRefresh );
-                tRefresh = null; // release to garbage collector
                 if( r3Wanted ) r3( wayrepoTreeLoc, serial, precountDemands, stripDemands, failureH );
                 else
                 {
@@ -501,14 +499,12 @@ public final class ForestCache
             demand.newNodeCache = new NodeCache1( precounter ); // collate results of precount
         }
 
-      // Dive back into "app main" thread.
+      // Join back into "app main" thread.
       // - - - - - - - - - - - - - - - - - -
-        Application.i().handler().post( new JointRunnable( serial, /*threadToJoin*/t )
+        Application.i().handler().post( new MainJoin( /*threadToJoin*/t, serial )
         {
-            void runAfterJoin() // on "app main", grep TermSync
+            public void runAfterJoin() // on "app main", reading r4t variables above by TermSync
             {
-                assert t.equals( tRefresh );
-                tRefresh = null; // release to garbage collector
                 r5( toClear, serial, precountDemands, stripDemands, failureH.get() );
             }
         });
@@ -610,44 +606,26 @@ public final class ForestCache
    // ==================================================================================================
 
 
-    /** A runnable that first joins a thread in order to synchronize with it (grep TermSync), then runs
-      * a refresh job.
-      */
-    private abstract class JointRunnable implements Runnable
+    private abstract class MainJoin extends GuardedJointRunnable
     {
 
-        @ThreadSafe JointRunnable( final int serial, final Thread threadToJoin )
+        @ThreadSafe MainJoin( final Thread threadToJoin, final int serial )
         {
+            super( threadToJoin );
             this.serial = serial;
-            this.threadToJoin = threadToJoin;
         }
 
 
         private final int serial;
 
 
-        private final Thread threadToJoin;
-
-
-       // ----------------------------------------------------------------------------------------------
-
-        abstract void runAfterJoin();
-
-
-       // - R u n n a b l e ----------------------------------------------------------------------------
-
-        public void run()
+        public boolean toProceed()
         {
-            if( serial != refreshSerialLast ) return; // refresh superceded, abort to prevent conflict
+            if( serial != refreshSerialLast ) return false; // refresh superceded, abort to avoid collision
 
-            try{ threadToJoin.join(); } // before reading its results in runAfterJoin (grep TermSync)
-            catch( InterruptedException _x )
-            {
-                Thread.currentThread().interrupt(); // pass it on
-                return;
-            }
-
-            runAfterJoin();
+            assert threadToJoin().equals( tRefresh );
+            tRefresh = null; // release to garbage collector
+            return true;
         }
 
     }

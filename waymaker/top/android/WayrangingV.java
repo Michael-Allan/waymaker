@@ -1,11 +1,10 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
+import android.graphics.*;
 import android.view.View;
 import android.widget.*;
 import waymaker.gen.*;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static waymaker.gen.RelativeLayoutJig.jigRelative;
 
 
@@ -103,21 +102,9 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
             addView( view, jigRelative().rule(BELOW,WAYPATH_VID)
               .rule(ALIGN_PARENT_LEFT).rule(ALIGN_PARENT_RIGHT).unjig() );
             view.setId( QUESTION_VID );
-            final class TextSetter implements Auditor<Changed>
-            {
-                public void hear( Changed _ding ) { sync(); }
-                private void sync()
-                {
-                    final Wayranging wr = wr();
-                    view.setText( wr.forests().getOrMakeForest(wr.pollNamer().get())
-                      .nodeCache().leader().waynode().question() );
-                }
-            };
-            final TextSetter setter = new TextSetter();
-            setter.sync();
-            wr.pollNamer().bell().register( setter ); // no need to unregister from wr co-construct
-            wr.forests().nodeCacheBell().register( setter ); // "
+            new QuestionTextSyncher( view ); // wr co-construct
         }
+        new QuestionImageSyncher( this ); // wr co-construct
 
       // Forest view.
       // - - - - - - -
@@ -207,7 +194,7 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
 
 
 
-    private Wayranging wr() { return (Wayranging)getContext(); }
+    Wayranging wr() { return (Wayranging)getContext(); }
 
 
 }

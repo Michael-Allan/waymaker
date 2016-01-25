@@ -24,9 +24,10 @@ public @ThreadSafe final class Waynode1 implements Waynode
       *     @see #question()
       *     @throws NullPointerException if any argument is null.
       */
-    public Waynode1( final String _handle, final String _answer, final String _question )
+    public Waynode1( final String _handle, final String _answer, final String _question,
+      final String _questionBackImageLoc )
     {
-        this( _handle, _answer, _question, /*inP*/null );
+        this( _handle, _answer, _question, _questionBackImageLoc, /*inP*/null );
         if( _handle == null || _answer == null || _question == null ) throw new NullPointerException();
     }
 
@@ -34,7 +35,10 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
     /** Constructs a Waynode1 by copying another waynode.
       */
-    public Waynode1( final Waynode wn ) { this( wn.handle(), wn.answer(), wn.question(), /*inP*/null ); }
+    public Waynode1( final Waynode wn )
+    {
+        this( wn.handle(), wn.answer(), wn.question(), wn.questionBackImageLoc(), /*inP*/null );
+    }
 
 
 
@@ -45,7 +49,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
       */
       @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.restore
     private Waynode1( final String _handle, final String _answer, final String _question,
-      final Parcel inP/*grep CtorRestore*/ )
+      final String _questionBackImageLoc, final Parcel inP/*grep CtorRestore*/ )
     {
         final boolean toInitClass;
         if( wasConstructorCalled ) toInitClass = false;
@@ -66,6 +70,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
                 out.writeString( wn.handle() );
                 ParcelX.writeString( wn.answer(), out, DEFAULT_ANSWER );
                 ParcelX.writeString( wn.question(), out, DEFAULT_QUESTION );
+                out.writeString( wn.questionBackImageLoc() );
             }
         });
         if( inP == null )
@@ -73,12 +78,14 @@ public @ThreadSafe final class Waynode1 implements Waynode
             handle = _handle;
             answer = _answer;
             question = _question;
+            questionBackImageLoc = _questionBackImageLoc;
         }
         else
         {
-            handle = inP.readString(); // CtorRestore to restore final fields
+            handle = inP.readString(); // CtorRestore to restore these final fields
             answer = ParcelX.readString( inP, DEFAULT_ANSWER );
             question = ParcelX.readString( inP, DEFAULT_QUESTION );
+            questionBackImageLoc = inP.readString();
         }
 
       // - - -
@@ -102,7 +109,7 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
       // 2.
       // - - -
-        return new Waynode1( null, null, null, in );
+        return new Waynode1( null, null, null, null, in );
     }
 
 
@@ -135,13 +142,6 @@ public @ThreadSafe final class Waynode1 implements Waynode
    // - W a y n o d e ----------------------------------------------------------------------------------
 
 
-    public String handle() { return handle; }
-
-
-        private final String handle;
-
-
-
     public String answer() { return answer; }
 
 
@@ -149,6 +149,13 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
 
         private final String answer;
+
+
+
+    public String handle() { return handle; }
+
+
+        private final String handle;
 
 
 
@@ -162,6 +169,13 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
 
 
+    public String questionBackImageLoc() { return questionBackImageLoc; }
+
+
+        private final String questionBackImageLoc;
+
+
+
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -172,8 +186,10 @@ public @ThreadSafe final class Waynode1 implements Waynode
         if( !(o2 instanceof Waynode) /*or if null*/ ) return false;
 
         final Waynode w2 = (Waynode)o2;
-        return w1.handle().equals(w2.handle()) && w1.answer().equals(w2.answer())
-          && w1.question().equals(w2.question());
+        return w1.handle().equals(w2.handle())
+            && w1.answer().equals(w2.answer())
+            && w1.question().equals(w2.question())
+            && w1.questionBackImageLoc().equals(w2.questionBackImageLoc());
     }
 
 

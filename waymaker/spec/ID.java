@@ -420,14 +420,14 @@ public @ThreadSafe class ID implements TriSerialID
             - domain serial 0 is reserved for network use
           / - standard 0 generators are:
           /     [ 00p-INSTANCE
-          /         ( referring to poll (p), not issue, per waymaker/gen/poll
-          /         - reserved for issues
-          /             - all issues have an identity tag in this form
-          /                 ( examples: 00p-0 | 00p-torM
+          /         ( referring to poll (p)
+          /         - reserved for polls
+          /         - all polls have an identity tag in this form
+          /             ( examples: 00p-0 | 00p-torM
           /         - the instance serial number is largely unregulated in this case
           /             - i.e. collision avoidance is not enforced
           /             - only the following instance serial is predefined:
-          /                 [ 1
+          /                 [ end
           /                     - ultimate end
           /                     - predefinition required by top/android issue train
           // not clear how 00p-* form will be useful

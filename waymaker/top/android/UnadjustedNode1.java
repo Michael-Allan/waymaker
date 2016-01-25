@@ -23,6 +23,7 @@ public final class UnadjustedNode1 extends UnadjustedNodeV
         super( id, peerOrdinal, rootwardInThis );
         assert id != null; // not ground
         waynode = _waynode;
+        WaykitUI.setRemotelyUsable(); // since one is actually constructed
     }
 
 

@@ -337,16 +337,33 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
             {
                 if( t != START_TAG ) continue doc;
 
-                if( "title".equals(p.getName()) )
+                if( "head".equals(p.getName()) )
                 {
-                  // Pollar prompt.
-                  // - - - - - - - -
-                    title: for( t = p.next(); t != END_TAG || !"title".equals(p.getName()); t = p.next() )
+                    head: for( t = p.next(); t != END_TAG || !"head".equals(p.getName()); t = p.next() )
                     {
-                        if( t == TEXT )
+                        if( t != START_TAG ) continue head;
+
+                      // Question in title.
+                      // - - - - - - - - - -
+                        if( "title".equals(p.getName()) )
                         {
-                            jig.question = p.getText().trim();
-                            break title;
+                            title:
+                            for( t = p.next(); t != END_TAG || !"title".equals(p.getName()); t = p.next() )
+                            {
+                                if( t == TEXT )
+                                {
+                                    jig.question = p.getText().trim();
+                                    break title;
+                                }
+                            }
+                            continue head;
+                        }
+
+                      // Back image.
+                      // - - - - - - -
+                        if( "backImage".equals(p.getName()) )
+                        {
+                            jig.questionBackImageLoc = p.getAttributeValue( null, "src" );
                         }
                     }
                     continue doc;
@@ -354,7 +371,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
                 if( "wayscript".equals(p.getName()) )
                 {
-                  // Summary.
+                  // Answer.
                   // - - - - -
                     t = p.next();
                     if( t == TEXT )

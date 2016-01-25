@@ -49,6 +49,13 @@
   * >Parcel</a>.obtain and .recycle methods appear to be thread safe judging by inspection
   * of the source code.</p>
   *
+  * <h3 id='Resources-TS'>Resources thread safety (Resources-TS)</h3>
+  *
+  * <p><a href='http://developer.android.com/reference/android/content/res/Resources.html' target='_top'
+  * >Resources</a> appears to be thread safe judging by inspection of its source code.  It synchronizes
+  * extensively by locking, and explains elaborately in a comment why certain members “are not protected
+  * by a lock”.</p>
+  *
   * <h3 id='FreezeSync'>Thread synchronization by final freezing (FreezeSync)</h3>
   *
   * <p>“A thread that can only see a reference to an object after that object has been completely initialized

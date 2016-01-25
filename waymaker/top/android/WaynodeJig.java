@@ -6,11 +6,19 @@ final class WaynodeJig implements Waynode
 {
 
 
+    WaynodeJig() { clear(); }
+
+
+
+   // --------------------------------------------------------------------------------------------------
+
+
     void clear()
     {
         answer = EMPTY_WAYNODE.answer();
         handle = EMPTY_WAYNODE.handle();
         question = EMPTY_WAYNODE.question();
+        questionBackImageLoc = EMPTY_WAYNODE.questionBackImageLoc();
     }
 
 
@@ -28,21 +36,28 @@ final class WaynodeJig implements Waynode
     public String answer() { return answer; }
 
 
-        String answer = EMPTY_WAYNODE.answer();
+        String answer;
 
 
 
     public String handle() { return handle; }
 
 
-        String handle = EMPTY_WAYNODE.handle();
+        String handle;
 
 
 
     public String question() { return question; }
 
 
-        String question = EMPTY_WAYNODE.question();
+        String question;
+
+
+
+    public String questionBackImageLoc() { return questionBackImageLoc; }
+
+
+        String questionBackImageLoc;
 
 
 }

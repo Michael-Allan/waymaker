@@ -105,6 +105,8 @@ public final @ThreadSafe class ServerCount
     {
         if( peersStart < 1 || peersStart > peersEndBound ) throw new IndexOutOfBoundsException();
 
+     // WaykitUI.setRemotelyUsable();
+     /// when this is coded
         throw new UnsupportedOperationException( "Server counts not yet coded" );
     }
 

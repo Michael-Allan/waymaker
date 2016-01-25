@@ -33,9 +33,9 @@ import java.lang.annotation.*;
   *     &#064;ThreadRestricted("further <var>restriction</var>")
   *     &#064;ThreadRestricted("<var>type restriction</var>, <var>further restriction</var>")</pre>
   *
-  * <h3>Restriction to a particular thread</h3>
+  * <h3>Restriction to a known thread</h3>
   *
-  * <p>The restriction may be to a particular thread.  For instance, most Swing code is
+  * <p>The restriction may be to a known instance of a thread.  For example, most Swing code is
   * restricted to the AWT event dispatch thread.  An appropriate annotation would be:</p>
   *
   * <pre>
@@ -52,9 +52,9 @@ import java.lang.annotation.*;
   * <p>The restriction may specify a particular synchronization lock.  For example:</p>
   *
   * <pre>
-  *     &#064;ThreadRestricted("holds <em>Class</em>.this")
-  *     &#064;ThreadRestricted("holds <em>object</em>")
-  *     &#064;ThreadRestricted("holds <em>lock</em>")</pre>
+  *     &#064;ThreadRestricted("holds <var>Class</var>.this")
+  *     &#064;ThreadRestricted("holds <var>object</var>")
+  *     &#064;ThreadRestricted("holds <var>lock</var>")</pre>
   *
   * <p>These specify that the thread must hold the monitor lock of the containing instance
   * (this), or of some other object; or that it must hold a particular {@linkplain
@@ -62,9 +62,9 @@ import java.lang.annotation.*;
   * may internally test compliance at runtime:</p>
   *
   * <pre>
-  *     assert Thread.holdsLock( <em>Class</em>.this );
-  *     assert Thread.holdsLock( <em>object</em> );
-  *     assert <em>lock</em>.isHeldByCurrentThread();</pre>
+  *     assert Thread.holdsLock( <var>Class</var>.this );
+  *     assert Thread.holdsLock( <var>object</var> );
+  *     assert <var>lock</var>.isHeldByCurrentThread();</pre>
   *
   * <h3 id='touch'>Restriction to touch-synchronizing threads</h3>
   *
@@ -72,9 +72,9 @@ import java.lang.annotation.*;
   *
   * <pre>
   *     &#064;ThreadRestricted("touch")
-  *     &#064;ThreadRestricted("touch <em>object</em>")
-  *     &#064;ThreadRestricted("touch <em>lock</em>")
-  *     &#064;ThreadRestricted("touch <em>Class</em>.this")</pre>
+  *     &#064;ThreadRestricted("touch <var>object</var>")
+  *     &#064;ThreadRestricted("touch <var>lock</var>")
+  *     &#064;ThreadRestricted("touch <var>Class</var>.this")</pre>
   *
   * <p>Access is superficially thread-safe, but modifications to state variables are not
   * guaranteed visible across threads unless the threads touch-synchronize on a common
@@ -103,6 +103,14 @@ import java.lang.annotation.*;
   * and thereby <em>happens-before</em> those actions.
   * (See also this <a target='_top' href='http://stackoverflow.com/questions/686415#31933260'
   * >answer on Stack Exchange</a>.)</p>
+  *
+  * <h3>Restriction to a thread synchronized by starting</h3>
+  *
+  * <p>The restriction may be to a thread that was synchronized by starting it from a known instance of
+  * another thread:</p>
+  *
+  * <pre>
+  *     &#064;ThreadRestricted("<a href='package-summary.html#StartSync'>StartSync</a> from <var>thread</var>")</pre>
   *
   * <h3>Restriction unspecified</h3>
   *

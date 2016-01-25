@@ -49,7 +49,8 @@ public @ThreadSafe final class ParcelX
 
 
 
-    /** Writes a string to a parcel with efficient handling for a frequent default value.
+    /** Writes a string to a parcel with efficient handling for a frequent default value.  The value is
+      * considered at default if <code>s == sDefault</code>.
       */
     public static void writeString( final String s, final Parcel out, final String sDefault )
     {
