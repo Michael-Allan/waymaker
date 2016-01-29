@@ -3,7 +3,10 @@ package waymaker.top.android; // Copyright 2016, Michael Allan.  Licence MIT-Way
 import waymaker.gen.*;
 
 
-final class PollIntroducer implements Auditor<Changed>
+/** An agent that introduces polls entered by the forester at ground elevation.  It introduces each poll
+  * by temporarily out-zooming the wayscope to {@linkplain WayscopeZoom#POLL POLL} level.
+  */
+public final class PollIntroducer implements Auditor<Changed>
 {
 
 

@@ -42,7 +42,6 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
           'javadoc' ));
 
         var argInFile = tmpDir.resolve( 'argIn' );
-//      Files.deleteIfExists( argInFile );
         var out = new PrintWriter( argInFile ); // truncates file if it exists
         {
             var P = Waymaker.P;
@@ -95,6 +94,9 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
          /// breaking out elaborate member classes to the top level where they properly belong.
             out.append( '-sourcepath ' ).println( Waymaker.loc() );
             out.println( '-subpackages waymaker' );
+         // out.println( '-tag extra:t:"Intent extra"' );
+         /// complains 'Illegal package name: "Intent extra"', likely a javadoc bug
+            out.println( '-tag extra:t' ); // not actually shown in resulting doc (again, likely a bug)
             out.println( '-use' );
             out.println( "-windowtitle 'Waymaker Java API'" );
             out.println( ' -Xdoclint:all,-missing' ); /* verify all javadoc comments, but allow their omission;
@@ -120,4 +122,4 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 }
 
 
-// Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+// Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.

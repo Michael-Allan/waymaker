@@ -11,6 +11,10 @@ import static waymaker.gen.ActivityLifeStage.*;
 
 /** Exploring and elaborating an <a href='../../../../way' target='_top'>ultimate way</a>, which is the
   * principle activity of this {@linkplain WaykitUI waykit UI}.
+  *
+  *     @extra waymaker.top.android.Wayranging.toIntroducePolls (boolean)
+  *       Whether to {@linkplain PollIntroducer introduce polls}.  A false value is useful when testing
+  *       because the initial introduction slows the start of the application.  The default is true.
   */
 public @ThreadRestricted("app main") final class Wayranging extends android.app.Activity
 {
@@ -131,7 +135,13 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     private void create3()
     {
         forester = new Forester( this );
-        new PollIntroducer( this );
+        final boolean toIntroducePolls;
+        {
+            final Bundle extraB = getIntent().getExtras();
+            if( extraB == null ) toIntroducePolls = true;
+            else toIntroducePolls = extraB.getBoolean( Wayranging.class.getName() + ".toIntroducePolls" );
+        }
+        if( toIntroducePolls ) new PollIntroducer( this );
         setContentView( new WayrangingV( this ));
     }
 
