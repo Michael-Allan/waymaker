@@ -10,7 +10,7 @@ final class QuestionTextSyncher extends QuestionSyncher
 
     @Warning("Wayranging co-construct") QuestionTextSyncher( final TextView view )
     {
-        super( ((WayrangingV)view.getParent()).wr() ); // wr co-construct
+        super( (Wayranging)view.getContext() ); // wr co-construct
         this.view = view;
         sync();
     }

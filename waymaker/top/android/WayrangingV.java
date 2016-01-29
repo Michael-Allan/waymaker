@@ -1,6 +1,6 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
-import android.graphics.*;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.*;
 import waymaker.gen.*;
@@ -62,21 +62,6 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
                     - including negative case of no node (grounded) and no vote
                     - overloads general summoner with specific cue
                         - cue would otherwise be lost, vote control being removed from main screen
-    [ (=)
-        - waypath chooser summoner
-        - chooser itself is controller of Wayranging.waypathNamer
-    [ WayscopeV
-        - way element graph
-            - elements
-                - with graphic indication (not shown) of element type
-                [ parent
-                [ children
-            [ end link ←
-                ( left ←
-                - pans view to next poll endward in waypath
-            [ means link ←
-                ( right ←
-                - pans view to next poll meansward in waypath
       */
 
 
@@ -90,34 +75,58 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
 
       // Waypath view.
       // - - - - - - - -
-        final WaypathV waypathV = new WaypathV( wr ); // wr co-construct
+        waypathV = new WaypathV( wr ); // wr co-construct
         addView( waypathV, jigRelative().rule(ALIGN_PARENT_TOP)
           .rule(ALIGN_PARENT_LEFT).rule(ALIGN_PARENT_RIGHT).unjig() );
         waypathV.setId( WAYPATH_VID );
 
+      // Waypath chooser summoner (=).
+      // - - - - - - - - - - - - - - - -
+        /* * *
+        - chooser itself controls Wayranging.waypathNamer
+          */
+
       // Question view.
       // - - - - - - - -
-        {
-            final TextView view = new TextView( wr );
-            addView( view, jigRelative().rule(BELOW,WAYPATH_VID)
-              .rule(ALIGN_PARENT_LEFT).rule(ALIGN_PARENT_RIGHT).unjig() );
-            view.setId( QUESTION_VID );
-            new QuestionTextSyncher( view ); // wr co-construct
-        }
-        new QuestionImageSyncher( this ); // wr co-construct
+        questionV = new TextView( wr );
+        addView( questionV, jigRelative().rule(BELOW,WAYPATH_VID).rule(ALIGN_PARENT_LEFT).unjig() );
+        questionV.setId( QUESTION_VID );
+        Android.pad( questionV, Math.round(WaykitUI.i().pxSP()*4) ); // for ZoomSyncher shieldAlpha
+        new QuestionTextSyncher( questionV ); // wr co-construct
+        /* * *
+        = add source link for question back-image
+            - link visible when zoomed to POLL
+            - targets file, not directory (else might fail or mislead)
+          */
 
       // Forest view.
       // - - - - - - -
-        final ForestV forestV = new ForestV( wr ); // wr co-construct
+        forestV = new ForestV( wr ); // wr co-construct
         addView( forestV, jigRelative().rule(BELOW,QUESTION_VID)
           .rule(ALIGN_PARENT_LEFT).rule(ALIGN_PARENT_BOTTOM).rule(ALIGN_PARENT_RIGHT).unjig() );
 
+      // Wayscope view.
+      // - - - - - - - -
+        /* * *
+        - way element graph
+            - elements
+                - with graphic indication (not shown) of element type
+                [ parent
+                [ children
+            [ end link ←
+                ( left ←
+                - pans view to next poll endward in waypath
+            [ means link ←
+                ( right ←
+                - pans view to next poll meansward in waypath
+          */
+
       // Out-zoom button (-).
       // - - - - - - - - - - -
-        final Button outZoomButton = new Button( wr );
+        outZoomButton = new Button( wr );
         addView( outZoomButton, jigRelative().rule(ABOVE,IN_ZOOM_VID).rule(ALIGN_PARENT_RIGHT).unjig() );
         outZoomButton.setText( "-" );
-        outZoomButton.setOnClickListener( new View.OnClickListener()
+        outZoomButton.setOnClickListener( new OnClickListener()
         {
             public void onClick( View _src ) { wr().wayscopeZoomer().outZoom(); }
         });
@@ -128,7 +137,7 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
             final Button button = new Button( wr );
             addView( button, jigRelative().rule(LEFT_OF,IN_ZOOM_VID).rule(ALIGN_PARENT_BOTTOM).unjig() );
             button.setText( "≡" );
-            button.setOnClickListener( new View.OnClickListener()
+            button.setOnClickListener( new OnClickListener()
             {
                 public void onClick( View _src )
                 {
@@ -139,42 +148,36 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
 
       // In-zoom button (+).
       // - - - - - - - - - - -
-      //    - main control, big
-      //    - zooms into chosen wayscript child element, making it parent and revealing its own children
-      //    - remembers deepest parent to enable backtrack (re-zoom) after out-zoom
-      //        - else backtracking is difficult and exploring is discouraged
-        final Button inZoomButton = new Button( wr );
+        inZoomButton = new Button( wr );
+        /* * *
+        - main control, big
+        - zooms into chosen wayscript child element, making it parent and revealing its own children
+        - remembers deepest parent to enable backtrack (re-zoom) after out-zoom
+            - else backtracking is difficult and exploring is discouraged
+          */
         addView( inZoomButton, jigRelative().rule(ALIGN_PARENT_BOTTOM).rule(ALIGN_PARENT_RIGHT).unjig() );
         inZoomButton.setId( IN_ZOOM_VID );
         inZoomButton.setText( "+" );
-        inZoomButton.setOnClickListener( new View.OnClickListener()
+        inZoomButton.setOnClickListener( new OnClickListener()
         {
             public void onClick( View _src ) { wr().wayscopeZoomer().inZoom(); }
         });
 
 
       // / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-        wr.wayscopeZoomer().bell().register( new Auditor<Changed>()
-        {
-            { sync(); } // init
-            private void sync()
-            {
-                final WayscopeZoomer zoomer = wr().wayscopeZoomer();
+        zoomSyncher = new ZoomSyncher( this ); // wr co-construct
+        new QuestionImageSyncher( this );     // "
+    }
 
-              // Maintain ability of zoom buttons.
-              // - - - - - - - - - - - - - - - - - -
-                outZoomButton.setEnabled( zoomer.outZoomEnabled() );
-                inZoomButton.setEnabled( zoomer.inZoomEnabled() );
 
-              // Maintain visibility of components.
-              // - - - - - - - - - - - - - - - - - -
-                final int vis = zoomer.zoom() == WayscopeZoom.POLL? INVISIBLE: VISIBLE;
-                waypathV.setVisibility( vis );
-                forestV.setVisibility( vis );
-                // leaving the question visible and conspicuous at POLL level
-            }
-            public void hear( Changed _ding ) { sync(); }
-        }); // no need to unregister from wr co-construct
+
+   // - V i e w ----------------------------------------------------------------------------------------
+
+
+    public @Override void setBackground( final Drawable back )
+    {
+        zoomSyncher.syncBackground( back, wr().wayscopeZoomer().zoom() );
+        super.setBackground( back );
     }
 
 
@@ -182,19 +185,40 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private static final int IN_ZOOM_VID = generateViewId();
+    final ForestV forestV;
 
 
 
-    private static final int QUESTION_VID = generateViewId();
+    final Button inZoomButton;
+
+
+        private static final int IN_ZOOM_VID = generateViewId();
 
 
 
-    private static final int WAYPATH_VID = generateViewId();
+    final Button outZoomButton;
+
+
+
+    final TextView questionV;
+
+
+        private static final int QUESTION_VID = generateViewId();
+
+
+
+    final WaypathV waypathV;
+
+
+        private static final int WAYPATH_VID = generateViewId();
 
 
 
     Wayranging wr() { return (Wayranging)getContext(); }
+
+
+
+    private final ZoomSyncher zoomSyncher;
 
 
 }

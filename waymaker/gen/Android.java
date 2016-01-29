@@ -1,6 +1,8 @@
 package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.view.View;
 
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
@@ -14,15 +16,50 @@ public @ThreadSafe final class Android
 
 
 
+    /** The maximum value of an alpha component, meaning “fully opaque”.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/graphics/drawable/Drawable.html#getAlpha%28%29'
+      *       target='_top'>Drawable.getAlpha</a>
+      */
+    public static final int ALPHA_OPAQUE = 255;
+
+
+
     /** Calculates the height of a graphical component from its top position (inclusive) and bottom
       * bound (exclusive).
       *
       *     @see <a href='http://developer.android.com/reference/android/view/View.html#getTop%28%29'
-      *       target='_top'>getTop</a>
+      *       target='_top'>View.getTop</a>
       *     @see <a href='http://developer.android.com/reference/android/view/View.html#getBottom%28%29'
-      *       target='_top'>getBottom</a>
+      *       target='_top'>View.getBottom</a>
       */
     public static int height( final int top, final int bottom ) { return bottom - top; } // undocumented
+
+
+
+    /** Converts HSV colour components to an ARGB colour.  This convenience method passes the arguments
+      * through a common array, restricted to the application main thread.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/graphics/Color.html#HSVToColor%28float[]%29'
+      *       target='_top'>Color.HSVToColor</a>
+      */
+      @ThreadRestricted("app main")
+    public static int HSVToColor( final float hue, final float saturation, final float value )
+    {
+        triFloat[0] = hue;
+        triFloat[1] = saturation;
+        triFloat[2] = value;
+        return Color.HSVToColor( ALPHA_OPAQUE, triFloat );
+    }
+
+
+
+    /** Sets a uniform padding on the view.  This is a convenience method.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#setPadding%28int,%20int,%20int,%20int%29'
+      *       target='_top'>View.setPadding</a>
+      */
+    public static void pad( final View view, final int p ) { view.setPadding( p, p, p, p ); }
 
 
 
@@ -47,11 +84,18 @@ public @ThreadSafe final class Android
       * (exclusive).
       *
       *     @see <a href='http://developer.android.com/reference/android/view/View.html#getLeft%28%29'
-      *       target='_top'>getLeft</a>
+      *       target='_top'>View.getLeft</a>
       *     @see <a href='http://developer.android.com/reference/android/view/View.html#getRight%28%29'
-      *       target='_top'>getRight</a>
+      *       target='_top'>View.getRight</a>
       */
     public static int width( final int left, final int right ) { return right - left; } // undocumented
+
+
+
+//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    private static @ThreadRestricted("app main") final float[] triFloat = new float[3];
 
 
 }
