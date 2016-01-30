@@ -135,12 +135,8 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     private void create3()
     {
         forester = new Forester( this );
-        final boolean toIntroducePolls;
-        {
-            final Bundle extraB = getIntent().getExtras();
-            if( extraB == null ) toIntroducePolls = true;
-            else toIntroducePolls = extraB.getBoolean( Wayranging.class.getName() + ".toIntroducePolls" );
-        }
+        final boolean toIntroducePolls = Android.unnull( getIntent().getExtras() )
+          .getBoolean( Wayranging.class.getName() + ".toIntroducePolls", /*default*/true );
         if( toIntroducePolls ) new PollIntroducer( this );
         setContentView( new WayrangingV( this ));
     }

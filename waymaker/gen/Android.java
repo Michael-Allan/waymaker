@@ -2,6 +2,7 @@ package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.*;
 import android.view.View;
 
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -77,6 +78,13 @@ public @ThreadSafe final class Android
             public void close() { preferenceStore.unregisterOnSharedPreferenceChangeListener( listener ); }
         });
     }
+
+
+
+    /** Returns the given bundle, or an immutable, empty surrogate if the bundle is null.
+      */
+    public static Bundle unnull( final Bundle bun ) { return bun == null? Bundle.EMPTY: bun; }
+      // Bundle.EMPTY is immutable (undocumented in Android 23) owing to use of ArrayMap.EMPTY
 
 
 
