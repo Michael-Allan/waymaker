@@ -363,6 +363,7 @@ public final class ForestCache
             catch( InterruptedException _x )
             {
                 logger.info( "Aborting interrupted thread: " + t.getName() );
+                Thread.currentThread().interrupt(); // pass it on, just to be correct
                 return;
             }
         }
@@ -493,6 +494,7 @@ public final class ForestCache
             catch( InterruptedException _x )
             {
                 logger.info( "Aborting interrupted thread: " + t.getName() );
+                Thread.currentThread().interrupt(); // pass it on, just to be correct
                 return;
             }
 

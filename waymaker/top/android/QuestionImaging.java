@@ -43,6 +43,7 @@ import static java.util.logging.Level.WARNING;
                 {
                     final String hostName = url.getHost();
                     if( hostName != null && !hostName.endsWith("reluk.ca") ) WaykitUI.setRemotelyUsable();
+                      // (a) before (b)
                 }
                 final HttpURLConnection con = Net.openHttpConnection( url );
                 Net.connect( con );
@@ -52,9 +53,14 @@ import static java.util.logging.Level.WARNING;
                 }
                 finally{ con.disconnect(); }
             }
+            catch( final InterruptedIOException x )
+            {
+                Thread.currentThread().interrupt(); // to be sure, pass it on
+                return; // interrupted, which is okay
+            }
             catch( final IOException x ) { logger.log( WARNING, "Unable to display question image", x ); }
             if( WaykitUI.isRemotelyUsable() ) throw new UnsupportedOperationException( "Needs caching" );
-              // image files are likely large; should be cached before allowing remote use
+              // (b) after (a).  Image files are likely large; should be cached before allowing remote use.
         }
 
         if( bitmapOriginal != null && widthV != 0 && heightV != 0 )
