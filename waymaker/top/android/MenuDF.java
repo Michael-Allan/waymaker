@@ -96,9 +96,9 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
                 {
                     public void onClick( final View src )
                     {
-                        final BelledVariable<String> pollNamer = ((Wayranging)src.getContext()).pollNamer();
-                        final String otherName = "end".equals(pollNamer.get())? "wk":"end";
-                        pollNamer.set( otherName );
+                        final BelledVariable<String> pollName = ((Wayranging)src.getContext()).pollName();
+                        final String otherName = "end".equals(pollName.get())? "wk":"end";
+                        pollName.set( otherName );
                     }
                 });
             }

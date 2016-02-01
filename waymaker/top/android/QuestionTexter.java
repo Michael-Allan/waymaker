@@ -4,11 +4,11 @@ import android.widget.TextView;
 import waymaker.gen.*;
 
 
-final class QuestionTextSyncher extends QuestionSyncher
+final class QuestionTexter extends QuestionSyncher
 {
 
 
-    @Warning("Wayranging co-construct") QuestionTextSyncher( final TextView view )
+    @Warning("Wayranging co-construct") QuestionTexter( final TextView view )
     {
         super( (Wayranging)view.getContext() ); // wr co-construct
         this.view = view;

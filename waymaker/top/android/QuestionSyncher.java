@@ -10,7 +10,7 @@ abstract @ThreadRestricted("app main") class QuestionSyncher implements Auditor<
     @Warning("wr co-construct") QuestionSyncher( final Wayranging wr )
     {
         this.wr = wr;
-        wr.pollNamer().bell().register( this ); // no need to unregister from wr co-construct
+        wr.pollName().bell().register( this ); // no need to unregister from wr co-construct
         wr.forests().nodeCacheBell().register( this ); // "
     }
 
@@ -21,7 +21,7 @@ abstract @ThreadRestricted("app main") class QuestionSyncher implements Auditor<
 
     final Waynode leaderWaynode( final Wayranging wr )
     {
-        return wr.forests().getOrMakeForest(wr.pollNamer().get()).nodeCache().leader().waynode();
+        return wr.forests().getOrMakeForest(wr.pollName().get()).nodeCache().leader().waynode();
     }
 
 

@@ -5,11 +5,11 @@ import waymaker.gen.*;
 
 
   @ThreadRestricted("app main")
-final class QuestionImageSyncher extends QuestionSyncher implements View.OnLayoutChangeListener
+final class QuestionImager extends QuestionSyncher implements View.OnLayoutChangeListener
 {
 
 
-    @Warning("wrV.wr co-construct") QuestionImageSyncher( final WayrangingV wrV )
+    @Warning("wrV.wr co-construct") QuestionImager( final WayrangingV wrV )
     {
         super( wrV.wr() ); // wr co-construct
         this.wrV = wrV;

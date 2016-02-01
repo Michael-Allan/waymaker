@@ -92,7 +92,7 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
         addView( questionV, jigRelative().rule(BELOW,WAYPATH_VID).rule(ALIGN_PARENT_LEFT).unjig() );
         questionV.setId( QUESTION_VID );
         Android.pad( questionV, Math.round(WaykitUI.i().pxSP()*4) ); // for ZoomSyncher shieldAlpha
-        new QuestionTextSyncher( questionV ); // wr co-construct
+        new QuestionTexter( questionV ); // wr co-construct
         /* * *
         = add source link for question back-image
             - link visible when zoomed to POLL
@@ -166,7 +166,7 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
 
       // / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
         zoomSyncher = new ZoomSyncher( this ); // wr co-construct
-        new QuestionImageSyncher( this );     // "
+        new QuestionImager( this );           // "
     }
 
 

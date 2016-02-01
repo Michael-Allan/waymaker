@@ -5,7 +5,7 @@ import waymaker.gen.*;
 
 
 /** A position controller for forest views.  It declares a {@linkplain #forest() forest} variable that
-  * automatically tracks the {@linkplain Wayranging#pollNamer poll namer}, and a {@linkplain #position()
+  * automatically tracks the {@linkplain Wayranging#pollName poll name}, and a {@linkplain #position()
   * nodal position} within the forest that obeys the following controls:
   *
   * <ul>
@@ -25,13 +25,13 @@ public final class Forester
     public @Warning("wr co-construct") Forester( final Wayranging wr )
     {
         final ForestCache forests = wr.forests();
-        forest = forests.getOrMakeForest( wr.pollNamer().get() );
+        forest = forests.getOrMakeForest( wr.pollName().get() );
         nodeCache( forest.nodeCache() );
-        wr.pollNamer().bell().register( new Auditor<Changed>()
+        wr.pollName().bell().register( new Auditor<Changed>()
         {
             public void hear( Changed _ding )
             {
-                final String _pollName = wr.pollNamer().get();
+                final String _pollName = wr.pollName().get();
                 if( _pollName.equals(forest.pollName()) ) return;
 
                 forest = wr.forests().getOrMakeForest( _pollName );
@@ -87,9 +87,9 @@ public final class Forester
 
 
 
-    /** The forest in which this forester now moves.  It automatically switches to the forest named by
-      * the {@linkplain Wayranging#pollNamer poll namer}.  Any change in the return value will be
-      * signalled by the {@linkplain #bell() bell}.
+    /** The forest in which this forester now moves.  It automatically switches the forest based on the
+      * {@linkplain Wayranging#pollName poll name}.  Any change in the return value will be signalled by
+      * the {@linkplain #bell() bell}.
       */
     public Forest forest() { return forest; }
 

@@ -96,10 +96,10 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         {
             public void save( final Wayranging wr, final Parcel out )
             {
-                AndroidXID.writeUDIDOrNull( wr.actorIdentifier.get(), out );
+                AndroidXID.writeUDIDOrNull( wr.actorID.get(), out );
             }
         });
-        actorIdentifier = new BelledVariable<VotingID>( inP == null? null:
+        actorID = new BelledVariable<VotingID>( inP == null? null:
           (VotingID)AndroidXID.readUDIDOrNull(inP) ); // CtorRestore to cleanly construct with restored state
 
       // Forests.
@@ -120,10 +120,10 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         {
             public void save( final Wayranging wr, final Parcel out )
             {
-                out.writeString( wr.pollNamer.get() );
+                out.writeString( wr.pollName.get() );
             }
         });
-        pollNamer = new BelledNonNull<String>( inP == null? "end": inP.readString() );
+        pollName = new BelledNonNull<String>( inP == null? "end": inP.readString() );
           // CtorRestore to cleanly construct with restored state
 
       // - - -
@@ -150,10 +150,10 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       *
       *     @see #position(String,VotingID)
       */
-    public BelledVariable<VotingID> actorIdentifier() { return actorIdentifier;}
+    public BelledVariable<VotingID> actorID() { return actorID;}
 
 
-        private BelledVariable<VotingID> actorIdentifier; // final after create2, which adds stator
+        private BelledVariable<VotingID> actorID; // final after create2, which adds stator
 
 
 
@@ -211,27 +211,27 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    /** The namer of the poll on which wayranging now focuses.
+    /** The name of the poll on which wayranging now focuses.
       *
       *     @see #position(String,VotingID)
       */
-    public BelledNonNull<String> pollNamer() { return pollNamer;}
+    public BelledNonNull<String> pollName() { return pollName;}
 
 
-        private BelledNonNull<String> pollNamer; // final after create2, which adds stator
+        private BelledNonNull<String> pollName; // final after create2, which adds stator
 
 
 
     /** Atomically sets the poll position on which wayranging now focuses by setting,
-      * in effect simultaneously, both the {@linkplain #pollNamer() poll name}
-      * and {@linkplain #actorIdentifier() actor identity}.
+      * in effect simultaneously, both the {@linkplain #pollName() poll name}
+      * and {@linkplain #actorID() actor identity}.
       */
-    public void position( final String pollName, final VotingID actorID )
+    public void position( final String _pollName, final VotingID _actorID )
     {
-        final boolean p = pollNamer.setSilently( pollName );
-        final boolean a = actorIdentifier.setSilently( actorID );
-        if( p ) pollNamer.bell().ring();
-        if( a ) actorIdentifier.bell().ring();
+        final boolean p = pollName.setSilently( _pollName );
+        final boolean a = actorID.setSilently( _actorID );
+        if( p ) pollName.bell().ring();
+        if( a ) actorID.bell().ring();
     }
 
 

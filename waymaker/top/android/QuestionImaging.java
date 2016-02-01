@@ -14,18 +14,18 @@ import static java.util.logging.Level.WARNING;
 {
 
 
-    @ThreadRestricted("app main") QuestionImaging( final QuestionImageSyncher syncher )
+    @ThreadRestricted("app main") QuestionImaging( final QuestionImager imager )
     {
-        this.syncher = syncher;
-        imageLoc = syncher.imageLoc;
-        final QuestionImaging incomplete = syncher.incompleteImaging;
+        this.imager = imager;
+        imageLoc = imager.imageLoc;
+        final QuestionImaging incomplete = imager.incompleteImaging;
         if( incomplete != null && imageLoc != null && imageLoc.equals(incomplete.imageLoc) )
         {
             bitmapOriginal = incomplete.bitmapOriginal; // if any, avoid refetching it
               // bitmapOriginal to be readable by StartSync
         }
-        widthV = syncher.wrV.getWidth();
-        heightV = syncher.wrV.getHeight();
+        widthV = imager.wrV.getWidth();
+        heightV = imager.wrV.getHeight();
     }
 
 
@@ -35,6 +35,7 @@ import static java.util.logging.Level.WARNING;
 
     public void run()
     {
+        final Thread thread = Thread.currentThread();
         if( imageLoc != null && bitmapOriginal == null ) // then fetch it
         {
             try
@@ -50,11 +51,16 @@ import static java.util.logging.Level.WARNING;
                 try( final InputStream in = new BufferedInputStream( con.getInputStream() ); )
                 {
                     bitmapOriginal = BitmapFactory.decodeStream( in );
+                      // decodeStream swallows interrupts (Android 23).  Throws InterruptedIOException
+                      // with interrupt status clear, then catches it internally and merely logs it,
+                      // leaving interrupt status unknown at this point.
+                    if( thread.isInterrupted() ) return; // imaging no longer wanted
+                      // unlikely to detect, as decodeStream above 'swallows' it
                 }
                 finally{ con.disconnect(); }
             }
-            catch( final InterruptedIOException x )
-            {
+            catch( final InterruptedIOException x ) // unlikely to catch, as decodeStream above 'swallows' it
+            { // unlike ClosedByInterruptException, leaves thread status in doubt, so:
                 Thread.currentThread().interrupt(); // to be sure, pass it on
                 return; // interrupted, which is okay
             }
@@ -85,6 +91,8 @@ import static java.util.logging.Level.WARNING;
             }
             bitmapScaled = Bitmap.createScaledBitmap( bitmapOriginal, widthB, heightB,
               /*Paint.FILTER_BITMAP_FLAG*/true );
+            if( thread.isInterrupted() ) return; // imaging no longer wanted
+
             bitmapOriginal = null; // signal that imaging is complete
         }
         Application.i().handler().post( new GuardedJointRunnable( /*threadToJoin*/Thread.currentThread() )
@@ -92,14 +100,14 @@ import static java.util.logging.Level.WARNING;
             // joining back into "app main" thread
             public boolean toProceed()
             {
-                if( !threadToJoin().equals( syncher.tImager )) return false; // superceded, avoid collision
+                if( !threadToJoin().equals( imager.tImager )) return false; // superceded, avoid collision
 
-                syncher.tImager = null; // release to garbage collector
+                imager.tImager = null; // release to garbage collector
                 return true;
             }
             public void runAfterJoin() // reading QuestionImaging variables by TermSync
             {
-                final WayrangingV wrV = syncher.wrV;
+                final WayrangingV wrV = imager.wrV;
                 final BitmapDrawable background;
                 if( bitmapOriginal == null ) // (normal case)
                 {
@@ -109,12 +117,12 @@ import static java.util.logging.Level.WARNING;
                         background.setGravity( gravity );
                     }
                     else background = null;
-                    syncher.incompleteImaging = null; // if any, release to garbage collector
+                    imager.incompleteImaging = null; // if any, release to garbage collector
                 }
                 else // this imaging is incomplete
                 {
                     background = null;
-                    syncher.incompleteImaging = QuestionImaging.this;
+                    imager.incompleteImaging = QuestionImaging.this;
                 }
                 wrV.setBackground( background );
             }
@@ -146,11 +154,11 @@ import static java.util.logging.Level.WARNING;
 
 
 
+    private @Warning("thread restricted object, app main") final QuestionImager imager;
+
+
+
     private static final java.util.logging.Logger logger = LoggerX.getLogger( QuestionImaging.class );
-
-
-
-    private @Warning("thread restricted object, app main") final QuestionImageSyncher syncher;
 
 
 

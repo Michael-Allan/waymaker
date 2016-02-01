@@ -14,7 +14,7 @@ public final class PollIntroducer implements Auditor<Changed>
     {
         wr = _wr;
         syncPoll();
-        wr.pollNamer().bell().register( this ); // no need to unregister from wr co-construct
+        wr.pollName().bell().register( this ); // no need to unregister from wr co-construct
         wr.wayscopeZoomer().bell().register( new Auditor<Changed>()
         {
             public void hear( Changed _ding ) { ++stateOrdinal; } // avoid collision between zoom agents
@@ -46,7 +46,7 @@ public final class PollIntroducer implements Auditor<Changed>
 
     private void syncPoll()
     {
-        if( wr.actorIdentifier().get() != null ) return; // skip intro, pollar forest not entered at ground
+        if( wr.actorID().get() != null ) return; // skip intro, pollar forest not entered at ground
 
         final WayscopeZoomer zoomer = wr.wayscopeZoomer();
         if( zoomer.zoom() != WayscopeZoom.FORESTER )

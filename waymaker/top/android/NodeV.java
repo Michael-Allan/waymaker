@@ -91,7 +91,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
         public void onClick( final View src )
         {
             final NodeV nodeV = (NodeV)src;
-            nodeV.wr().actorIdentifier().set( nodeV.node.id() );
+            nodeV.wr().actorID().set( nodeV.node.id() );
         }
     };
 
@@ -115,7 +115,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
         {
          // isActor_sync(); // init
          /// effectively done by node init
-            wr().actorIdentifier().bell().register( new Auditor<Changed>()
+            wr().actorID().bell().register( new Auditor<Changed>()
             {
                 public void hear( Changed _ding ) { isActor_sync(); }
             }); // no need to unregister from wr co-construct
@@ -124,7 +124,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 
         private void isActor_sync()
         {
-            final boolean _isActor = node != null && node.id().equals(wr().actorIdentifier().get());
+            final boolean _isActor = node != null && node.id().equals(wr().actorID().get());
             if( _isActor == isActor ) return;
 
             isActor = _isActor;

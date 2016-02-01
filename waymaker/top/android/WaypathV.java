@@ -21,7 +21,7 @@ public @ThreadRestricted("app main") final class WaypathV extends LinearLayout
                 - identification
                     ( as per 2015.12.12
                     - using only string form, "name"
-            - Wayranging.pollNamer
+            - Wayranging.pollName
             - Wayranging.waypathNamer
         - controls
             - waypath chooser, summoner (=)
@@ -104,10 +104,10 @@ public @ThreadRestricted("app main") final class WaypathV extends LinearLayout
         {
             final TextView view = new TextView( wr );
             addView( view );
-            wr.pollNamer().bell().register( new Auditor<Changed>()
+            wr.pollName().bell().register( new Auditor<Changed>()
             {
                 { sync(); } // init
-                private void sync() { view.setText( wr.pollNamer().get() ); }
+                private void sync() { view.setText( wr.pollName().get() ); }
                 public void hear( Changed _ding ) { sync(); }
             }); // no need to unregister from wr co-construct
         }

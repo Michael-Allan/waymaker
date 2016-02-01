@@ -20,7 +20,7 @@ public interface NodeCache
                 - overall count (continually updated and restamped)
             - local code stamps new cache with count serial once
                 - never updating it
-            - then as cache grows lazily by receiving new nodes:
+            - then as cache grows by receiving new nodes:
                 - the stamp of each received node is tested against the cache stamp
                 - if higher, then cache inconsistency (with received node) is detected
         - in response to detection, invalidate cache, which is then replaced
