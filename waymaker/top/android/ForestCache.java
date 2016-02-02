@@ -26,53 +26,23 @@ public final class ForestCache
 
 
     /** Constructs a ForestCache.
-      *
-      *     @param inP The parceled state to restore, or null to restore none, in which case the
-      *       openToThread restriction is lifted.
       */
-      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
-    public ForestCache( final Parcel inP/*grep CtorRestore*/ )
+    public ForestCache() { forestMap = new HashMap<>( 10, MapX.HASH_LOAD_FACTOR ); }
+
+
+
+    /** Constructs a ForestCache from stored state.
+      *
+      *     @param inP The parceled state to restore.
+      */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.startCtorRestore
+    public ForestCache( final Parcel inP )
     {
-        // A CtorRestore is a state-component restoration that is coded within a constructor or factory
-        // method, as opposed to the restore method of a stator.  Coordinating it with the whole save
-        // and restore procedure complicates its code.  CtorRestore is therefore used only where reason
-        // demands.  The reason in each case is documented by a comment labeled "CtorRestore".
-        final boolean toInitClass;
-        if( wasConstructorCalled ) toInitClass = false;
-        else
-        {
-            toInitClass = true;
-            wasConstructorCalled = true;
-        }
-        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
+        int s = stators.startCtorRestore( this, inP );
 
       // Forest map.
       // - - - - - - -
-        if( toInitClass ) stators.add( new StateSaver<ForestCache>()
-        {
-            public void save( final ForestCache c, final Parcel out )
-            {
-              // 1. Size.
-              // - - - - -
-                final Collection<Forest> forests = c.forestMap.values();
-                out.writeInt( forests.size() );
-
-              // 2. Map.
-              // - - - - -
-                for( final Forest forest: forests )
-                {
-                  // 2a. Key.
-                  // - - - - -
-                    out.writeString( forest.pollName() );
-
-                  // 2b. Value.
-                  // - - - - - -
-                    Forest.stators.save( forest, out );
-                }
-
-            }
-        });
-        if( inP != null ) // restore
+        assert stators.get(s++) == forestMap_stator;
         {
           // 1.
           // - - -
@@ -94,10 +64,9 @@ public final class ForestCache
                 forestMap.put( pollName, forest );
             }
         }
-        else forestMap = new HashMap<>( 10, MapX.HASH_LOAD_FACTOR );
 
       // - - -
-        if( toInitClass ) stators.seal();
+        assert s == stators.size();
     }
 
 
@@ -203,6 +172,32 @@ public final class ForestCache
     private final HashMap<String,Forest> forestMap; // keyed by poll name
 
 
+        private static final Object forestMap_stator = stators.add( new StateSaver<ForestCache>()
+        {
+            public void save( final ForestCache c, final Parcel out )
+            {
+              // 1. Size.
+              // - - - - -
+                final Collection<Forest> forests = c.forestMap.values();
+                out.writeInt( forests.size() );
+
+              // 2. Map.
+              // - - - - -
+                for( final Forest forest: forests )
+                {
+                  // 2a. Key.
+                  // - - - - -
+                    out.writeString( forest.pollName() );
+
+                  // 2b. Value.
+                  // - - - - - -
+                    Forest.stators.save( forest, out );
+                }
+
+            }
+        });
+
+
 
     private static final java.util.logging.Logger logger = LoggerX.getLogger( ForestCache.class );
 
@@ -215,10 +210,6 @@ public final class ForestCache
         t.setDaemon( true );
         return t;
     }
-
-
-
-    private static boolean wasConstructorCalled;
 
 
 
@@ -716,5 +707,9 @@ public final class ForestCache
 
     }
 
+
+///////
+
+    static { stators.seal(); }
 
 }

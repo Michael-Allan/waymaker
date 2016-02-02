@@ -38,28 +38,74 @@ public class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
    // --------------------------------------------------------------------------------------------------
 
 
-    /** Adds a component stator to this poly-stator.
+    /** Appends a component stator to the leading part of this poly-stator, ahead of any trailing
+      * CtorRestore state savers.
       *
       *     @throws IllegalStateException if this poly-stator is already sealed.
       */
     public final void add( final KittedStatorSR<? super T, ? super S, ? super R> stator )
     {
-        try { stators.add( stator ); }
-        catch( final UnsupportedOperationException x )
+        add( leaderSize, stator );
+        ++leaderSize;
+    }
+
+
+        private void add( final int s, final KittedStatorSR<? super T, ? super S, ? super R> stator )
         {
-            assert stators.getClass().equals( ListOnArray.class );
-            throw new IllegalStateException( "Unable to add, poly-stator is sealed", x );
+            try{ stators.add( s, stator ); }
+            catch( final UnsupportedOperationException x )
+            {
+                assert stators.getClass().equals( ListOnArray.class );
+                throw new IllegalStateException( "Unable to add, poly-stator is sealed", x );
+            }
         }
+
+
+
+    /** Appends a component stator to the trailing part of this poly-stator, which is reserved for
+      * CtorRestore state savers.
+      *
+      *     @return The same saver, returned as a convenience for use in declaring an assignment for
+      *       subsequent {@linkplain #get(int) get} testing.
+      *     @throws IllegalStateException if this poly-stator is already sealed.
+      */
+    public final Object add( final StateSaver<? super T> saver )
+    {
+        add( size(), saver );
+        return saver;
     }
 
 
 
-    /** Gives the calling thread access to the current composition of every poly-stator regardless of
-      * which thread composed it.  Each composite (top level) use of a poly-stator to save or restore
-      * state must, in addition to the basic thread restriction demanded by the poly-stator (obeyed by
-      * locking or other synchronization), be immediately preceded by a call to this method.  A single
-      * call (per use) suffices to access the poly-stator, any poly-stator nested as its component, and
-      * any other poly-stator indirectly referenced during the save or restore.
+    /** Returns the component stator at the given index.  This method is used for assertions of order
+      * during {@linkplain #startCtorRestore(Object,Parcel,Object) CtorRestore} that depend on identity
+      * tests alone, hence the general return type.
+      */
+    public final Object get( final int s ) { return stators.get( s ); }
+
+
+
+    /** The size of the leading part of this poly-stator, which is the number of component stators of
+      * the ordinary, restoring type.  Any trailing part is reserved for CtorRestore state savers.
+      *
+      *     @see #size()
+      *     @see #startCtorRestore(Object,Parcel,Object)
+      */
+    public int leaderSize() { return leaderSize; }
+
+
+        private int leaderSize;
+
+
+
+    /** Gives the calling thread access to the deep composition of all poly-stators that are currently
+      * sealed regardless of which threads composed and sealed them.  Each use of a poly-stator to save
+      * or restore state must, in addition to the basic thread restriction demanded by the poly-stator
+      * (locking or other synchronization), be preceded by a call to this method.  A single call
+      * suffices to access the poly-stator, any poly-stator nested as its component, and any other
+      * poly-stator that will be indirectly referenced by that particular save or restore operation.
+      * Any later operation may involve additional, newly sealed poly-stators, and must therefore be
+      * preceded by its own call.
       */
     public static @ThreadSafe void openToThread()
     {
@@ -68,10 +114,10 @@ public class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
     }
 
         // The instigating case is that of precount threads in top/android.  A precount thread might
-        // happen to be the first constructor of a class, and thus the composer of its poly-stator.  It
-        // subsequently communicates its results back to the main thread by TermSync, which also happens
-        // to communicate the composition of the poly-stator.  But this is an accident, a side effect of
-        // the design in one particular case; it might be otherwise in other cases.
+        // happen to be the first constructor of a class, and thus the sealer of its poly-stator.
+        // Subsequently it communicates its results back to the main thread by TermSync, which also
+        // happens to communicate the composition of the poly-stator.  But this is an accident of one
+        // particular case, and it might happen otherwise in other cases.
 
 
         private static final Object COMPOSITION_LOCK = new Object();
@@ -111,8 +157,31 @@ public class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
 
 
     /** The number of component stators added to this poly-stator.
+      *
+      *     @see #leaderSize()
       */
     public final int size() { return stators.size(); }
+
+
+
+    /** Partly restores state to the thing by calling
+      * st.{@linkplain KittedStatorSR#restore(Object,Parcel,Object) restore}
+      * for each component st in the leading part of this poly-stator.
+      * The stators of the trailing part are mere {@linkplain StateSaver state savers}, unable to
+      * restore state.  Their state should instead be restored by the caller after the call.  Usually
+      * the caller is a constructor or factory method, so this type of restore is called a
+      * “CtorRestore”.
+      *
+      *     @return The {@linkplain #leaderSize() size of the leading part}.
+      *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed, or
+      *       is {@linkplain #openToThread() unopen} to the calling thread.
+      */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread")
+    public final int startCtorRestore( final T th, final Parcel in, final R kit )
+    {
+        restore( th, in, kit, leaderSize );
+        return leaderSize;
+    }
 
 
 
@@ -120,41 +189,49 @@ public class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
 
 
     /** Saves state from the thing by calling
-      * s.{@linkplain KittedStatorSR#save(Object,Parcel,Object) save}
-      * for each component s of this poly-stator.
+      * st.{@linkplain KittedStatorSR#save(Object,Parcel,Object) save}
+      * for each component st of this poly-stator.
       *
       *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed, or
       *       is {@linkplain #openToThread() unopen} to the calling thread.
       */
       @ThreadRestricted("further KittedPolyStatorSR.openToThread")
-    public final void save( final T t, final Parcel out, S kit )
+    public final void save( final T th, final Parcel out, S kit )
     {
         assert stators.getClass().equals(ListOnArray.class) && isOpenToThread(): "Sealed and openToThread";
-        for( KittedStatorSR<? super T, ? super S, ? super R> s: stators ) s.save( t, out, kit );
+        for( KittedStatorSR<? super T, ? super S, ? super R> st: stators ) st.save( th, out, kit );
     }
 
 
 
     /** Restores state to the thing by calling
-      * s.{@linkplain KittedStatorSR#restore(Object,Parcel,Object) restore}
-      * for each component s of this poly-stator.
+      * st.{@linkplain KittedStatorSR#restore(Object,Parcel,Object) restore}
+      * for each component st of this poly-stator.
       *
-      *     @throws AssertionError if assertions are enabled and this poly-stator is
-      *       {@linkplain #openToThread() unopen} to the calling thread.
+      *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed, or
+      *       is {@linkplain #openToThread() unopen} to the calling thread.
       */
       @ThreadRestricted("further KittedPolyStatorSR.openToThread")
-    public final void restore( final T t, final Parcel in, final R kit )
-    {
-        assert isOpenToThread(): "openToThread";
-        for( KittedStatorSR<? super T, ? super S, ? super R> s: stators ) s.restore( t, in, kit );
-    }
+    public final void restore( final T th, final Parcel in, final R kit ) { restore( th, in, kit, size() ); }
 
 
 
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-      @ThreadRestricted("touch COMPOSITION_LOCK") // for visibility of both array and elements
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread")
+    private void restore( final T th, final Parcel in, final R kit, final int sN )
+    {
+        assert stators.getClass().equals(ListOnArray.class) && isOpenToThread(): "Sealed and openToThread";
+        for( int s = 0; s < sN; ++s )
+        {
+            final KittedStatorSR<? super T, ? super S, ? super R> st = stators.get( s );
+            st.restore( th, in, kit );
+        }
+    }
+
+
+
     private List<KittedStatorSR<? super T, ? super S, ? super R>> stators = new ArrayList<>();
 
 

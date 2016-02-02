@@ -21,13 +21,13 @@ public interface KittedStatorSR<T,S,R>
 
     /** Saves state from the thing, writing out to the parcel.
       */
-    public void save( T t, Parcel out, S kit );
+    public void save( T th, Parcel out, S kit );
 
 
 
     /** Restores state to the thing, reading in from the parcel.
       */
-    public void restore( T t, Parcel in, R kit );
+    public void restore( T th, Parcel in, R kit );
 
 
 }

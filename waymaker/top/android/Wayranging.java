@@ -54,6 +54,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
             {
                 inP.unmarshall( state, 0, state.length ); // (sic) form state into parcel
                 inP.setDataPosition( 0 ); // (undocumented requirement)
+                KittedPolyStatorSR.openToThread();
                 create2( inP );
             }
             finally { inP.recycle(); }
@@ -73,61 +74,38 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    /** @param inP The parceled state to restore, or null to restore none.
+    /** @param inP The parceled state to restore, or null to restore none, in which case the
+      *   openToThread restriction is lifted.
       */
-    private void create2( final Parcel inP/*grep CtorRestore*/ ) // see Recreating an Activity [RA]
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.startCtorRestore
+    private void create2( final Parcel inP ) // see Recreating an Activity [RA]
     {
-        final boolean toInitClass;
-        if( wasConstructorCalled ) toInitClass = false;
-        else
-        {
-            toInitClass = true;
-            wasConstructorCalled = true;
-        }
-        if( inP != null )
-        {
-            KittedPolyStatorSR.openToThread();
-            stators.restore( this, inP ); // saved by stators in static inits further below
-        }
+        int s = inP == null? stators.leaderSize(): stators.startCtorRestore(this,inP);
 
-      // Actor identifier.
-      // - - - - - - - - - -
-        if( toInitClass ) stators.add( new StateSaver<Wayranging>()
-        {
-            public void save( final Wayranging wr, final Parcel out )
-            {
-                AndroidXID.writeUDIDOrNull( wr.actorID.get(), out );
-            }
-        });
+      // Actor ID.
+      // - - - - - -
+        assert stators.get(s++) == actorID_stator;
         actorID = new BelledVariable<VotingID>( inP == null? null:
           (VotingID)AndroidXID.readUDIDOrNull(inP) ); // CtorRestore to cleanly construct with restored state
 
       // Forests.
       // - - - - -
-        if( toInitClass ) stators.add( new StateSaver<Wayranging>()
+        assert stators.get(s++) == forests_stator;
+        if( inP == null )
         {
-            public void save( final Wayranging wr, final Parcel out )
-            {
-                ForestCache.stators.save( wr.forests, out );
-            }
-        });
-        forests = new ForestCache( inP/*by CtorRestore*/ );
-        if( inP == null ) forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
+            forests = new ForestCache();
+            forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
+        }
+        else forests = new ForestCache( inP );
 
-      // Poll namer.
-      // - - - - - - -
-        if( toInitClass ) stators.add( new StateSaver<Wayranging>()
-        {
-            public void save( final Wayranging wr, final Parcel out )
-            {
-                out.writeString( wr.pollName.get() );
-            }
-        });
+      // Poll name.
+      // - - - - - -
+        assert stators.get(s++) == pollName_stator;
         pollName = new BelledNonNull<String>( inP == null? "end": inP.readString() );
           // CtorRestore to cleanly construct with restored state
 
       // - - -
-        if( toInitClass ) stators.seal();
+        assert s == stators.size();
     }
 
 
@@ -146,14 +124,23 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
    // --------------------------------------------------------------------------------------------------
 
 
-    /** The identifier of the wayranging actor, if any.
+    /** The identity tag of the wayranging actor, or null if there is none.
       *
       *     @see #position(String,VotingID)
       */
     public BelledVariable<VotingID> actorID() { return actorID;}
 
 
-        private BelledVariable<VotingID> actorID; // final after create2, which adds stator
+        private BelledVariable<VotingID> actorID; // final after create2
+
+
+        private static final Object actorID_stator = stators.add( new StateSaver<Wayranging>()
+        {
+            public void save( final Wayranging wr, final Parcel out )
+            {
+                AndroidXID.writeUDIDOrNull( wr.actorID.get(), out );
+            }
+        });
 
 
 
@@ -171,7 +158,16 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     public ForestCache forests() { return forests; }
 
 
-        private ForestCache forests; // final after create2, which adds stator
+        private ForestCache forests; // final after create2
+
+
+        private static final Object forests_stator = stators.add( new StateSaver<Wayranging>()
+        {
+            public void save( final Wayranging wr, final Parcel out )
+            {
+                ForestCache.stators.save( wr.forests, out );
+            }
+        });
 
 
 
@@ -218,7 +214,16 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
     public BelledNonNull<String> pollName() { return pollName;}
 
 
-        private BelledNonNull<String> pollName; // final after create2, which adds stator
+        private BelledNonNull<String> pollName; // final after create2
+
+
+        private static final Object pollName_stator = stators.add( new StateSaver<Wayranging>()
+        {
+            public void save( final Wayranging wr, final Parcel out )
+            {
+                out.writeString( wr.pollName.get() );
+            }
+        });
 
 
 
@@ -308,11 +313,6 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
-    private static boolean wasConstructorCalled;
-      // more correctly 'wasCreateCalled', but here following the usual pattern of CtorRestore
-
-
-
     private static final WaykitUI wk = WaykitUI.i();
 
 
@@ -374,6 +374,10 @@ System.err.println( " --- onActivityResult wk.isMainThread()=" + wk.isMainThread
         outB.putByteArray( Wayranging.class.getName(), state ); // put state into bundle
     }
 
+
+///////
+
+    static { stators.seal(); }
 
 }
 

@@ -22,13 +22,18 @@ public @ThreadSafe final class Waynode1 implements Waynode
       *     @see #handle()
       *     @see #answer()
       *     @see #question()
-      *     @throws NullPointerException if any argument is null.
+      *     @see #questionBackImageLoc()
+      *     @throws NullPointerException if any argument other than _questionBackImageLoc is null.
       */
     public Waynode1( final String _handle, final String _answer, final String _question,
       final String _questionBackImageLoc )
     {
-        this( _handle, _answer, _question, _questionBackImageLoc, /*inP*/null );
         if( _handle == null || _answer == null || _question == null ) throw new NullPointerException();
+
+        handle = _handle;
+        answer = _answer;
+        question = _question;
+        questionBackImageLoc = _questionBackImageLoc;
     }
 
 
@@ -37,59 +42,31 @@ public @ThreadSafe final class Waynode1 implements Waynode
       */
     public Waynode1( final Waynode wn )
     {
-        this( wn.handle(), wn.answer(), wn.question(), wn.questionBackImageLoc(), /*inP*/null );
+        handle = wn.handle();
+        answer = wn.answer();
+        question = wn.question();
+        questionBackImageLoc = wn.questionBackImageLoc();
     }
 
 
 
     /** Constructs a Waynode1 from stored state.
       *
-      *     @param inP The parceled state to restore, or null to restore none, in which case the
-      *       openToThread restriction is lifted.
+      *     @param inP The parceled state to restore.
       */
-      @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.restore
-    private Waynode1( final String _handle, final String _answer, final String _question,
-      final String _questionBackImageLoc, final Parcel inP/*grep CtorRestore*/ )
+      @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.startCtorRestore
+    private Waynode1( final Parcel inP )
     {
-        final boolean toInitClass;
-        if( wasConstructorCalled ) toInitClass = false;
-        else
-        {
-            toInitClass = true;
-            wasConstructorCalled = true;
-        }
-        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
-          // at coding time this had no effect, the only stator being the StateSaver added just below
-
-      // Final fields.
-      // - - - - - - - -
-        if( toInitClass ) stators.add( new StateSaver<Waynode1>()
-        {
-            public void save( final Waynode1 wn, final Parcel out )
-            {
-                out.writeString( wn.handle() );
-                ParcelX.writeString( wn.answer(), out, DEFAULT_ANSWER );
-                ParcelX.writeString( wn.question(), out, DEFAULT_QUESTION );
-                out.writeString( wn.questionBackImageLoc() );
-            }
-        });
-        if( inP == null )
-        {
-            handle = _handle;
-            answer = _answer;
-            question = _question;
-            questionBackImageLoc = _questionBackImageLoc;
-        }
-        else
-        {
-            handle = inP.readString(); // CtorRestore to restore these final fields
-            answer = ParcelX.readString( inP, DEFAULT_ANSWER );
-            question = ParcelX.readString( inP, DEFAULT_QUESTION );
-            questionBackImageLoc = inP.readString();
-        }
-
-      // - - -
-        if( toInitClass ) stators.seal();
+        int s = stators.startCtorRestore( this, inP );
+        assert stators.get(s++) == answer_stator;
+        answer = ParcelX.readString( inP, DEFAULT_ANSWER ); // CtorRestore to restore as final field
+        assert stators.get(s++) == handle_stator;
+        handle = inP.readString();                            // "
+        assert stators.get(s++) == question_stator;
+        question = ParcelX.readString( inP, DEFAULT_QUESTION ); // "
+        assert stators.get(s++) == questionBackImageLoc_stator;
+        questionBackImageLoc = inP.readString();                  // "
+        assert s == stators.size();
     }
 
 
@@ -109,13 +86,13 @@ public @ThreadSafe final class Waynode1 implements Waynode
 
       // 2.
       // - - -
-        return new Waynode1( null, null, null, null, in );
+        return new Waynode1( in );
     }
 
 
 
-    /** Saves either the state of a Waynode1, or a reference to the {@linkplain EMPTY_WAYNODE empty
-      * waynode}, by writing out to the parcel.
+    /** Writes out to the parcel either the state of a Waynode1, or
+      * a reference to the {@linkplain EMPTY_WAYNODE empty waynode}.
       */
       @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.save
     public static void saveEmptily( final Waynode1 wn, final Parcel out )
@@ -151,11 +128,26 @@ public @ThreadSafe final class Waynode1 implements Waynode
         private final String answer;
 
 
+        private static final Object answer_stator = stators.add( new StateSaver<Waynode1>()
+        {
+            public void save( final Waynode1 wn, final Parcel out )
+            {
+                ParcelX.writeString( wn.answer(), out, DEFAULT_ANSWER );
+            }
+        });
+
+
 
     public String handle() { return handle; }
 
 
         private final String handle;
+
+
+        private static final Object handle_stator = stators.add( new StateSaver<Waynode1>()
+        {
+            public void save( final Waynode1 wn, final Parcel out ) { out.writeString( wn.handle() ); }
+        });
 
 
 
@@ -168,11 +160,29 @@ public @ThreadSafe final class Waynode1 implements Waynode
         private final String question;
 
 
+        private static final Object question_stator = stators.add( new StateSaver<Waynode1>()
+        {
+            public void save( final Waynode1 wn, final Parcel out )
+            {
+                ParcelX.writeString( wn.question(), out, DEFAULT_QUESTION );
+            }
+        });
+
+
 
     public String questionBackImageLoc() { return questionBackImageLoc; }
 
 
         private final String questionBackImageLoc;
+
+
+        private static final Object questionBackImageLoc_stator = stators.add( new StateSaver<Waynode1>()
+        {
+            public void save( final Waynode1 wn, final Parcel out )
+            {
+                out.writeString( wn.questionBackImageLoc() );
+            }
+        });
 
 
 
@@ -193,8 +203,8 @@ public @ThreadSafe final class Waynode1 implements Waynode
     }
 
 
+///////
 
-    private static volatile boolean wasConstructorCalled;
-
+    static { stators.seal(); }
 
 }

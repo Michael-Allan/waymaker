@@ -25,22 +25,7 @@ public final class Forest implements PeersReceiver
       */
     public Forest( final String pollName, final ForestCache forestCache )
     {
-        this( pollName, forestCache, /*inP*/null, /*nodeCache*/null );
-    }
-
-
-
-    /** Constructs a Forest from stored state.
-      *
-      *     @see #pollName()
-      *     @see #forestCache()
-      *     @param inP The parceled state to restore, or null to restore none, in which case the
-      *       openToThread restriction is lifted.
-      */
-      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
-    public Forest( final String pollName, final ForestCache forestCache, final Parcel inP )
-    {
-        this( pollName, forestCache, inP, /*nodeCache*/null );
+        this( pollName, forestCache, new NodeCache1(0,/*hasPrecountAdjustments*/false) );
     }
 
 
@@ -53,48 +38,30 @@ public final class Forest implements PeersReceiver
       */
     public Forest( final String pollName, final ForestCache forestCache, final NodeCache1 nodeCache )
     {
-        this( pollName, forestCache, /*inP*/null, nodeCache );
+        this.pollName = pollName;
+        this.forestCache = forestCache;
+        this.nodeCache = nodeCache;
     }
 
 
 
-      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.restore
-    private Forest( final String pollName, final ForestCache forestCache,
-      final Parcel inP/*grep CtorRestore*/, NodeCache1 nodeCache )
+    /** Constructs a Forest from stored state.
+      *
+      *     @see #pollName()
+      *     @see #forestCache()
+      *     @param inP The parceled state to restore.
+      */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.startCtorRestore
+    public Forest( final String pollName, final ForestCache forestCache, final Parcel inP )
     {
         this.pollName = pollName;
         this.forestCache = forestCache;
-        final boolean toInitClass;
-        if( wasConstructorCalled ) toInitClass = false;
-        else
-        {
-            toInitClass = true;
-            wasConstructorCalled = true;
-        }
-        if( inP != null ) stators.restore( this, inP ); // saved by stators in static inits further below
+        int s = stators.startCtorRestore( this, inP );
 
       // Node cache.
       // - - - - - - -
-        if( toInitClass ) stators.add( new StateSaver<Forest>()
+        assert stators.get(s++) == nodeCache_stator;
         {
-            public void save( final Forest f, final Parcel out )
-            {
-              // 1. Size.
-              // - - - - -
-                out.writeInt( f.nodeCache.nodeMap.size() );
-
-              // 2. Has precount adjustments?
-              // - - - - - - - - - - - - - - -
-                ParcelX.writeBoolean( f.nodeCache.groundUna().precounted() != null, out );
-
-              // 3. Cache.
-              // - - - - - -
-                NodeCache1.stators.save( f.nodeCache, out );
-            }
-        });
-        if( inP != null ) // restore
-        {
-            assert nodeCache == null; // exclusive parameters
             nodeCache = new NodeCache1( /* 1 */inP.readInt(), /* 2 */ParcelX.readBoolean(inP) );
               // CtorRestore for this config of NodeCache1 construction (q.v.) based on saved state
 
@@ -102,11 +69,9 @@ public final class Forest implements PeersReceiver
           // - - -
             NodeCache1.stators.restore( nodeCache, inP );
         }
-        else if( nodeCache == null ) nodeCache = new NodeCache1( 0, /*hasPrecountAdjustments*/false );
-        this.nodeCache = nodeCache;
 
       // - - -
-        if( toInitClass ) stators.seal();
+        assert s == stators.size();
     }
 
 
@@ -130,7 +95,7 @@ public final class Forest implements PeersReceiver
     public NodeCache nodeCache() { return nodeCache; }
 
 
-        private NodeCache1 nodeCache; // constructor adds stator
+        private NodeCache1 nodeCache;
 
 
         /** Sets the cache of nodes.  Does not ring the node cache bell, leaving that to the caller.
@@ -139,6 +104,25 @@ public final class Forest implements PeersReceiver
 
 
         @Warning("non-API") NodeCache1 nodeCache1() { return nodeCache; }
+
+
+        private static final Object nodeCache_stator = stators.add( new StateSaver<Forest>()
+        {
+            public void save( final Forest f, final Parcel out )
+            {
+              // 1. Size.
+              // - - - - -
+                out.writeInt( f.nodeCache.nodeMap.size() );
+
+              // 2. Has precount adjustments?
+              // - - - - - - - - - - - - - - -
+                ParcelX.writeBoolean( f.nodeCache.groundUna().precounted() != null, out );
+
+              // 3. Cache.
+              // - - - - - -
+                NodeCache1.stators.save( f.nodeCache, out );
+            }
+        });
 
 
 
@@ -295,11 +279,8 @@ public final class Forest implements PeersReceiver
     }
 
 
+///////
 
-//// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
-
-
-    private static volatile boolean wasConstructorCalled;
-
+    static { stators.seal(); }
 
 }

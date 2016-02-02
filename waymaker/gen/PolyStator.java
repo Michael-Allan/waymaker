@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
 import java.util.*;
@@ -29,25 +29,45 @@ public final class PolyStator<T> extends KittedPolyStatorSR<T,Object,Object>
    // --------------------------------------------------------------------------------------------------
 
 
-    /** Saves state from the thing by calling s.{@linkplain Stator#save(Object,Parcel) save}
-      * for each component s of this poly-stator.
+    /** Saves state from the thing by calling st.{@linkplain Stator#save(Object,Parcel) save}
+      * for each component st of this poly-stator.
       *
       *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed, or
       *       is {@linkplain #openToThread() unopen} to the calling thread.
       */
       @ThreadRestricted("further KittedPolyStatorSR.openToThread")
-    public void save( final T t, final Parcel out ) { save( t, out, /*kit*/null ); }
+    public void save( final T th, final Parcel out ) { save( th, out, /*kit*/null ); }
 
 
 
-    /** Restores state to the thing by calling s.{@linkplain Stator#restore(Object,Parcel) restore}
-      * for each component s of this poly-stator.
+    /** Restores state to the thing by calling st.{@linkplain Stator#restore(Object,Parcel) restore}
+      * for each component st of this poly-stator.
       *
-      *     @throws AssertionError if assertions are enabled and this poly-stator is
-      *       {@linkplain #openToThread() unopen} to the calling thread.
+      *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed, or
+      *       is {@linkplain #openToThread() unopen} to the calling thread.
       */
       @ThreadRestricted("further KittedPolyStatorSR.openToThread")
-    public void restore( final T t, final Parcel in ) { restore( t, in, /*kit*/null ); }
+    public void restore( final T th, final Parcel in ) { restore( th, in, /*kit*/null ); }
+
+
+
+    /** Partly restores state to the thing by calling
+      * st.{@linkplain Stator#restore(Object,Parcel) restore}
+      * for each component st in the leading part of this poly-stator.
+      * The stators of the trailing part are mere {@linkplain StateSaver state savers}, unable to
+      * restore state.  Their state should instead be restored by the caller after the call.  Usually
+      * the caller is a constructor or factory method, so this type of restore is called a
+      * “CtorRestore”.
+      *
+      *     @return The {@linkplain #leaderSize() size of the leading part}.
+      *     @throws AssertionError if assertions are enabled and this poly-stator is still unsealed, or
+      *       is {@linkplain #openToThread() unopen} to the calling thread.
+      */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread")
+    public final int startCtorRestore( final T th, final Parcel in )
+    {
+        return startCtorRestore( th, in, /*kit*/null );
+    }
 
 
 }
