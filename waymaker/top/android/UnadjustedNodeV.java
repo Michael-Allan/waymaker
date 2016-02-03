@@ -5,6 +5,8 @@ import java.util.*;
 import waymaker.gen.*;
 import waymaker.spec.*;
 
+import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
+
 
 /** A skeletal implementation of a votable unadjusted node.
   */
@@ -50,7 +52,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
       // c. Waynode.
       // - - - - - - -
-        Waynode1.saveEmptily( voter.waynode(), out );
+        Waynode1.stators.saveD( voter.waynode(), out, EMPTY_WAYNODE );
 
       // d. Voter.
       // - - - - - -
@@ -71,7 +73,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
       // c.
       // - - -
-        final Waynode1 waynode = Waynode1.restoreEmptily( in );
+        final Waynode1 waynode = Waynode1.makeD( in, EMPTY_WAYNODE );
 
       // d.
       // - - -

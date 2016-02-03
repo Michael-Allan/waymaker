@@ -91,7 +91,7 @@ public class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
       *     @see #size()
       *     @see #startCtorRestore(Object,Parcel,Object)
       */
-    public int leaderSize() { return leaderSize; }
+    public final int leaderSize() { return leaderSize; }
 
 
         private int leaderSize;
@@ -130,6 +130,25 @@ public class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
 
 
         private static @ThreadSafe boolean isOpenToThread() { return openToThread.get() == TRUE; }
+
+
+
+    /** {@linkplain #save(Object,Parcel,Object) Saves state} from the thing with efficient handling for a
+      * frequent default instance.  The thing is considered at default if <code>th == thDefault</code>.
+      * Restoration requires a call to a factory method such as <code>T.makeD( in, kit, thDefault )</code>.
+      */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread")
+    public final void saveD( final T th, final Parcel out, final S kit, final T thDefault )
+    {
+      // 1. Is default?
+      // - - - - - - - -
+        final boolean isDefault = th == thDefault; // == for speed, not equals
+        ParcelX.writeBoolean( isDefault, out );
+
+      // 2. Thing
+      // - - - - -
+        if( !isDefault ) save( th, out, kit );
+    }
 
 
 
@@ -196,7 +215,7 @@ public class KittedPolyStatorSR<T,S,R> implements KittedStatorSR<T,S,R>
       *       is {@linkplain #openToThread() unopen} to the calling thread.
       */
       @ThreadRestricted("further KittedPolyStatorSR.openToThread")
-    public final void save( final T th, final Parcel out, S kit )
+    public final void save( final T th, final Parcel out, final S kit )
     {
         assert stators.getClass().equals(ListOnArray.class) && isOpenToThread(): "Sealed and openToThread";
         for( KittedStatorSR<? super T, ? super S, ? super R> st: stators ) st.save( th, out, kit );

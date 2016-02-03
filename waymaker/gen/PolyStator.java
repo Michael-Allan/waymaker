@@ -40,6 +40,18 @@ public final class PolyStator<T> extends KittedPolyStatorSR<T,Object,Object>
 
 
 
+    /** {@linkplain #save(Object,Parcel) Saves state} from the thing with efficient handling for a
+      * frequent default instance.  The thing is considered at default if <code>th == thDefault</code>.
+      * Restoration requires a call to a factory method such as <code>T.makeD( in, thDefault )</code>.
+      */
+      @ThreadRestricted("further KittedPolyStatorSR.openToThread")
+    public void saveD( final T th, final Parcel out, final T thDefault )
+    {
+        saveD( th, out, /*kit*/null, thDefault );
+    }
+
+
+
     /** Restores state to the thing by calling st.{@linkplain Stator#restore(Object,Parcel) restore}
       * for each component st of this poly-stator.
       *

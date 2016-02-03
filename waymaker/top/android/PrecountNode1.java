@@ -4,6 +4,8 @@ import android.os.Parcel;
 import waymaker.gen.*;
 import waymaker.spec.VotingID;
 
+import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
+
 
 /** An implementation of a precount-adjustable node.
   */
@@ -81,11 +83,11 @@ public final class PrecountNode1 extends PrecountNode
         {
             public void save( final PrecountNode1 node, final Parcel out )
             {
-                Waynode1.saveEmptily( node.waynode, out );
+                Waynode1.stators.saveD( node.waynode, out, EMPTY_WAYNODE );
             }
             public void restore( final PrecountNode1 node, final Parcel in )
             {
-                node.waynode = Waynode1.restoreEmptily( in );
+                node.waynode = Waynode1.makeD( in, EMPTY_WAYNODE );
             }
         });}
 

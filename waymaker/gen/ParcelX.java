@@ -49,13 +49,13 @@ public @ThreadSafe final class ParcelX
 
 
 
-    /** Writes a string to a parcel with efficient handling for a frequent default value.  The value is
-      * considered at default if <code>s == sDefault</code>.
+    /** Writes the string to the parcel with efficient handling for a frequent default instance.  The
+      * string is considered at default if <code>s == sDefault</code>.
       */
     public static void writeString( final String s, final Parcel out, final String sDefault )
     {
       // 1. Is default?
-      // - - - - - - -
+      // - - - - - - - -
         final boolean isDefault = s == sDefault; // == for speed, not equals
         ParcelX.writeBoolean( isDefault, out );
 
@@ -65,7 +65,7 @@ public @ThreadSafe final class ParcelX
     }
 
 
-        /** Reads a string from a parcel with efficient handling for a frequent default value.
+        /** Reads a string from the parcel with efficient handling for a frequent default instance.
           */
         public static String readString( final Parcel in, final String sDefault )
         {

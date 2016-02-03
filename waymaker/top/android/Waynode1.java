@@ -3,8 +3,6 @@ package waymaker.top.android; // Copyright 2016, Michael Allan.  Licence MIT-Way
 import android.os.Parcel;
 import waymaker.gen.*;
 
-import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
-
 
 /** An implementation of a waynode.
   */
@@ -74,37 +72,20 @@ public @ThreadSafe final class Waynode1 implements Waynode
    // --------------------------------------------------------------------------------------------------
 
 
-    /** Reconstructs a Waynode1, or recreates a reference to the {@linkplain EMPTY_WAYNODE empty
-      * waynode}, by reading in from the parcel.
+    /** Reconstructs a Waynode1 from the parcel with efficient handling for a frequent default instance.
+      *
+      *     @see PolyStator#saveD(Object,Parcel,Object)
       */
       @ThreadRestricted("KittedPolyStatorSR.openToThread") // for Waynode1(Parcel)
-    public static Waynode1 restoreEmptily( final Parcel in )
+    public static Waynode1 makeD( final Parcel inP, final Waynode1 wnDefault )
     {
       // 1.
       // - - -
-        if( ParcelX.readBoolean( in )) return EMPTY_WAYNODE;
+        if( ParcelX.readBoolean( inP )) return wnDefault;
 
       // 2.
       // - - -
-        return new Waynode1( in );
-    }
-
-
-
-    /** Writes out to the parcel either the state of a Waynode1, or
-      * a reference to the {@linkplain EMPTY_WAYNODE empty waynode}.
-      */
-      @ThreadRestricted("KittedPolyStatorSR.openToThread") // for stators.save
-    public static void saveEmptily( final Waynode1 wn, final Parcel out )
-    {
-      // 1. Is empty?
-      // - - - - - - -
-        final boolean isEmpty = wn == EMPTY_WAYNODE; // == for speed, not equals
-        ParcelX.writeBoolean( isEmpty, out );
-
-      // 2. Waynode
-      // - - - - - -
-        if( !isEmpty ) stators.save( wn, out );
+        return new Waynode1( inP );
     }
 
 

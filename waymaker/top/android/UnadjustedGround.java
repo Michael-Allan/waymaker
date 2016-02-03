@@ -4,6 +4,8 @@ import android.os.Parcel;
 import waymaker.gen.*;
 import waymaker.spec.*;
 
+import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
+
 
 /** An unadjusted {@linkplain NodeCache#ground() ground pseudo-node}.
   */
@@ -34,7 +36,7 @@ public final class UnadjustedGround extends UnadjustedNodeV
 
       // c. Waynode.
       // - - - - - - -
-        Waynode1.saveEmptily( voter.waynode(), out );
+        Waynode1.stators.saveD( voter.waynode(), out, EMPTY_WAYNODE );
 
       // d. Vote.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,7 +77,7 @@ public final class UnadjustedGround extends UnadjustedNodeV
 
       // c.
       // - - -
-        final Waynode1 waynode = Waynode1.restoreEmptily( in );
+        final Waynode1 waynode = Waynode1.makeD( in, EMPTY_WAYNODE );
 
       // d.
       // - - -
