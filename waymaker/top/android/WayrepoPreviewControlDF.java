@@ -1,5 +1,6 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.*;
 import waymaker.gen.*;
@@ -13,6 +14,15 @@ public final class WayrepoPreviewControlDF extends android.app.DialogFragment //
 
 
    // - F r a g m e n t --------------------------------------------------------------------------------
+
+
+    public @Override Dialog onCreateDialog( final Bundle in )
+    {
+        final Dialog dialog = super.onCreateDialog( in );
+        dialog.setTitle( WayrepoPreviewController.TITLE );
+        return dialog;
+    }
+
 
 
     public @Override View onCreateView( LayoutInflater _inf, ViewGroup _group, Bundle _in )

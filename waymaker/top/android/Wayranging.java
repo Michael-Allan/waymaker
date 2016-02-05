@@ -68,8 +68,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
     private void create1()
     {
-        final Window w = getWindow(); // note: w.requestFeature wants to precede setContentView
-        w.requestFeature( Window.FEATURE_NO_TITLE ); // omit activity bar, or whatever else shows title
+        getWindow().requestFeature( Window.FEATURE_NO_TITLE ); // no activity bar, or whatever is showing title
     }
 
 

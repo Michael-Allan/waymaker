@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.app.*;
 import android.content.Context;
@@ -17,6 +17,15 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
    // - F r a g m e n t --------------------------------------------------------------------------------
 
 
+    public @Override Dialog onCreateDialog( final Bundle in )
+    {
+        final Dialog dialog = super.onCreateDialog( in );
+        dialog.getWindow().requestFeature( Window.FEATURE_NO_TITLE ); // omit empty space atop dialogue
+        return dialog;
+    }
+
+
+
     public @Override View onCreateView( LayoutInflater _inf, ViewGroup _group, Bundle _in )
     {
         final Context context = getActivity(); // in lieu of API level 23 getContext
@@ -27,7 +36,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
           // - - - - - - - - - - - - - - - - - -
             final Button button = new Button( context );
             y.addView( button );
-            button.setText( "Control wayrepo preview…" );
+            button.setText( WayrepoPreviewController.TITLE + "…" );
             button.setOnClickListener( new View.OnClickListener()
             {
                 public void onClick( View _src )

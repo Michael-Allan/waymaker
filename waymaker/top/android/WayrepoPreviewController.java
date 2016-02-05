@@ -20,39 +20,8 @@ import static android.content.SharedPreferences.OnSharedPreferenceChangeListener
 public @ThreadRestricted("app main") final class WayrepoPreviewController extends LinearLayout
 {
     /* * *
-    - designed for possible use in (among other contexts) a "Refresh" dialogue that floats,
-      allowing previews to show behind it
-    - layout
-        - plan
-            - wayrepo location (URI)
-                [ view
-                    ( text view
-                [ clear button
-                    ( push-button
-                [ finder button
-                    ( push-button
-                    - pops the Android "document" finder
-            [ enabling switch
-                ( toggle button
-                - enabling implies also an immediate refresh
-            - refresh buttons
-                ( push buttons
-                [ local refresh
-                    - e.g. precount only, leaving unadjusted cache
-                    - to allow immediate testing of wayrepo changes
-                [ full refresh
-                    - e.g. unadjusted cache too
-                - refresh may also be initiated wherever preview itself is shown
-                  (i.e. in all wayrepo-based UI views) by impatience gesture
-                    - such as deselection with immediate reselection
-                    - when refresh gesture immediately repeated, depth of effect escalates:
-                        ( notebook 2015.6.4
-                        - 1st locally refreshes
-                        - 2nd fully refreshes
-            [ note view
-                ( text view
-                - shows by default the time lapsed since last successful refresh
-        - only pieces of this layout are test-coded below
+    - designed for eventual reuse in (among other contexts) a "Refresh" dialogue that floats,
+      allowing previews to show more clearly in the background
       */
 
 
@@ -62,69 +31,11 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
     {
         super( /*context*/wr );
         setOrientation( VERTICAL );
-
         final WaykitUI wk = WaykitUI.i();
-        final SharedPreferences preferences = wk.preferences();
+
+      // Note view.
+      // - - - - - -
         {
-          // Wayrepo location view.
-          // - - - - - - - - - - - -
-            final TextView view = new TextView( wr );
-            addView( view );
-            Android.registerDestructibly( preferences, new OnSharedPreferenceChangeListener()
-            {
-                { sync(); } // init
-                private void sync()
-                {
-                    String text = wk.wayrepoTreeLoc();
-                    if( text == null ) text = "Location unspecified";
-                    view.setText( text );
-                }
-                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
-            }, destructor );
-        }
-        {
-            final LinearLayout x = new LinearLayout( wr );
-            addView( x );
-            {
-              // Location clear button, to clear the wayrepo location.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( wr );
-                x.addView( button );
-                button.setText( "Clear" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _src ) { wk.wayrepoTreeLoc( null ); }
-                });
-            }
-            {
-              // Location finder button, to open the finder and locate the wayrepo.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( wr );
-                x.addView( button );
-                button.setText( "Locate wayrepo" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _src )
-                    {
-                        final Intent request;
-                     // try
-                     // {
-                            request = new Intent( /*[SAF]*/ACTION_OPEN_DOCUMENT_TREE ); // or:
-                         // request = new Intent( /*[SAF]*/ACTION_OPEN_DOCUMENT ); // simple doc TEST part 1/2
-                         // request.addCategory( android.content.Intent.CATEGORY_OPENABLE );
-                         // request.setType( "*/*" ); // setType or throws ActivityNotFoundException
-                         /// only to a) doc this request, and b) regression test it in external SMBProvider app
-                     // }
-                     // catch( final ActivityNotFoundException x ) { throw new RuntimeException( x ); }
-                     //// but ActivityNotFoundException *is* a RuntimeException
-                        wr.startActivityForResult( request, new WayrepoLocator() );
-                    }
-                });
-            }
-        }
-        {
-          // Note view.
-          // - - - - - -
             final TextView noteView = new TextView( wr );
             addView( noteView );
             wr.forests().notaryBell().registerDestructibly( new Auditor<Changed>()
@@ -134,6 +45,10 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
                 public void hear( Changed _ding ) { sync(); }
             }, destructor );
         }
+
+      // Refresh buttons.
+      // - - - - - - - - -
+        final SharedPreferences preferences = wk.preferences();
         {
             final LinearLayout x = new LinearLayout( wr );
             addView( x );
@@ -170,7 +85,87 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
                 });
             }
         }
+        /* * *
+        - refresh may also be initiated wherever preview itself is shown
+          (i.e. in all wayrepo-based UI views) by impatience gesture
+            - such as deselection with immediate reselection
+            - when refresh gesture immediately repeated, depth of effect escalates:
+                ( notebook 2015.6.4
+                - 1st locally refreshes
+                - 2nd fully refreshes
+          */
+
+      // Wayrepo location.
+      // - - - - - - - - - -
+        {
+          // View.
+          // - - - -
+            final TextView view = new TextView( wr );
+            addView( view );
+            Android.registerDestructibly( preferences, new OnSharedPreferenceChangeListener()
+            {
+                { sync(); } // init
+                private void sync()
+                {
+                    String text = wk.wayrepoTreeLoc();
+                    if( text == null ) text = "Location unspecified";
+                    view.setText( text );
+                }
+                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
+            }, destructor );
+        }
+        {
+          // Controls.
+          // - - - - - -
+            final LinearLayout x = new LinearLayout( wr );
+            addView( x );
+            {
+              // Clear button, to clear the wayrepo location.
+              // - - - - - - - - - - - - - - - - - - - - - - -
+                final Button button = new Button( wr );
+                x.addView( button );
+                button.setText( "Clear" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( View _src ) { wk.wayrepoTreeLoc( null ); }
+                });
+            }
+            {
+              // Locate button, to open the locator and find the wayrepo.
+              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                final Button button = new Button( wr );
+                x.addView( button );
+                button.setText( "Locate wayrepo" );
+                button.setOnClickListener( new View.OnClickListener()
+                {
+                    public void onClick( View _src )
+                    {
+                        final Intent request;
+                     // try
+                     // {
+                            request = new Intent( /*[SAF]*/ACTION_OPEN_DOCUMENT_TREE ); // or:
+                         // request = new Intent( /*[SAF]*/ACTION_OPEN_DOCUMENT ); // simple doc TEST part 1/2
+                         // request.addCategory( android.content.Intent.CATEGORY_OPENABLE );
+                         // request.setType( "*/*" ); // setType or throws ActivityNotFoundException
+                         /// only to a) doc this request, and b) regression test it in external SMBProvider app
+                     // }
+                     // catch( final ActivityNotFoundException x ) { throw new RuntimeException( x ); }
+                     //// but ActivityNotFoundException *is* a RuntimeException
+                        wr.startActivityForResult( request, new WayrepoLocator() );
+                    }
+                });
+            }
+        }
     }
+
+
+
+   // --------------------------------------------------------------------------------------------------
+
+
+    /** The standard title for these controllers.
+      */
+    public static final String TITLE = "Control wayrepo preview";
 
 
 
