@@ -5,12 +5,13 @@ import android.database.*;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.DocumentsContract; // grep DocumentsContract-TS
-import waymaker.gen.ThreadSafe;
+import waymaker.gen.*;
 
 import static android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME;
 import static android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID;
 import static android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE;
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
+import static java.util.logging.Level.INFO;
 
 
 /** A tool for reading from the user’s local wayrepo.
@@ -94,7 +95,7 @@ public final class WayrepoReader implements java.io.Closeable
       */
     public Cursor queryChildren( final String parentID ) throws WayrepoAccessFailure, InterruptedException
     {
-        return queryChildren( parentID, false );
+        return queryChildren( parentID, /*retryCount*/0 );
     }
 
 
@@ -125,6 +126,10 @@ public final class WayrepoReader implements java.io.Closeable
 
 
 
+    private static final java.util.logging.Logger logger = LoggerX.getLogger( WayrepoReader.class );
+
+
+
     private static final long MS_TIMEOUT_MIN = 4500;
 
 
@@ -133,7 +138,7 @@ public final class WayrepoReader implements java.io.Closeable
 
 
 
-    private Cursor queryChildren( final String parentID, final boolean isRetry )
+    private Cursor queryChildren( final String parentID, int retryCount )
       throws WayrepoAccessFailure, InterruptedException
     {
         final Cursor c;
@@ -151,7 +156,15 @@ public final class WayrepoReader implements java.io.Closeable
       // - - - - - - - - - - - - - - - - -
         if( !c.getExtras().getBoolean( DocumentsContract.EXTRA_LOADING )) return c;
 
-        if( isRetry ) { throw new WayrepoAccessFailure( "Incomplete response from documents provider after retry" ); }
+        if( retryCount > 0 )
+        {
+            final String s = "Incomplete response from documents provider after retries, count " + retryCount;
+            if( retryCount > 1 ) throw new WayrepoAccessFailure( s );
+            // Else retry again.  Maybe the provider isn't at fault, but some intermediary is forcing
+            // the retry.  It's accompanied by a noticeable delay.
+
+            logger.info( s );
+        }
 
       // Else wait for response to fully load.
       // - - - - - - - - - - - - - - - - - - - -
@@ -188,7 +201,7 @@ public final class WayrepoReader implements java.io.Closeable
 
       // Retry query now that response is fully loaded.
       // - - - - - - - - - - - - - - - - - - - - - - - -
-        return queryChildren( parentID, true );
+        return queryChildren( parentID, ++retryCount );
     }
 
 
