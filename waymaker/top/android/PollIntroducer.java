@@ -13,12 +13,12 @@ public final class PollIntroducer implements Auditor<Changed>
     @Warning("_wr co-construct") PollIntroducer( final Wayranging _wr )
     {
         wr = _wr;
-        syncPoll();
         wr.pollName().bell().register( this ); // no need to unregister from wr co-construct
         wr.wayscopeZoomer().bell().register( new Auditor<Changed>()
         {
             public void hear( Changed _ding ) { ++stateOrdinal; } // avoid collision between zoom agents
         }); // no need to unregister from wr co-construct
+        if( wr.isCreatedAnew() ) syncPoll(); // else is restoration of wr that had already introduced poll
     }
 
 
