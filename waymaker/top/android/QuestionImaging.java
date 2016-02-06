@@ -46,7 +46,8 @@ import static java.util.logging.Level.WARNING;
                     if( hostName != null && !hostName.endsWith("reluk.ca") ) WaykitUI.setRemotelyUsable();
                       // (a) before (b)
                 }
-                final HttpURLConnection con = Net.openHttpConnection( url );
+                final HttpURLConnection con = Net.openHttpConnection( url ); // uses permission INTERNET
+                assert con.getUseCaches();
                 Net.connect( con );
                 try( final InputStream in = new BufferedInputStream( con.getInputStream() ); )
                 {

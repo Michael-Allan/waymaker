@@ -80,10 +80,10 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
             {
                 final Button button = new Button( context );
                 x.addView( button );
-                button.setText( "A" ); // test  a s s e r t  facility (hide from preprocessor)
+                button.setText( "A" ); // test as[hide from preprocessor]sert facility
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( final View src ) { assert false; }
+                    public void onClick( View _src ) { assert false; }
                 });
             }
             {
@@ -92,7 +92,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
                 button.setText( "B" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( final View src )
+                    public void onClick( View _src )
                     {
                     }
                 });
@@ -118,7 +118,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
                 button.setText( "X" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( final View src )
+                    public void onClick( View _src )
                     {
                     }
                 });
@@ -129,7 +129,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
                 button.setText( "Y" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( final View src )
+                    public void onClick( View _src )
                     {
                     }
                 });
@@ -140,7 +140,7 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
                 button.setText( "Z" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( final View src )
+                    public void onClick( View _src )
                     {
                     }
                 });

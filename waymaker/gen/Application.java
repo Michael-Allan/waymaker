@@ -36,8 +36,9 @@ public @ThreadSafe class Application extends android.app.Application
    // ` c r e a t i o n ````````````````````````````````````````````````````````````````````````````````
 
 
-    public @Override @Warning("non-API") final void onCreate()
+    public @Override @Warning("non-API") void onCreate()
     {
+        super.onCreate(); // obeying API
         if( !isMainThread() ) throw new IllegalStateException(); // at least for visibility of this.preferences
 
         {

@@ -35,6 +35,11 @@
   * judging by inspection of the source code.  Likewise for its parsing methods
   * get<var>X</var>(Uri).</p>
   *
+  * <h3 id='HttpResponseCache-TS'>HttpResponseCache thread safety (HttpResponseCache-TS)</h3>
+  *
+  * <p><a href='http://developer.android.com/reference/android/net/http/HttpResponseCache.html' target='_top'
+  * >HttpResponseCache</a> appears to be thread safe judging by inspection of its source code.</p>
+  *
   * <h3 id='ParcelReuse'>Parcel reuse (ParcelReuse)</h3>
   *
   * <p><a href='http://developer.android.com/reference/android/os/Parcel.html' target='_top'>Parcel</a>.recycle
@@ -94,4 +99,4 @@
   * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.4.5' target='_top'>17.4.5</a>)
   * </p>
   */
-package waymaker.gen;
+package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.

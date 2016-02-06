@@ -37,7 +37,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
         assert lifeStage.compareTo(CREATING) < 0: "One creation per instance, no colliding creations";
         lifeStage = CREATING;
         lifeStageBell.ring();
-        super.onCreate( inB );
+        super.onCreate( inB ); // obeying API
         create1();
         if( isCreatedAnew ) create2( null );
         else
@@ -198,6 +198,9 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
     /** A bell that rings when the life stage changes.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html'
+      *       target='_top'>Application.ActivityLifecycleCallbacks.html</a>
       */
     public Bell<Changed> lifeStageBell() { return lifeStageBell; }
 

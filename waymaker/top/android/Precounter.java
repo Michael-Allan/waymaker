@@ -35,7 +35,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
       *     @see #pollName()
       *     @param groundUnaState The {@linkplain UnadjustedGround#restore(byte[],UnadjustedNodeV.RKit)
       *       marshalled state} of the unadjusted ground on which to base the precount, or null to base
-      *       it on nothing, in which case the openToThread restriction is lifted.
+      *       it on a virgin, empty ground, in which case the openToThread restriction is lifted.
       *     @param originalUnaCount The number of unadjusted nodes in the original groundUnaState cache,
       *        or zero if groundUnaState is null.  The value serves only to enlarge the initial capacity
       *        of the node map in order to avoid forseeable rehashes.

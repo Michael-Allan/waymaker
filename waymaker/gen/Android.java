@@ -1,6 +1,6 @@
 package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
 
-import android.content.SharedPreferences;
+import android.content.*;
 import android.graphics.Color;
 import android.os.*;
 import android.view.View;
@@ -23,6 +23,22 @@ public @ThreadSafe final class Android
       *       target='_top'>Drawable.getAlpha</a>
       */
     public static final int ALPHA_OPAQUE = 255;
+
+
+
+    /** Returns the requested service, or throws a NullPointerException if the service is unavailable in
+      * the given context.  This is a convenience method.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/content/Context.html#getSystemService%28java.lang.Class%3CT%3E%29'
+      *       target='_top'>Context.getSystemService</a>
+      */
+    public static final <T> T ensureSystemService( final Class<T> serviceClass, final Context context )
+    {
+        final T service = context.getSystemService( serviceClass );
+        if( service == null ) throw new IllegalStateException();
+
+        return service;
+    }
 
 
 

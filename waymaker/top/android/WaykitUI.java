@@ -1,7 +1,11 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
+import android.app.Activity;
 import android.content.*;
 import android.net.Uri;
+import android.net.http.HttpResponseCache;
+import android.os.Bundle;
+import java.io.*;
 import java.util.concurrent.atomic.AtomicReference;
 import org.xmlpull.v1.*;
 import waymaker.gen.*;
@@ -11,7 +15,7 @@ import static java.util.logging.Level.WARNING;
 
 /** A waykit user interface in the form of an Android application.
   */
-public @ThreadSafe final class WaykitUI extends Application
+public @ThreadSafe final class WaykitUI extends Application implements Application.ActivityLifecycleCallbacks
 {
 
 
@@ -22,6 +26,40 @@ public @ThreadSafe final class WaykitUI extends Application
       *     @throws IllegalStateException if an instance was already constructed.
       */
     public @Warning("non-API") WaykitUI() {}
+
+
+
+   // ` c r e a t i o n ````````````````````````````````````````````````````````````````````````````````
+
+
+    public @Override @Warning("non-API") void onCreate()
+    {
+        super.onCreate(); // obeying API
+
+      // Enable response caching by default for each HttpURLConnection.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // Has no effect on DownloadManager, which apparently cannot do response caching.
+      // http://stackoverflow.com/questions/35191718
+        try
+        {
+            final HttpResponseCache cache = HttpResponseCache.install( // grep HttpResponseCache-TS
+              new File(getCacheDir(),HttpResponseCache.class.getName()), HTTP_CACHE_BYTES );
+            final long sizeBytes = cache.size();
+            final String utilization;
+            if( sizeBytes >= 0 )
+            {
+                final float percentF = sizeBytes / (cache.maxSize()/100.0f);
+                final int percentI = Math.round( percentF );
+                utilization = Integer.toString(percentI) + "%";
+            }
+            else utilization = "Unable to calculate";
+            logger.info( "HTTP response cache utilization at start: " + utilization );
+        }
+        catch( final IOException x ) { logger.log( WARNING, "Cannot enable HTTP response cache", x ); }
+
+      // - - -
+        registerActivityLifecycleCallbacks( this ); // no need to unregister from self
+    }
 
 
 
@@ -118,7 +156,39 @@ public @ThreadSafe final class WaykitUI extends Application
 
 
 
+   // - A c t i v i t y - L i f e c y c l e - C a l l b a c k s ----------------------------------------
+
+
+    public void onActivityCreated( Activity _ac, Bundle _in ) {}
+
+    public void onActivityDestroyed( Activity _ac ) {}
+
+    public void onActivityPaused( Activity _ac ) {}
+
+    public void onActivityResumed( Activity _ac ) {}
+
+    public void onActivitySaveInstanceState( Activity _ac, Bundle _out ) {}
+
+    public void onActivityStarted( Activity _ac ) {}
+
+
+
+    public void onActivityStopped( Activity _ac )
+    {
+        final HttpResponseCache cache = HttpResponseCache.getInstalled(); // grep HttpResponseCache-TS
+        if( cache != null ) cache.flush(); /* Flush buffer to file system in case whole app is exiting.
+          Not also closing the cache, because the certainty of exit is too hard to detect.  And closure
+          would probably be unnecessary at that point anyway. */
+        else assert false; // cache was definitely installed
+    }
+
+
+
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
+
+
+    private static final long HTTP_CACHE_BYTES = 50_000_000L;
+
 
 
     private static final java.util.logging.Logger logger = LoggerX.getLogger( WaykitUI.class );

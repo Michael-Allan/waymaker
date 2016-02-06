@@ -1,9 +1,13 @@
 <?xml version='1.0'?><!-- incomplete template -->
 <manifest xmlns:a='http://schemas.android.com/apk/res/android' a:versionCode='0' a:versionName='0'>
+
 	<uses-sdk a:minSdkVersion='21' a:targetSdkVersion='23'/>
             <!--               ↓      targetSdkVersion 23 ← androidVersion in spec/build/ConfigDefault.js
                  minSdkVersion 21 required for SAF directory selection in Wayranging.wayrepoTreeLoc -->
+
+    <!-- grep permission names to locate actual uses -->
     <uses-permission a:name='android.permission.INTERNET'/>
+
     <application a:name='waymaker.top.android.WaykitUI'>
         <activity a:name='waymaker.top.android.Wayranging'>
              <intent-filter>
@@ -12,4 +16,5 @@
                 </intent-filter>
             </activity>
         </application>
+
     </manifest>
