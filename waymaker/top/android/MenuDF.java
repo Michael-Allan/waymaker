@@ -8,7 +8,7 @@ import android.widget.*;
 import waymaker.gen.*;
 
 
-/** A one-shot dialogue to show the general menu of the waykit user interface.
+/** A one-shot, disposable dialogue that shows a general menu of the waykit user interface.
   */
 public @ThreadRestricted("app main") final class MenuDF extends DialogFragment // grep AutoRestore-public
 {
@@ -32,16 +32,16 @@ public @ThreadRestricted("app main") final class MenuDF extends DialogFragment /
         final LinearLayout y = new LinearLayout( context );
         y.setOrientation( LinearLayout.VERTICAL );
         {
-          // Wayrepo preview control summoner.
-          // - - - - - - - - - - - - - - - - - -
+          // Refresh summoner.
+          // - - - - - - - - - -
             final Button button = new Button( context );
             y.addView( button );
-            button.setText( WayrepoPreviewController.TITLE + "…" );
+            button.setText( RefreshDF.TITLE + "…" );
             button.setOnClickListener( new View.OnClickListener()
             {
                 public void onClick( View _src )
                 {
-                    new WayrepoPreviewControlDF().show( getFragmentManager(), /*fragment tag*/null );
+                    new RefreshDF().show( getFragmentManager(), /*fragment tag*/null );
                 }
             });
         }

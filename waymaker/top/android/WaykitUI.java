@@ -13,7 +13,8 @@ import waymaker.gen.*;
 import static java.util.logging.Level.WARNING;
 
 
-/** A waykit user interface in the form of an Android application.
+/** A waykit user interface in the form of an Android application.  It takes ownership of the
+  * {@linkplain java.net.ResponseCache HTTP response cache}, expecting no contention.
   */
 public @ThreadSafe final class WaykitUI extends Application implements Application.ActivityLifecycleCallbacks
 {
@@ -40,22 +41,7 @@ public @ThreadSafe final class WaykitUI extends Application implements Applicati
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Has no effect on DownloadManager, which apparently cannot do response caching.
       // http://stackoverflow.com/questions/35191718
-        try
-        {
-            final HttpResponseCache cache = HttpResponseCache.install( // grep HttpResponseCache-TS
-              new File(getCacheDir(),HttpResponseCache.class.getName()), HTTP_CACHE_BYTES );
-            final long sizeBytes = cache.size();
-            final String utilization;
-            if( sizeBytes >= 0 )
-            {
-                final float percentF = sizeBytes / (cache.maxSize()/100.0f);
-                final int percentI = Math.round( percentF );
-                utilization = Integer.toString(percentI) + "%";
-            }
-            else utilization = "Unable to calculate";
-            logger.info( "HTTP response cache utilization at start: " + utilization );
-        }
-        catch( final IOException x ) { logger.log( WARNING, "Cannot enable HTTP response cache", x ); }
+        installHttpResponseCache();
 
       // - - -
         registerActivityLifecycleCallbacks( this ); // no need to unregister from self
@@ -68,7 +54,7 @@ public @ThreadSafe final class WaykitUI extends Application implements Applicati
 
     /** The single instance of WaykitUI as created by the Anroid runtime, or null if there is none.
       */
-    public static @Warning("thread restricted object") WaykitUI i() { return instanceA.get(); }
+    public static WaykitUI i() { return instanceA.get(); }
 
 
         private static final AtomicReference<WaykitUI> instanceA = new AtomicReference<>();
@@ -179,7 +165,6 @@ public @ThreadSafe final class WaykitUI extends Application implements Applicati
         if( cache != null ) cache.flush(); /* Flush buffer to file system in case whole app is exiting.
           Not also closing the cache, because the certainty of exit is too hard to detect.  And closure
           would probably be unnecessary at that point anyway. */
-        else assert false; // cache was definitely installed
     }
 
 
@@ -187,7 +172,42 @@ public @ThreadSafe final class WaykitUI extends Application implements Applicati
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
+    @ThreadRestricted("app main"/*for atomic operation*/) void clearHttpResponseCache()
+    {
+        final HttpResponseCache cache = HttpResponseCache.getInstalled(); // grep HttpResponseCache-TS
+        try // for lack of cache.clear, delete and reinstall:
+        {
+            if( cache != null ) cache.delete(); // before installing new cache, in case the two tangle
+            installHttpResponseCache();
+        }
+        catch( final IOException x ) { logger.log( WARNING, "Failed to clear the HTTP response cache", x ); }
+    }
+
+
+
     private static final long HTTP_CACHE_BYTES = 50_000_000L;
+
+
+
+    private void installHttpResponseCache()
+    {
+        try
+        {
+            final HttpResponseCache cache = HttpResponseCache.install( // grep HttpResponseCache-TS
+              new File(getCacheDir(),HttpResponseCache.class.getName()), HTTP_CACHE_BYTES );
+            final long sizeBytes = cache.size();
+            final String utilization;
+            if( sizeBytes >= 0 )
+            {
+                final float percentF = sizeBytes / (cache.maxSize()/100.0f);
+                final int percentI = Math.round( percentF );
+                utilization = Integer.toString(percentI) + "%";
+            }
+            else utilization = "Unable to calculate";
+            logger.info( "HTTP response cache utilization: " + utilization );
+        }
+        catch( final IOException x ) { logger.log( WARNING, "Cannot enable HTTP response cache", x ); }
+    }
 
 
 

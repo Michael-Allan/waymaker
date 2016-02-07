@@ -1,9 +1,10 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
+import android.app.Dialog;
 import android.content.*;
 import android.net.Uri;
-import android.os.Parcel;
-import android.view.View;
+import android.os.*;
+import android.view.*;
 import android.widget.*;
 import waymaker.gen.*;
 
@@ -14,128 +15,134 @@ import static android.content.Intent.ACTION_OPEN_DOCUMENT_TREE;
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 
-/** A controller and configurer of those models that can introduce changes read from the user’s local
-  * wayrepo, which are yet unknown to public sources, thus anticipating a future public state.
+/** A one-shot, disposable dialogue that shows a refresh facility.
   */
-public @ThreadRestricted("app main") final class WayrepoPreviewController extends LinearLayout
+  @ThreadRestricted("app main")
+public final class RefreshDF extends android.app.DialogFragment // grep AutoRestore-public
 {
-    /* * *
-    - designed for eventual reuse in (among other contexts) a "Refresh" dialogue that floats,
-      allowing previews to show more clearly in the background
-      */
 
 
-    /** Constructs a WayrepoPreviewController.
+    /** The title of this dialogue.
       */
-    public WayrepoPreviewController( final Wayranging wr, final Destructor destructor )
+    public static final String TITLE = "Refresh";
+
+
+
+   // - F r a g m e n t --------------------------------------------------------------------------------
+
+
+    public @Override Dialog onCreateDialog( final Bundle in )
     {
-        super( /*context*/wr );
-        setOrientation( VERTICAL );
-        final WaykitUI wk = WaykitUI.i();
+        final Dialog dialog = super.onCreateDialog( in );
+        dialog.setTitle( RefreshDF.TITLE );
+        return dialog;
+    }
 
-      // Note view.
-      // - - - - - -
+
+
+    public @Override View onCreateView( LayoutInflater _inf, ViewGroup _group, Bundle _in )
+    {
+        final Wayranging wr = wr();
+        final LinearLayout y = new LinearLayout( wr );
+        y.setOrientation( LinearLayout.VERTICAL );
+
+      // Refresh notes.
+      // - - - - - - - -
         {
             final TextView noteView = new TextView( wr );
-            addView( noteView );
+            y.addView( noteView );
             wr.forests().notaryBell().registerDestructibly( new Auditor<Changed>()
             {
+                // only forest cache writes refresh notes at present, so let them stand for all
                 { sync(); } // init
-                private void sync() { noteView.setText( wr.forests().refreshNote() ); }
+                private void sync() { noteView.setText( wr().forests().refreshNote() ); }
                 public void hear( Changed _ding ) { sync(); }
             }, destructor );
         }
 
-      // Refresh buttons.
-      // - - - - - - - - -
-        final SharedPreferences preferences = wk.preferences();
+      // Local refresh button, to refresh from user's local wayrepo.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        final SharedPreferences preferences = WaykitUI.i().preferences();
         {
-            final LinearLayout x = new LinearLayout( wr );
-            addView( x );
+            final Button button = new Button( wr );
+            y.addView( button );
+            button.setText( "From local wayrepo" );
+            button.setOnClickListener( new View.OnClickListener()
             {
-              // Local refresh button, to refresh from local wayrepo.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( wr );
-                x.addView( button );
-                button.setText( "Refresh from wayrepo" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _src )
-                    {
-                        wr.forests().startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
-                    }
-                });
-                Android.registerDestructibly( preferences, new OnSharedPreferenceChangeListener()
-                {
-                    { sync(); } // init
-                    private void sync() { button.setEnabled( wk.wayrepoTreeLoc() != null ); }
-                      // hint to user that refreshing from a non-existent wayrepo is pointless
-                    public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
-                }, destructor );
-            }
+                public void onClick( View _src ) { wr().refreshFromLocalWayrepo(); }
+            });
+            Android.registerDestructibly( preferences, new OnSharedPreferenceChangeListener()
             {
-              // Full refresh button, to refresh from all sources.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - -
-                final Button button = new Button( wr );
-                x.addView( button );
-                button.setText( "from all" );
-                button.setOnClickListener( new View.OnClickListener()
-                {
-                    public void onClick( View _src ) { wr.forests().startRefresh( wk.wayrepoTreeLoc() ); }
-                });
-            }
+                { sync(); } // init
+                private void sync() { button.setEnabled( WaykitUI.i().wayrepoTreeLoc() != null ); }
+                  // hint to user that refreshing from a non-existent wayrepo is pointless
+                public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
+            }, destructor );
+        }
+
+      // General refresh button, to refresh from all sources.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        {
+            final Button button = new Button( wr );
+            y.addView( button );
+            button.setText( "From all sources" );
+            button.setOnClickListener( new View.OnClickListener()
+            {
+                public void onClick( View _src ) { wr().refreshFromAllSources(); }
+            });
         }
         /* * *
-        - refresh may also be initiated wherever preview itself is shown
-          (i.e. in all wayrepo-based UI views) by impatience gesture
+        = also allow trigger of refresh by impatience gesture on refreshable view itself
             - such as deselection with immediate reselection
-            - when refresh gesture immediately repeated, depth of effect escalates:
+            - scope of refresh escalates on immediate repeat of impatience gesture
                 ( notebook 2015.6.4
-                - 1st locally refreshes
-                - 2nd fully refreshes
+                - 1st gesture refreshes locally
+                - 2nd gesture refreshes generally
           */
 
-      // Wayrepo location.
-      // - - - - - - - - - -
+      // Local wayrepo location.
+      // - - - - - - - - - - - - -
         {
-          // View.
-          // - - - -
             final TextView view = new TextView( wr );
-            addView( view );
+            y.addView( view );
             Android.registerDestructibly( preferences, new OnSharedPreferenceChangeListener()
             {
                 { sync(); } // init
                 private void sync()
                 {
-                    String text = wk.wayrepoTreeLoc();
-                    if( text == null ) text = "Location unspecified";
-                    view.setText( text );
+                    final WaykitUI wk = WaykitUI.i();
+                    final StringBuilder b = wk.stringBuilderClear();
+                    b.append( "Local wayrepo: " );
+                    final String loc = wk.wayrepoTreeLoc();
+                    b.append( loc == null? "Location unspecified": loc );
+                    view.setText( b.toString() );
                 }
                 public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
             }, destructor );
         }
         {
-          // Controls.
-          // - - - - - -
             final LinearLayout x = new LinearLayout( wr );
-            addView( x );
+            y.addView( x );
+            x.setGravity( Gravity.RIGHT );
+
+          // Clear button.
+          // - - - - - - - -
             {
-              // Clear button, to clear the wayrepo location.
-              // - - - - - - - - - - - - - - - - - - - - - - -
                 final Button button = new Button( wr );
                 x.addView( button );
                 button.setText( "Clear" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
-                    public void onClick( View _src ) { wk.wayrepoTreeLoc( null ); }
+                    public void onClick( View _src ) { WaykitUI.i().wayrepoTreeLoc( null ); }
                 });
             }
+
+          // Finder button.
+          // - - - - - - - -
             {
-              // Locate button, to open the locator and find the wayrepo.
-              // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 final Button button = new Button( wr );
                 x.addView( button );
-                button.setText( "Locate wayrepo" );
+                button.setText( "Find" );
                 button.setOnClickListener( new View.OnClickListener()
                 {
                     public void onClick( View _src )
@@ -151,28 +158,36 @@ public @ThreadRestricted("app main") final class WayrepoPreviewController extend
                      // }
                      // catch( final ActivityNotFoundException x ) { throw new RuntimeException( x ); }
                      //// but ActivityNotFoundException *is* a RuntimeException
-                        wr.startActivityForResult( request, new WayrepoLocator() );
+                        wr().startActivityForResult( request, new WayrepoLocator() );
                     }
                 });
             }
         }
+        return y;
     }
 
 
 
-   // --------------------------------------------------------------------------------------------------
-
-
-    /** The standard title for these controllers.
-      */
-    public static final String TITLE = "Control wayrepo preview";
+    public @Override void onDestroyView()
+    {
+        destructor.close();
+        super.onDestroyView();
+    }
 
 
 
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
+    private final Destructor destructor = new Destructor1();
+
+
+
     private static final java.util.logging.Logger logger = LoggerX.getLogger( WayrangingV.class );
+
+
+
+    private Wayranging wr() { return (Wayranging)getActivity(); }
 
 
 

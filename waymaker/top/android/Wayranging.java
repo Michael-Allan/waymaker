@@ -1,8 +1,10 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.*;
 import android.view.Window;
+import java.util.ArrayList;
 import waymaker.gen.*;
 import waymaker.spec.*;
 
@@ -16,7 +18,7 @@ import static waymaker.gen.ActivityLifeStage.*;
   *       Whether to {@linkplain PollIntroducer introduce polls}.  A false value is useful when testing
   *       because the initial introduction slows the start of the application.  The default is true.
   */
-public @ThreadRestricted("app main") final class Wayranging extends android.app.Activity
+public @ThreadRestricted("app main") final class Wayranging extends Activity implements Refreshable
 {
 
     private static final PolyStator<Wayranging> stators = new PolyStator<>();
@@ -90,12 +92,7 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
       // Forests.
       // - - - - -
         assert stators.get(s++) == forests_stator;
-        if( inP == null )
-        {
-            forests = new ForestCache();
-            forests.startRefreshFromWayrepo( wk.wayrepoTreeLoc() );
-        }
-        else forests = new ForestCache( inP );
+        forests = inP == null? new ForestCache(this): new ForestCache(inP,this);
 
       // Poll name.
       // - - - - - -
@@ -140,6 +137,13 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
                 AndroidXID.writeUDIDOrNull( wr.actorID.get(), out );
             }
         });
+
+
+
+    /** Adds a refreshable component to this activity.  The component will refresh each time the
+      * activity refreshes, together with the other components in the order they are added.
+      */
+    public void addRefreshable( final Refreshable component ) { refreshables.add( component ); }
 
 
 
@@ -308,10 +312,35 @@ public @ThreadRestricted("app main") final class Wayranging extends android.app.
 
 
 
+   // - R e f r e s h a b l e --------------------------------------------------------------------------
+
+
+    /** {@inheritDoc}  First clears the HTTP response cache, then delegates the call
+      * to each {@linkplain #addRefreshable(Refreshable) refreshable component} in turn.
+      */
+    public void refreshFromAllSources()
+    {
+        wk.clearHttpResponseCache(); // before any r below hits it
+        for( Refreshable r: refreshables ) r.refreshFromAllSources();
+    }
+
+
+
+    /** {@inheritDoc}  Delegates the call
+      * to each {@linkplain #addRefreshable(Refreshable) refreshable component} in turn.
+      */
+    public void refreshFromLocalWayrepo() { for( Refreshable r: refreshables ) r.refreshFromLocalWayrepo(); }
+
+
+
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
     private static final java.util.logging.Logger logger = LoggerX.getLogger( Wayranging.class );
+
+
+
+    private final ArrayList<Refreshable> refreshables = new ArrayList<>();
 
 
 

@@ -4,6 +4,7 @@ import android.content.*;
 import android.graphics.Color;
 import android.os.*;
 import android.view.View;
+import android.widget.TextView;
 
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
@@ -67,6 +68,17 @@ public @ThreadSafe final class Android
         triFloat[1] = saturation;
         triFloat[2] = value;
         return Color.HSVToColor( ALPHA_OPAQUE, triFloat );
+    }
+
+
+
+    /** Creates a text view with the given text.  This is a convenience method.
+      */
+    public static TextView newTextView( final String text, final Context context )
+    {
+        final TextView view = new TextView( context );
+        view.setText( text );
+        return view;
     }
 
 

@@ -17,7 +17,7 @@ import static java.util.logging.Level.WARNING;
   * communications with the remote data source (count server).
   */
   @ThreadRestricted("app main") // effectively so by "joins" into "app main"
-public final class ForestCache
+public final class ForestCache implements Refreshable
 {
 
     static final PolyStator<ForestCache> stators = new PolyStator<>();
@@ -27,7 +27,12 @@ public final class ForestCache
 
     /** Constructs a ForestCache.
       */
-    public ForestCache() { forestMap = new HashMap<>( 10, MapX.HASH_LOAD_FACTOR ); }
+    public @Warning("wr co-construct") ForestCache( final Wayranging wr )
+    {
+        forestMap = new HashMap<>( 10, MapX.HASH_LOAD_FACTOR );
+        init( wr );
+        refreshFromLocalWayrepo();
+    }
 
 
 
@@ -36,7 +41,7 @@ public final class ForestCache
       *     @param inP The parceled state to restore.
       */
       @ThreadRestricted("further KittedPolyStatorSR.openToThread") // for stators.startCtorRestore
-    public ForestCache( final Parcel inP )
+    public @Warning("wr co-construct") ForestCache( final Parcel inP, final Wayranging wr )
     {
         int s = stators.startCtorRestore( this, inP );
 
@@ -67,7 +72,13 @@ public final class ForestCache
 
       // - - -
         assert s == stators.size();
+        init( wr );
     }
+
+
+
+    private void init( final Wayranging wr ) { wr.addRefreshable( this ); }
+      // no need to unregister from wr co-construct
 
 
 
@@ -102,7 +113,7 @@ public final class ForestCache
 
 
 
-    /** A bell that rings when a note is changed.
+    /** A bell that rings when the {@linkplain #refreshNote() refresh note} is changed.
       */
     public Bell<Changed> notaryBell() { return notaryBell; }
 
@@ -113,6 +124,9 @@ public final class ForestCache
 
     /** A note for the user on the ultimate result of the latest refresh attempt.  Any change in the
       * return value will be signalled by the {@linkplain #notaryBell() notary bell}.
+      *
+      *     @see #refreshFromAllSources()
+      *     @see #refreshFromLocalWayrepo()
       */
     public String refreshNote() { return refreshNote; }
 
@@ -125,28 +139,6 @@ public final class ForestCache
             public void save( final ForestCache c, final Parcel out ) { out.writeString( c.refreshNote ); }
             public void restore( final ForestCache c, final Parcel in ) { c.refreshNote = in.readString(); }
         });}
-
-
-
-    /** Initiates the clearance of all cached data, plus a {@linkplain #startRefreshFromWayrepo(String)
-      * refresh from the local wayrepo}.  Eventually replaces the node cache of each forest and rings
-      * the {@linkplain #nodeCacheBell() node cache bell}.  Posts user feedback as a single {@linkplain
-      * #refreshNote() refresh note}.
-      *
-      *     @see WaykitUI#wayrepoTreeLoc()
-      */
-    public void startRefresh( final String wayrepoTreeLoc ) { r1( /*toClear*/true, wayrepoTreeLoc ); }
-
-
-
-    /** Initiates a refresh by {@linkplain Precounter precounting} from the user’s local wayrepo,
-      * eventually replacing the node cache of each affected forest and ringing the {@linkplain
-      * #nodeCacheBell() node cache bell}.  Skips the bell ringing if no forest was affected.  Posts
-      * user feedback as a single {@linkplain #refreshNote() refresh note}.
-      *
-      *     @see WaykitUI#wayrepoTreeLoc()
-      */
-    public void startRefreshFromWayrepo( final String wayrepoTreeLoc ) { r1( /*toClear*/false, wayrepoTreeLoc ); }
 
 
 
@@ -163,6 +155,27 @@ public final class ForestCache
           */
 
         private final ReRinger<Changed> voterListingBell = Changed.newReRinger();
+
+
+
+   // - R e f r e s h a b l e --------------------------------------------------------------------------
+
+
+    /** Initiates the clearance of all cached data, plus a {@linkplain #refreshFromLocalWayrepo()
+      * refresh from the local wayrepo}.  Eventually replaces the node cache of each forest and rings
+      * the {@linkplain #nodeCacheBell() node cache bell}.  Posts user feedback as a single {@linkplain
+      * #refreshNote() refresh note}.
+      */
+    public void refreshFromAllSources() { r1( /*toClear*/true ); }
+
+
+
+    /** Initiates a refresh by {@linkplain Precounter precounting} from the user’s local wayrepo,
+      * eventually replacing the node cache of each affected forest and ringing the {@linkplain
+      * #nodeCacheBell() node cache bell}.  Skips the bell ringing if no forest was affected.  Posts
+      * user feedback as a single {@linkplain #refreshNote() refresh note}.
+      */
+    public void refreshFromLocalWayrepo() { r1( /*toClear*/false ); }
 
 
 
@@ -216,7 +229,10 @@ public final class ForestCache
    // ` r e f r e s h ``````````````````````````````````````````````````````````````````````````````````
 
 
-    private void r1( final boolean toClear, final String wayrepoTreeLoc )
+    /** @param toClear Whether to clear each forest’s node cache before the precount, extending the
+      *   scope of refresh to include the cache of unadjusted nodes from the remote count server.
+      */
+    private void r1( final boolean toClear )
     {
       // Coordinate with refresh series.
       // - - - - - - - - - - - - - - - - -
@@ -244,6 +260,8 @@ public final class ForestCache
 
       // Maybe skip straight to r5.
       // - - - - - - - - - - - - - -
+        final WaykitUI wk = WaykitUI.i();
+        final String wayrepoTreeLoc = wk.wayrepoTreeLoc();
         if( wayrepoTreeLoc == null && demands.size() == 0 ) // then can't precount & there's nothing to strip
         {
             // can only clear if requested, and finally post the obligatory note for user feedback:
@@ -254,7 +272,7 @@ public final class ForestCache
 
       // Else make reference for use outside "app main".
       // - - - - - - - - - - - - - - - - - - - - - - - - -
-        final ContentResolver cResolver = Application.i().getContentResolver(); // grep ContentResolver-TS
+        final ContentResolver cResolver = wk.getContentResolver(); // grep ContentResolver-TS
 
       // Start worker thread.
       // - - - - - - - - - - -

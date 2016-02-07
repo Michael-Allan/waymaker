@@ -22,9 +22,9 @@ import static org.xmlpull.v1.XmlPullParser.TEXT;
 import static waymaker.top.android.Waynode.EMPTY_WAYNODE;
 
 
-/** A count engine that uses a {@linkplain WayrepoPreviewController wayrepo preview} to form an
-  * adjusted, local count, thus anticipating a future server count.  Precounters are single use
-  * facilities; construct one, use it, and discard it.
+/** A count engine that reads from the user’s local wayrepo to form an adjusted, local count, thus
+  * anticipating a future server count.  Precounters are single use facilities; construct one, use it,
+  * and discard it.
   */
 public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKit
 {
