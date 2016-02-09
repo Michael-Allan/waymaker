@@ -62,8 +62,11 @@ public interface NodeCache
 
 
     /** The forest’s first root in {@linkplain CountNode#peersComparator peer order}, or the ground if
-      * the forest is yet without roots.  Any subsequent change to the return value will be signalled by
-      * the {@linkplain ForestCache#nodeCacheBell() node cache bell}.  It will change at most once.
+      * the forest is without roots, or the roots are incomplete.  Any subsequent change to the return
+      * value will be signalled by the {@linkplain ForestCache#nodeCacheBell() node cache bell}.  It
+      * will change at most once as the roots are completed.
+      *
+      *     @see CountNode#votersMaybeIncomplete()
       */
     public CountNode leader();
 

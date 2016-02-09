@@ -93,7 +93,8 @@ public @ThreadSafe class Application extends android.app.Application
 
 
     /** Answers whether an application might run remotely from a server, as during normal use, as
-      * opposed to local testing.
+      * opposed to local testing.  Currently this is false.  Assert it as false from any code that might
+      * break on remote usage <em>provided the fix can reasonably be deferred</em>.
       *
       *     @see #setRemotelyUsable()
       */

@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.*;
 import waymaker.gen.*;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.logging.Level.WARNING;
 
 
@@ -14,16 +15,13 @@ import static java.util.logging.Level.WARNING;
 {
 
 
-    @ThreadRestricted("app main") QuestionImaging( final QuestionImager imager )
+      @ThreadRestricted("app main")
+    QuestionImaging( final int sImaging, final Thread tImagingPrior, final QuestionImager imager )
     {
+        this.sImaging = sImaging;
+        this.tImagingPrior = tImagingPrior;
         this.imager = imager;
         imageLoc = imager.imageLoc;
-        final QuestionImaging incomplete = imager.incompleteImaging;
-        if( incomplete != null && imageLoc != null && imageLoc.equals(incomplete.imageLoc) )
-        {
-            bitmapOriginal = incomplete.bitmapOriginal; // if any, avoid refetching it
-              // bitmapOriginal to be readable by StartSync
-        }
         widthV = imager.wrV.getWidth();
         heightV = imager.wrV.getHeight();
     }
@@ -35,41 +33,74 @@ import static java.util.logging.Level.WARNING;
 
     public void run()
     {
-        final Thread thread = Thread.currentThread();
-        if( imageLoc != null && bitmapOriginal == null ) // then fetch it
+        final Thread tCurrent = Thread.currentThread();
+        if( tImagingPrior != null )
         {
-            try
+            try{ tImagingPrior.join(); }
+              // let any prior HTTP response finish and cache before possibly re-requesting same URL
+            catch( final InterruptedException x )
             {
-                final URL url = new URL( imageLoc );
-                {
-                    final String hostName = url.getHost();
-                    if( hostName != null && !hostName.endsWith("reluk.ca") ) WaykitUI.setRemotelyUsable();
-                      // (a) before (b)
-                }
-                final HttpURLConnection con = Net.openHttpConnection( url ); // uses permission INTERNET
-                assert con.getUseCaches();
-                Net.connect( con );
-                try( final InputStream in = new BufferedInputStream( con.getInputStream() ); )
-                {
-                    bitmapOriginal = BitmapFactory.decodeStream( in );
-                      // decodeStream swallows interrupts (Android 23).  Throws InterruptedIOException
-                      // with interrupt status clear, then catches it internally and merely logs it,
-                      // leaving interrupt status unknown at this point.
-                    if( thread.isInterrupted() ) return; // imaging no longer wanted
-                      // unlikely to detect, as decodeStream above 'swallows' it
-                }
-                finally{ con.disconnect(); }
+                assert !isInterruptible;
+                logger.log( WARNING, "Unexpected, untimely interrupt", x );
+                tCurrent.interrupt(); // pass it on
+                return;
             }
-            catch( final InterruptedIOException x ) // unlikely to catch, as decodeStream above 'swallows' it
-            { // unlike ClosedByInterruptException, leaves thread status in doubt, so:
-                Thread.currentThread().interrupt(); // to be sure, pass it on
-                return; // interrupted, which is okay
-            }
-            catch( final IOException x ) { logger.log( WARNING, "Unable to display question image", x ); }
-            if( WaykitUI.isRemotelyUsable() ) throw new UnsupportedOperationException( "Needs caching" );
-              // (b) after (a).  Image files are likely large; should be cached before allowing remote use.
         }
+        // else prior thread already terminated, nulling en passant imager.tImaging
+        connection: try // fetch bitmapOriginal
+        {
+            final HttpURLConnection con = Net.openHttpConnection( new URL( imageLoc )); // uses INTERNET
+            assert con.getUseCaches();
+            Net.connect( con );
+            final int statusCode = con.getResponseCode();
+            if( statusCode != /*200*/HTTP_OK ) break connection;
 
+          // Determine whether to allow interruption of fetch.
+          // - - - - - - - - - - - - - - - - - - - - - - - - - -
+            {
+             // System.err.println( " --- headers=" + con.getHeaderFields() ); // TEST
+                final String responseSource = con.getHeaderField( "X-Android-Response-Source" );
+                  // SOURCE " " STATUS-CODE is the form, where SOURCE is enum name of:
+                  // http://square.github.io/okhttp/1.x/okhttp/com/squareup/okhttp/ResponseSource.html
+                final boolean isRecognized;
+                if( responseSource == null ) isRecognized = false;
+                else if( responseSource.startsWith( "CACHE " )
+                      || responseSource.startsWith( "NONE " ))
+                {
+                    isRecognized = true;
+                    isInterruptible = true; // surely not a network connection better left to finish and cache
+                }
+                else isRecognized = responseSource.startsWith( "NETWORK " )
+                                 || responseSource.startsWith( "CONDITIONAL_CACHE " );
+                assert isRecognized: "HTTP response source '" + responseSource + "' is recognized";
+            }
+
+          // Fetch image.
+          // - - - - - - -
+            try( final InputStream in = new BufferedInputStream( con.getInputStream() ); )
+            {
+                bitmapOriginal = BitmapFactory.decodeStream( in );
+                  // decodeStream swallows interrupts (Android 23).  Throws InterruptedIOException with
+                  // interrupt status clear, then catches it internally and merely logs it before
+                  // aborting and returning to here, leaving interrupt status unknown at this point.
+                if( tCurrent.isInterrupted() ) return; // imaging no longer wanted
+                  // unlikely to detect, as decodeStream above 'swallows' it
+            }
+            finally{ con.disconnect(); }
+        }
+        catch( final InterruptedIOException x ) // unlikely to catch, as decodeStream above 'swallows' it
+        { // unlike ClosedByInterruptException, leaves tCurrent status in doubt, so:
+            tCurrent.interrupt(); // to be sure, pass it on
+            return; // interrupted, which is okay
+        }
+        catch( final IOException x ) { logger.log( WARNING, "Unable to fetch question back image", x ); }
+        if( imager.sImaging != sImaging ) return; /* Superceded, imaging no longer wanted.
+          QuestionImager.sImaging was exposed volatile for just this purpose, to enable deferred
+          detection of being unwanted in lieu of receiving an interrupt, while !isInterruptible. */
+
+      // Scale fetched image.
+      // - - - - - - - - - - -
+        isInterruptible = true; // now that HTTP response is finished and cached
         if( bitmapOriginal != null && widthV != 0 && heightV != 0 )
         {
             final int widthB; // when scaled
@@ -92,39 +123,34 @@ import static java.util.logging.Level.WARNING;
             }
             bitmapScaled = Bitmap.createScaledBitmap( bitmapOriginal, widthB, heightB,
               /*Paint.FILTER_BITMAP_FLAG*/true );
-            if( thread.isInterrupted() ) return; // imaging no longer wanted
+            if( tCurrent.isInterrupted() ) return; // imaging no longer wanted
 
             bitmapOriginal = null; // signal that imaging is complete
         }
-        Application.i().handler().post( new GuardedJointRunnable( /*threadToJoin*/Thread.currentThread() )
+
+      // Set scaled image as background.
+      // - - - - - - - - - - - - - - - - -
+        Application.i().handler().post( new GuardedJointRunnable( /*threadToJoin*/tCurrent )
         {
             // joining back into "app main" thread
             public boolean toProceed()
             {
-                if( !threadToJoin().equals( imager.tImager )) return false; // superceded, avoid collision
+                if( imager.sImaging != sImaging ) return false; // superceded, abort to avoid collision
 
-                imager.tImager = null; // release to garbage collector
+                assert threadToJoin().equals( imager.tImaging );
+                imager.tImaging = null; // release to garbage collector
                 return true;
             }
-            public void runAfterJoin() // reading QuestionImaging variables by TermSync
+            public void runAfterJoin() // reading QuestionImaging.this variables by TermSync
             {
                 final WayrangingV wrV = imager.wrV;
                 final BitmapDrawable background;
-                if( bitmapOriginal == null ) // (normal case)
+                if( bitmapScaled != null )
                 {
-                    if( bitmapScaled != null )
-                    {
-                        background = new BitmapDrawable( wrV.wr().getResources(), bitmapScaled );
-                        background.setGravity( gravity );
-                    }
-                    else background = null;
-                    imager.incompleteImaging = null; // if any, release to garbage collector
+                    background = new BitmapDrawable( wrV.wr().getResources(), bitmapScaled );
+                    background.setGravity( gravity );
                 }
-                else // this imaging is incomplete
-                {
-                    background = null;
-                    imager.incompleteImaging = QuestionImaging.this;
-                }
+                else background = null;
                 wrV.setBackground( background );
             }
         });
@@ -135,11 +161,11 @@ import static java.util.logging.Level.WARNING;
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
-    private Bitmap bitmapOriginal; // if left non-null, then imaging is incomplete pending height or width
+    private Bitmap bitmapOriginal;
 
 
 
-    private Bitmap bitmapScaled; // null if imaging is incomplete
+    private Bitmap bitmapScaled;
 
 
 
@@ -159,7 +185,22 @@ import static java.util.logging.Level.WARNING;
 
 
 
+    @ThreadSafe boolean isInterruptible() { return isInterruptible; } // once true it never changes
+
+
+        private volatile boolean isInterruptible;
+
+
+
     private static final java.util.logging.Logger logger = LoggerX.getLogger( QuestionImaging.class );
+
+
+
+    private final int sImaging; // serial
+
+
+
+    private final Thread tImagingPrior;
 
 
 

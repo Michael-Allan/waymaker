@@ -4,7 +4,7 @@ package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
 /** A belled variable that is constrained to a non-null value.  Attempting to set a null value will
   * instead throw a null pointer exception.
   *
-  *     @param <V> The type of variable.
+  *     @param <V> The type of variable belled.
   */
 public final class BelledNonNull<V> extends BelledVariable<V>
 {

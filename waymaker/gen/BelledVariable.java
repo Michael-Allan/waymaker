@@ -3,7 +3,7 @@ package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymak
 
 /** A variable with a change bell.
   *
-  *     @param <V> The type of variable.
+  *     @param <V> The type of variable belled.
   */
 public class BelledVariable<V>
 {

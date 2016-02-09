@@ -3,9 +3,11 @@ package waymaker.top.android; // Copyright 2016, Michael Allan.  Licence MIT-Way
 import android.view.View;
 import waymaker.gen.*;
 
+import static android.view.View.OnLayoutChangeListener;
+
 
   @ThreadRestricted("app main")
-final class QuestionImager extends QuestionSyncher implements View.OnLayoutChangeListener
+final class QuestionImager extends QuestionSyncher implements OnLayoutChangeListener, Refreshable
 {
 
 
@@ -14,6 +16,7 @@ final class QuestionImager extends QuestionSyncher implements View.OnLayoutChang
         super( wrV.wr() ); // wr co-construct
         this.wrV = wrV;
         wrV.addOnLayoutChangeListener( this ); // no need to unregister from wr co-construct
+        wrV.wr().addRefreshable( this );      // "
         sync();
     }
 
@@ -45,6 +48,21 @@ final class QuestionImager extends QuestionSyncher implements View.OnLayoutChang
 
 
 
+   // - R e f r e s h a b l e --------------------------------------------------------------------------
+
+
+    public void refreshFromAllSources()
+    {
+        if( imageLoc != null ) sync(); // force refetch of image, now cleared from HTTP cache
+        // else nothing to refresh
+    }
+
+
+
+    public void refreshFromLocalWayrepo() {} // nothing to do, no direct dependence on local wayrepo
+
+
+
 //// P r i v a t e /////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -52,23 +70,26 @@ final class QuestionImager extends QuestionSyncher implements View.OnLayoutChang
 
 
 
-    QuestionImaging incompleteImaging; /* Fetched but unscaled because wrV dimesions unknown.  Will be
-      reused by next sync, then nulled when complete.  Might instead defer imaging entirely till
-      dimesions are known, but that would needlessly postpone the fetch. */
+    @ThreadSafe volatile int sImaging; /* Serial number as conflict flag for parallel worker threads.
+      Write from app main, read from threads themselves.  Not using tImaging as flag, or tImaging(null)
+      might overwrite and prevent join by subsequent QuestionImaging.run. */
 
 
 
     void sync()
     {
+        ++sImaging; // flag to all prior worker threads, "you're superceded"
+        if( tImaging != null && tImaging.target().isInterruptible() ) tImaging.interrupt(); /* Tap on
+          shoulder, "no longer wanted".  To save resources, otherwise harmless running to completion. */
         if( imageLoc == null )
         {
-            tImager( null );
             wrV.setBackground( null );
             return;
         }
 
-        final Thread t = new Thread( new QuestionImaging(this), "question imager" );
-        tImager( t );
+        final QuestionImaging qI = new QuestionImaging( sImaging, /*tImagingPrior*/tImaging, this );
+        final Thread t = tImaging = new TargetedThread<QuestionImaging>( qI,
+          QuestionImaging.class.getSimpleName() + " " + sImaging );
         t.setPriority( Thread.NORM_PRIORITY ); // or to limit of group
         t.setDaemon( true );
         t.start(); // grep StartSync, continues at QuestionImaging.run
@@ -76,18 +97,7 @@ final class QuestionImager extends QuestionSyncher implements View.OnLayoutChang
 
 
 
-    Thread tImager; /* Reference of current "question imager" thread.  Use as conflict guard and
-      interrupt handle.  Interrupt to synchronize (TermSync) and to conserve resources.  Otherwise,
-      running to completion is harmless.  Null on thread termination to enable garbage collection. */
-
-
-
-    private void tImager( final Thread _tImager )
-    {
-        final Thread tWas = tImager;
-        tImager = _tImager; // raise conflict signal to any prior tImager, "you're superceded"
-        if( tWas != null ) tWas.interrupt(); // tap on shoulder, "no longer wanted"
-    }
+    TargetedThread<QuestionImaging> tImaging; // parallel worker thread, null to garbage on termination
 
 
 

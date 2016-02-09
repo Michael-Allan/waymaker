@@ -2,6 +2,8 @@ package waymaker.gen; // Copyright 2006, 2012, Michael Allan.  Licence MIT-Wayma
 
 
 /** An implementation of a holder.
+  *
+  *     @param <C> The type of content held.
   */
 public final class Holder1<C> implements Holder<C>
 {
@@ -15,7 +17,7 @@ public final class Holder1<C> implements Holder<C>
 
     /** Creates a Holder1 and sets the initial content.
       */
-    public Holder1( C content ) { this.content = content; }
+    public Holder1( final C content ) { this.content = content; }
 
 
 

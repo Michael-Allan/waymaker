@@ -216,9 +216,10 @@ public final class ForestCache implements Refreshable
 
 
 
-    private static Thread newWorkerThread( final String name, final int serial, final Runnable runnable )
+    private static Thread newWorkerThread( final String typeName, final int serial, final Runnable runnable )
     {
-        final Thread t = new Thread( runnable, name + " forest cache worker " + serial );
+        final Thread t = new Thread( runnable,
+          ForestCache.class.getSimpleName() + " " + typeName + " worker " + serial );
         t.setPriority( Thread.NORM_PRIORITY ); // or to limit of group
         t.setDaemon( true );
         return t;
@@ -236,7 +237,7 @@ public final class ForestCache implements Refreshable
     {
       // Coordinate with refresh series.
       // - - - - - - - - - - - - - - - - -
-        final int serial = ++refreshSerialLast; // raise signal to any prior refresh, "you're superceded"
+        final int serial = ++refreshSerialLast; // flag to all prior tRefresh, "you're superceded"
         if( tRefresh != null ) tRefresh.interrupt(); // tap on shoulder, "no longer wanted"
 
       // Scope the general refresh demands that are determinable from "app main".
@@ -299,10 +300,8 @@ public final class ForestCache implements Refreshable
             });}
 
 
-        private Thread tRefresh;
-          // Reference of worker thread as interrupt handle.  Interrupted only to synchronize (TermSync)
-          // and to conserve resources.  Otherwise, running a worker thread to completion is harmless.
-          // On thread termination, null this reference to enable garbage collection.
+        private Thread tRefresh; /* Parallel worker thread.  Interrupt to conserve resources.  Otherwise
+          harmless running to completion.  Null to garbage on termination. */
 
 
 
