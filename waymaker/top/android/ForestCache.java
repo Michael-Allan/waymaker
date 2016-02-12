@@ -420,7 +420,7 @@ public final class ForestCache implements Refreshable
 
       // Else must join back into "app main" thread.
       // - - - - - - - - - - - - - - - - - - - - - - -
-        Application.i().handler().post( new MainJoin( /*threadToJoin*/t, serial )
+        ApplicationX.i().handler().post( new MainJoin( /*threadToJoin*/t, serial )
         {
             public void runAfterJoin() // on "app main", reading r2t variables above by TermSync
             {
@@ -455,7 +455,7 @@ public final class ForestCache implements Refreshable
 
       // Make reference for use outside "app main".
       // - - - - - - - - - - - - - - - - - - - - - -
-        final ContentResolver cResolver = Application.i().getContentResolver(); // grep ContentResolver-TS
+        final ContentResolver cResolver = ApplicationX.i().getContentResolver(); // grep ContentResolver-TS
 
       // Start worker thread.
       // - - - - - - - - - - -
@@ -511,7 +511,7 @@ public final class ForestCache implements Refreshable
 
       // Join back into "app main" thread.
       // - - - - - - - - - - - - - - - - - -
-        Application.i().handler().post( new MainJoin( /*threadToJoin*/t, serial )
+        ApplicationX.i().handler().post( new MainJoin( /*threadToJoin*/t, serial )
         {
             public void runAfterJoin() // on "app main", reading r4t variables above by TermSync
             {
@@ -582,7 +582,7 @@ public final class ForestCache implements Refreshable
         if( failure == null ) refreshNote = "Refresh " + serial + " done";
         else
         {
-            final StringBuilder b = Application.i().stringBuilderClear();
+            final StringBuilder b = ApplicationX.i().stringBuilderClear();
             b.append( "Refresh " ).append( serial ).append( ": " );
             ThrowableX.toStringDeeply( failure, b );
             refreshNote = b.toString();

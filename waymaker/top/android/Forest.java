@@ -158,7 +158,7 @@ public final class Forest implements PeersReceiver
         }
         final Request req = new Request();
         final Response res = new Response();
-        Application.i().handler().post( new Runnable()
+        ApplicationX.i().handler().post( new Runnable()
         {
             public void run() // on application main thread
             {

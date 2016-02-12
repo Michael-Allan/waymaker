@@ -31,7 +31,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 
     /** Constructs a NodeV with a null node.  Set a node before using it.
       */
-    public @Warning("wr co-construct") NodeV( final Wayranging wr ) { this( wr, null ); }
+    public @Warning("forestV.wr co-construct") NodeV( final ForestV forestV ) { this( forestV, null ); }
 
 
 
@@ -39,13 +39,13 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
       *
       *     @see #node()
       */
-    public @Warning("wr co-construct") NodeV( final Wayranging wr, final CountNode _node )
+    public @Warning("forestV.wr co-construct") NodeV( final ForestV forestV, final CountNode _node )
     {
-        super( /*context*/wr );
+        super( forestV.getContext() );
         assert getChildCount() == C_HANDLE;
-        addView( new HandleV(wr) ); // wr co-construct
+        addView( new HandleV(forestV) ); // forestV.wr co-construct
         assert getChildCount() == C_ANSWER;
-        addView( new TextView(wr) );
+        addView( new TextView(getContext()) );
         node( _node );
     }
 
@@ -99,6 +99,10 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 
 
 
+    private TextView answerV() { return (TextView)getChildAt( C_ANSWER ); }
+
+
+
     private static final int C_HANDLE = 0; // child index
 
     private static final int C_ANSWER = 1;
@@ -133,7 +137,7 @@ public @ThreadRestricted("app main") final class NodeV extends LinearLayout
 
 
 
-    private TextView answerV() { return (TextView)getChildAt( C_ANSWER ); }
+    ForestV parentForestV() { return (ForestV)getParent(); }
 
 
 

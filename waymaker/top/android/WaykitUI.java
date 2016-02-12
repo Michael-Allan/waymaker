@@ -16,7 +16,7 @@ import static java.util.logging.Level.WARNING;
 /** A waykit user interface in the form of an Android application.  It takes ownership of the
   * {@linkplain java.net.ResponseCache HTTP response cache}, expecting no contention.
   */
-public @ThreadSafe final class WaykitUI extends Application implements Application.ActivityLifecycleCallbacks
+public final class WaykitUI extends ApplicationX implements ApplicationX.ActivityLifecycleCallbacks
 {
 
 
@@ -65,7 +65,7 @@ public @ThreadSafe final class WaykitUI extends Application implements Applicati
 
 
     /** The access location of the user’s wayrepo in the form of a “tree URI”, or null if no location is
-      * known.  The return value is backed by the {@linkplain Application#preferences() general
+      * known.  The return value is backed by the {@linkplain ApplicationX#preferences() general
       * preference store} under the key ‘wayrepoTreeLoc’.
       *
       *     @see <a href='https://developer.android.com/about/versions/android-5.0.html#DirectorySelection'

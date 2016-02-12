@@ -63,6 +63,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
     public @Warning("wr co-construct") ForestV( final Wayranging wr )
     {
         super( /*context*/wr );
+        pxActorMarkerWidth = Math.max( Math.round(wr.pxSP()), /*at least*/1 );
 
       // / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /  LAYOUT
         setOrientation( VERTICAL );
@@ -295,6 +296,10 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
 
 
+    final int pxActorMarkerWidth;
+
+
+
     void reconstrain() // called on calibration change
     {
         spaceLayoutParams_sync();
@@ -396,7 +401,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
                     peerV = expoolNode();
                     peerV.node( peer );
                 }
-                else peerV = new NodeV( wr, peer );
+                else peerV = new NodeV( this, peer );
                 addView( peerV, c );
                 ++peerCount;
             }
@@ -549,7 +554,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
 
 
-    private Wayranging wr() { return (Wayranging)getContext(); }
+    Wayranging wr() { return (Wayranging)getContext(); }
 
 
 }

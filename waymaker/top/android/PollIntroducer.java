@@ -56,7 +56,7 @@ public final class PollIntroducer implements Auditor<Changed>
         }
 
         zoomer.outZoom(); // temporarily to POLL level, drawing attention to the question
-        Application.i().handler().postDelayed( new Runnable()
+        ApplicationX.i().handler().postDelayed( new Runnable()
         {
             private final int stateOrdinalWas = stateOrdinal;
             public void run() // later

@@ -43,7 +43,7 @@ import static waymaker.top.android.ForestV.C_TOP_PEER;
         if( isActivated ) return;
 
         isActivated = true;
-        Application.i().handler().post( this ); // run in later dispatch loop
+        ApplicationX.i().handler().post( this ); // run in later dispatch loop
     }
 
 

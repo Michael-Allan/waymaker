@@ -3,7 +3,7 @@
   * <h3>Android</h3>
   *
   * <p>Code annotated &#064;{@linkplain waymaker.gen.ThreadRestricted ThreadRestricted}("app main") is
-  * restricted to the application’s {@linkplain Application#isMainThread() main thread} under the
+  * restricted to the application’s {@linkplain ApplicationX#isMainThread() main thread} under the
   * Android runtime.  Much of the library code for Android is likewise restricted, but with no
   * annotation or other indication.</p>
   *

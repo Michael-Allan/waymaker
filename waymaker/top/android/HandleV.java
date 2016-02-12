@@ -10,10 +10,10 @@ import waymaker.gen.ThreadRestricted;
 {
 
 
-    HandleV( final Context context )
+    HandleV( final ForestV forestV )
     {
-        super( context );
-        setPadding( 0, 0, PX_ACTOR_MARKER_WIDTH * 2, 0 ); // LTRB
+        super( forestV.getContext() );
+        setPadding( 0, 0, forestV.pxActorMarkerWidth * 2, 0 ); // LTRB
     }
 
 
@@ -29,10 +29,6 @@ import waymaker.gen.ThreadRestricted;
 
 
 
-    private static final int PX_ACTOR_MARKER_WIDTH = Math.max( Math.round(wk.pxSP()), /*at least*/1 );
-
-
-
    // - V i e w ----------------------------------------------------------------------------------------
 
 
@@ -45,7 +41,7 @@ import waymaker.gen.ThreadRestricted;
         final Rect bounds = wk.rect();
         if( !canvas.getClipBounds( bounds )) return;
 
-        bounds.left = bounds.right - PX_ACTOR_MARKER_WIDTH; // shrink to thin right border
+        bounds.left = bounds.right - nodeV.parentForestV().pxActorMarkerWidth; // shrink to thin right border
         final Paint paint = onDraw_paint;
         paint.setColor( getCurrentTextColor() );
         canvas.drawRect( bounds, paint );

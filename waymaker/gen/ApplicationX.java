@@ -1,25 +1,25 @@
 package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
+import android.app.Application;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
-import android.util.DisplayMetrics;
 import android.os.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-/** An Android application.
+/** An Android application with member extensions.
   */
-public @ThreadSafe class Application extends android.app.Application
+public @ThreadSafe class ApplicationX extends Application
 {
 
 
-    /** Constructs the {@linkplain #i() single instance} of Application.  This constructor is called by
+    /** Constructs the {@linkplain #i() single instance} of ApplicationX.  This constructor is called by
       * the Android runtime during initialization of the actual application as commanded in the manifest
       * file <code>AndroidManifest.xml</code>.
       *
       *     @throws IllegalStateException if an instance was already constructed.
       */
-    public @Warning("non-API") Application()
+    public @Warning("non-API") ApplicationX()
     {
         mainLooper = Looper.getMainLooper();
         handler = new Handler( mainLooper );
@@ -41,11 +41,7 @@ public @ThreadSafe class Application extends android.app.Application
         super.onCreate(); // obeying API
         if( !isMainThread() ) throw new IllegalStateException(); // at least for visibility of this.preferences
 
-        {
-            final DisplayMetrics m = getResources().getDisplayMetrics();
-            pxDP = m.density;
-            pxSP = m.scaledDensity;
-        }
+        pxDP = getResources().getDisplayMetrics().density;
         preferences = getSharedPreferences( /*name*/"app", /*mode, typical*/MODE_PRIVATE );
     }
 
@@ -68,12 +64,12 @@ public @ThreadSafe class Application extends android.app.Application
 
 
 
-    /** The single instance of Application as created by the Android runtime, or null if there is none.
+    /** The single instance of ApplicationX as created by the Android runtime, or null if there is none.
       */
-    public static Application i() { return instanceA.get(); }
+    public static ApplicationX i() { return instanceA.get(); }
 
 
-        private static final AtomicReference<Application> instanceA = new AtomicReference<>();
+        private static final AtomicReference<ApplicationX> instanceA = new AtomicReference<>();
 
 
         { if( !instanceA.compareAndSet( null, this )) throw new IllegalStateException(); }
@@ -126,8 +122,11 @@ public @ThreadSafe class Application extends android.app.Application
 
 
 
-    /** The size of a density-indpendent pixel as measured in physical pixels.
+    /** The size of a density-independent pixel as measured in physical pixels.  Returns the value of
+      * getResources.getDisplayMetrics.<a href='http://developer.android.com/reference/android/util/DisplayMetrics.html#density' target='_top'>density</a>
+      * cached (for speed) when this application was created.
       *
+      *     @see ActivityX#pxSP()
       *     @see <a href='http://developer.android.com/guide/topics/resources/more-resources.html#Dimension'
       *       target='_top'>Resources § Dimension</a>
       */
@@ -135,19 +134,6 @@ public @ThreadSafe class Application extends android.app.Application
 
 
         private volatile float pxDP; // final after onCreate
-
-
-
-    /** The size of a scale-indpendent pixel as measured in physical pixels.  This is {@linkplain
-      * #pxDP() pxDP} “scaled by the user's font size”, larger or smaller according to preference.
-      *
-      *     @see <a href='http://developer.android.com/guide/topics/resources/more-resources.html#Dimension'
-      *       target='_top'>Resources § Dimension</a>
-      */
-    public final float pxSP() { return pxSP; }
-
-
-        private volatile float pxSP; // final after onCreate
 
 
 

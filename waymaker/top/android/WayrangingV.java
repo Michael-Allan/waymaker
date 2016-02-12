@@ -91,7 +91,7 @@ public @ThreadRestricted("app main") final class WayrangingV extends RelativeLay
         questionV = new TextView( wr );
         addView( questionV, jigRelative().rule(BELOW,WAYPATH_VID).rule(ALIGN_PARENT_LEFT).unjig() );
         questionV.setId( QUESTION_VID );
-        Android.pad( questionV, Math.round(WaykitUI.i().pxSP()*4) ); // for ZoomSyncher shieldAlpha
+        Android.pad( questionV, Math.round(wr.pxSP()*4) ); // for ZoomSyncher shieldAlpha
         new QuestionTexter( questionV ); // wr co-construct
         /* * *
         = add source link for question back-image

@@ -18,7 +18,7 @@ import static waymaker.gen.ActivityLifeStage.*;
   *       Whether to {@linkplain PollIntroducer introduce polls}.  A false value is useful when testing
   *       because the initial introduction slows the start of the application.  The default is true.
   */
-public @ThreadRestricted("app main") final class Wayranging extends Activity implements Refreshable
+public final class Wayranging extends ActivityX implements Refreshable
 {
 
     private static final PolyStator<Wayranging> stators = new PolyStator<>();
