@@ -20,7 +20,7 @@ public @ThreadSafe final class Android
 
     /** The maximum value of an alpha component, meaning “fully opaque”.
       *
-      *     @see <a href='http://developer.android.com/reference/android/graphics/drawable/Drawable.html#getAlpha%28%29'
+      *     @see <a href='http://developer.android.com/reference/android/graphics/drawable/Drawable.html#getAlpha()'
       *       target='_top'>Drawable.getAlpha</a>
       */
     public static final int ALPHA_OPAQUE = 255;
@@ -30,7 +30,7 @@ public @ThreadSafe final class Android
     /** Returns the requested service, or throws a NullPointerException if the service is unavailable in
       * the given context.  This is a convenience method.
       *
-      *     @see <a href='http://developer.android.com/reference/android/content/Context.html#getSystemService%28java.lang.Class%3CT%3E%29'
+      *     @see <a href='http://developer.android.com/reference/android/content/Context.html#getSystemService(java.lang.Class%3CT%3E)'
       *       target='_top'>Context.getSystemService</a>
       */
     public static final <T> T ensureSystemService( final Class<T> serviceClass, final Context context )
@@ -46,9 +46,9 @@ public @ThreadSafe final class Android
     /** Calculates the height of a graphical component from its top position (inclusive) and bottom
       * bound (exclusive).
       *
-      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getTop%28%29'
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getTop()'
       *       target='_top'>View.getTop</a>
-      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getBottom%28%29'
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getBottom()'
       *       target='_top'>View.getBottom</a>
       */
     public static int height( final int top, final int bottom ) { return bottom - top; } // undocumented
@@ -58,7 +58,7 @@ public @ThreadSafe final class Android
     /** Converts HSV colour components to an ARGB colour.  This convenience method passes the arguments
       * through a common array, restricted to the application main thread.
       *
-      *     @see <a href='http://developer.android.com/reference/android/graphics/Color.html#HSVToColor%28float[]%29'
+      *     @see <a href='http://developer.android.com/reference/android/graphics/Color.html#HSVToColor(float[])'
       *       target='_top'>Color.HSVToColor</a>
       */
       @ThreadRestricted("app main")
@@ -85,7 +85,7 @@ public @ThreadSafe final class Android
 
     /** Sets a uniform padding on the view.  This is a convenience method.
       *
-      *     @see <a href='http://developer.android.com/reference/android/view/View.html#setPadding%28int,%20int,%20int,%20int%29'
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#setPadding(int,%20int,%20int,%20int)'
       *       target='_top'>View.setPadding</a>
       */
     public static void pad( final View view, final int p ) { view.setPadding( p, p, p, p ); }
@@ -119,9 +119,9 @@ public @ThreadSafe final class Android
     /** Calculates the width of a graphical component from its left position (inclusive) and right bound
       * (exclusive).
       *
-      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getLeft%28%29'
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getLeft()'
       *       target='_top'>View.getLeft</a>
-      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getRight%28%29'
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getRight()'
       *       target='_top'>View.getRight</a>
       */
     public static int width( final int left, final int right ) { return right - left; } // undocumented

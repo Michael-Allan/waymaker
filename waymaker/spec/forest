@@ -15,7 +15,7 @@
     </ul>
 <p>
     The count is structured by coalescent flows of transitive votes into a forest
-    of <a href='http://en.wikipedia.org/wiki/Arborescence_%28graph_theory%29'>arborescences</a>
+    of <a href='http://en.wikipedia.org/wiki/Arborescence_(graph_theory)'>arborescences</a>
     each converging to a root (in-trees).
     One may picture the votes streaming like raindrops down the leaves and branches to the roots.
     Accordingly the rootward direction is sometimes called ‘downstream’, and the leafward ‘upstream’.

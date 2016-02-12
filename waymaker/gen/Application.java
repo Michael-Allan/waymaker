@@ -56,7 +56,7 @@ public @ThreadSafe class Application extends android.app.Application
 
     /** A handler for communicating with the application’s main thread.
       *
-      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#runOnUiThread%28java.lang.Runnable%29'
+      *     @see <a href='http://developer.android.com/reference/android/app/Activity.html#runOnUiThread(java.lang.Runnable)'
       *       target='_top'>runOnUiThread</a>
       *     @see <a href='http://developer.android.com/reference/android/os/AsyncTask.html'
       *       target='_top'>AsyncTask</a>

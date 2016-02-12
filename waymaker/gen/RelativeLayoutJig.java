@@ -47,11 +47,12 @@ public final class RelativeLayoutJig
     /** Constructs a set of layout parameters, lays them in the {@linkplain #i() single instance} of the
       * jig, and returns the jig.
       *
-      *     @see <a href='http://developer.android.com/reference/android/widget/RelativeLayout.LayoutParams.html#RelativeLayout.LayoutParams(int,%20int)'
-      *       target='_top'>RelativeLayout.LayoutParams(int, int)</a>
       *     @see <a href='http://developer.android.com/reference/android/view/ViewGroup.LayoutParams.html#ViewGroup.LayoutParams(int,%20int)'
       *       target='_top'>ViewGroup.LayoutParams(int, int)</a>
       */
+         // @see <a href='http://developer.android.com/reference/android/widget/RelativeLayout.LayoutParams.html#RelativeLayout.LayoutParams(int,%20int)'
+         //   target='_top'>RelativeLayout.LayoutParams(int, int)</a>
+         //// right, but it says nothing
     public static RelativeLayoutJig jigRelative( final int width, final int height )
     {
         instance.params = new RelativeLayout.LayoutParams( width, height );
