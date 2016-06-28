@@ -492,8 +492,8 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
 
 
 
-    private final XmlPullParserFactory xhtmlParserFactory; /* for Waymaker XHTML documents because
-      parser cannot be reused, https://code.google.com/p/android/issues/detail?id=182605 */
+    private final XmlPullParserFactory xhtmlParserFactory;
+      // parsers non-reusable, https://code.google.com/p/android/issues/detail?id=182605
 
 
 }

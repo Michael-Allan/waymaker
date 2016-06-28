@@ -1,9 +1,16 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
+import android.content.res.*;
+import android.graphics.drawable.VectorDrawable;
+import android.util.*;
 import android.widget.*;
+import java.io.IOException;
 import java.util.*;
+import org.xmlpull.v1.XmlPullParserException;
 import waymaker.gen.*;
 
+import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+import static org.xmlpull.v1.XmlPullParser.START_TAG;
 import static waymaker.top.android.ForestVCalibrator.Calibration;
 
 
@@ -65,6 +72,57 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         super( /*context*/wr );
         pxActorMarkerWidth = Math.max( Math.round(wr.pxSP()), /*at least*/1 );
 
+      // Climber icons.
+      // - - - - - - - -
+        final VectorDrawable upClimberIcon;
+        final LinearLayout.LayoutParams climberLayoutParams;
+        {
+          // Make.
+          // - - - -
+            final Resources res = wr.getResources();
+         // try
+         // {
+         //     final Class<?> c = Class.forName( "android.graphics.drawable.VectorDrawable" );
+         //     final Method m = c.getMethod( "create", Resources.class, int.class );
+         //     upClimberIcon = (VectorDrawable)m.invoke( null, res, R.drawable.top_android_forestv_climber );
+         // }
+         // catch( final Exception ex ) { throw new RuntimeException( ex ); }
+         //// call to API-hidden create method, but better to inline it for production code:
+            final XmlResourceParser p = res.getXml( R.drawable.top_android_forestv_climber );
+            try
+            {
+                // Advance to first element, else VectorDrawable throws XmlPullParserException
+                // "Binary XML file line #-1<vector> tag requires viewportWidth > 0".
+                for( int t = p.getEventType(); t != START_TAG; t = p.next() )
+                {
+                    if( t == END_DOCUMENT ) throw new XmlPullParserException( "Missing start tag" );
+                }
+
+                upClimberIcon = new VectorDrawable();
+                upClimberIcon.inflate( res, p, Xml.asAttributeSet(p) );
+            }
+            catch( final IOException|XmlPullParserException ex ) { throw new RuntimeException( ex ); }
+
+            final WaykitUI wk = WaykitUI.i();
+            final TypedValue tV = wk.typedValue();
+            if( wr.getTheme().resolveAttribute( android.R.attr.colorForeground, tV, /*resolveRefs*/true ))
+            {
+                upClimberIcon.setTint( tV.data );
+            }
+
+          // Scale.
+          // - - - -
+            final float aspectRatio =
+              (float)upClimberIcon.getIntrinsicWidth() / upClimberIcon.getIntrinsicHeight();
+            final int pxWidth = wk.px9mmExtendedWidth( Math.round( 35/*sp*/ * wr.pxSP() ));
+              // text sibling ∴ sp
+            final int pxHeight = Math.round( pxWidth / aspectRatio );
+         // upClimberIcon.setBounds( /*left*/0, /*top*/0, Android.right(0,pxWidth), Android.bottom(0,pxHeight) );
+         /// needn't scale icon itself, just the button:
+            climberLayoutParams = new LinearLayout.LayoutParams( pxWidth, pxHeight );
+        }
+
+
       // / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /  LAYOUT
         setOrientation( VERTICAL );
         setGravity( android.view.Gravity.BOTTOM );
@@ -72,8 +130,8 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
       // Children at fixed indeces.
       // - - - - - - - - - - - - - -
-        addView( upClimber = new TextView(wr) );
-        upClimber.setText( "◢◣" );
+        addView( upClimber = new Button(wr), climberLayoutParams );
+        upClimber.setBackground( upClimberIcon );
         addView( textV = new TextView(wr) ); // up pager
         textV.setText( "————" );
         assert getChildCount() == C_TOP_PEER;
@@ -84,8 +142,9 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
         downPager.setText( "————" );
         ellipsis = new TextView( wr );
         ellipsis.setText( "··" );
-        addView( downClimber = new TextView(wr) );
-        downClimber.setText( "◥◤" );
+        addView( downClimber = new Button(wr), climberLayoutParams );
+        downClimber.setBackground( upClimberIcon );
+        downClimber.setRotation( 180f );
         // changing floaters?  maybe change c* indexing methods
 
 
@@ -550,7 +609,7 @@ public @ThreadRestricted("app main") final class ForestV extends LinearLayout
 
 
 
-    final TextView upClimber;
+    final Button upClimber;
 
 
 

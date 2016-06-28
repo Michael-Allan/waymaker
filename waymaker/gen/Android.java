@@ -27,6 +27,18 @@ public @ThreadSafe final class Android
 
 
 
+    /** Calculates the bottom bound (exclusive) of a graphical component from its top position
+      * (inclusive) and height.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getTop()'
+      *       target='_top'>View.getTop</a>
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getBottom()'
+      *       target='_top'>View.getBottom</a>
+      */
+    public static int bottom( final int top, final int height ) { return top + height; } // undocumented
+
+
+
     /** Returns the requested service, or throws a NullPointerException if the service is unavailable in
       * the given context.  This is a convenience method.
       *
@@ -106,6 +118,18 @@ public @ThreadSafe final class Android
             public void close() { preferenceStore.unregisterOnSharedPreferenceChangeListener( listener ); }
         });
     }
+
+
+
+    /** Calculates the right bound (exclusive) of a graphical component from its left position
+      * (inclusive) and width.
+      *
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getLeft()'
+      *       target='_top'>View.getLeft</a>
+      *     @see <a href='http://developer.android.com/reference/android/view/View.html#getRight()'
+      *       target='_top'>View.getRight</a>
+      */
+    public static int right( final int left, final int width ) { return left + width; } // undocumented
 
 
 

@@ -1,0 +1,7 @@
+( function()
+{
+    var our = waymaker.spec.build.Build.fab( __FILE__ ); // thereby public
+
+    our.readyAndroidAsset = function( Android ) { return Android.readySVG_toVectorDrawable( our ); };
+
+}() );

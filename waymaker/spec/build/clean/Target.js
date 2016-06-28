@@ -57,7 +57,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
                     return CONTINUE;
                 }
             });
-            count = count.intValue(); // [2]
+            count = count.intValue(); // [IV]
             outS.append( '\b\b\b ' ).println( count );
         }
     };
@@ -67,6 +67,12 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 }() );
     // still under this module's load guard at top
 }
+
+
+// Note
+// ----
+//  [IV] Using explicit intValue conversion here in order to defeat previous ++ operator's
+//      implicit conversion to double, if only for sake of pretty printing.
 
 
 // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.

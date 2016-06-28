@@ -26,7 +26,9 @@ public @ThreadRestricted("app main") class ActivityX extends Activity
 
 
         private float pxSP; /* Final after onCreate.  Bound here to activity because change of font size
-          by test user (Settings app, 2016) does not recreate ApplicationX. */
+          by test user (Settings app, 2016) does not recreate ApplicationX.  Binding to the application
+          would wrongly suggest that the value is a constant for the application and thereby assignable,
+          for example, within a view class as a (static final) named number. */
 
 
 

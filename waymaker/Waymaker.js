@@ -218,6 +218,58 @@ if( !waymaker.Waymaker ) {
 
 
 
+    /** Returns a sibling of the given file with a different suffix.
+      *
+      *     @param file (java.nio.file.Path)
+      *     @param suffix (String) The name end of the file (assumed).
+      *     @param _suffix (String) The name end of the sibling.
+      *
+      *     @return (java.nio.file.Path) The sibling.
+      */
+    our.suffixSibling = function( file, suffix, _suffix )
+    {
+        return our.resuffixed( file, file.getFileName().toString(), suffix, _suffix );
+    };
+
+
+
+    /** Returns a sibling of the given file with a different suffix.
+      *
+      *     @param file (java.nio.file.Path)
+      *     @param name (String) The name of the file (assumed).
+      *     @param suffix (String) The name end of the file (assumed).
+      *     @param _suffix (String) The name end of the sibling.
+      *
+      *     @return (java.nio.file.Path) The sibling.
+      */
+    our.suffixSibling = function( file, name, suffix, _suffix )
+    {
+        name = name.substring( 0, name.length - suffix.length ); // remove old suffix
+        name = name + _suffix; // add new suffix
+        return file.resolveSibling( name );
+    };
+
+
+
+    /** Verifies the suffix of the given file and returns a sibling with a different suffix.
+      *
+      *     @param file (java.nio.file.Path)
+      *     @param suffix (String) The name end of the file (verified).
+      *     @param _suffix (String) The name end of the sibling.
+      *
+      *     @return (java.nio.file.Path) The sibling.
+      *     @throws (String) If the suffix is missing from the file.
+      */
+    our.suffixSiblingV = function( file, suffix, _suffix )
+    {
+        var name = file.getFileName().toString();
+        if( !name.endsWith( suffix ))  throw( "Missing '" + suffix + "' suffix: " + file );
+
+        return our.suffixSibling( file, name, suffix, _suffix );
+    };
+
+
+
     /** The directory for expendable, intermediate output from scripted processes.  It is
       * created by #init().  Do not delete it.
       *
@@ -230,7 +282,8 @@ if( !waymaker.Waymaker ) {
 
 
 
-    /** Returns the absolute URI of the specified Waymaker installation file.
+    /** Returns the absolute URI of the given Waymaker installation file.  A common use for the URI is
+      * to load a script file (grep PortableLoad).
       *
       *     @param subLoc (String) The URI path of the file relative to the
       *       Waymaker installation directory.
@@ -285,4 +338,4 @@ if( !waymaker.Waymaker ) {
 }
 
 
-// Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+// Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.

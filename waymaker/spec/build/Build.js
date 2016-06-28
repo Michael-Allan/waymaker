@@ -9,12 +9,14 @@ if( !waymaker.spec.build.Build ) {
 
     var Config = waymaker.spec.build.Config;
     var Files = Java.type( 'java.nio.file.Files' );
+    var FileVisitResult = Java.type( 'java.nio.file.FileVisitResult' );
     var Paths = Java.type( 'java.nio.file.Paths' );
     var SimpleFileVisitor = Java.type( 'java.nio.file.SimpleFileVisitor' );
     var Waymaker = waymaker.Waymaker;
 
-    var CONTINUE = Java.type('java.nio.file.FileVisitResult').CONTINUE;
+    var CONTINUE = FileVisitResult.CONTINUE;
     var L = Waymaker.L;
+    var SKIP_SUBTREE = FileVisitResult.SKIP_SUBTREE;
 
 
 
@@ -23,12 +25,11 @@ if( !waymaker.spec.build.Build ) {
 
     /** Arrays the class files compiled by javac.
       *
-      *     @param dir (java.nio.file.Path) The output directory which contains the
-      *       compiled class files.
-      *     @param msCompileTime (long) The file time at which the compiler was invoked,
-      *       or just before.  Only files modified at msCompileTime or later are included
-      *       in the result.  The reliability of this filter depends on msCompileTime
-      *       originating with the file system, as other clocks may differ in granularity.
+      *     @param dir (java.nio.file.Path) The output directory containing the compiled class files.
+      *     @param msCompileTime (long) When the compiler was invoked, or just before.  Only files
+      *       modified at msCompileTime or later are included in the result.  The reliability of this
+      *       filter depends on msCompileTime originating with the file system clock, because other
+      *       clocks may differ in granularity.
       *
       *     @return (JS Array of java.nio.file.Path)
       */
@@ -93,8 +94,7 @@ if( !waymaker.spec.build.Build ) {
                     var fileName = classFile.getFileName().toString();
                     if( !our.isTopClass( fileName )) break test;
 
-                    fileName = fileName.slice(0,-'.class'.length) + '.java'; // change extension
-                    var sourceFile = classFile.resolveSibling( fileName );
+                    var sourceFile = Waymaker.suffixSibling( classFile, fileName, '.class', '.java' );
                     sourceFile = waymakerDir.resolve( javacOutDir.relativize( sourceFile ));
                     if( !Files.exists( sourceFile )) break test; // source file was deleted
 
@@ -120,14 +120,12 @@ if( !waymaker.spec.build.Build ) {
 
 
 
-    /** Counts the class files compiled by javac and returns the result.  Counts only the
-      * top-level classes, not the member classes.
+    /** Counts the class files compiled by javac and returns the result.  Counts only the top-level
+      * classes, not the member classes.
       *
-      *     @param dir (java.nio.file.Path) The output directory which contains the
-      *       compiled class files.
-      *     @param compileTime (java.nio.file.attribute.FileTime) The time at which the
-      *       compiler was invoked, or just before.  Only files modified at compileTime or
-      *       later are included in the result.
+      *     @param dir (java.nio.file.Path) The output directory containing the compiled class files.
+      *     @param compileTime (java.nio.file.attribute.FileTime) When the compiler was invoked, or just
+      *       before.  Only files modified at compileTime or later are included in the result.
       *
       *     @return (Integer)
       */
@@ -156,6 +154,72 @@ if( !waymaker.spec.build.Build ) {
         count = count.intValue(); // as per contract, defeat ++'s conversion to double
         return count;
     };
+
+
+
+    /** Registers a file-associated build script and appends it to fabArray.  This function is called by
+      * each file-associated build script as it loads.  It defines the following mandatory function on
+      * the registered script (fab):
+      *
+      *     fab.fileLoc()
+      *             The path to the file associated with this script.
+      *         @return (String)
+      *
+      *     @param scriptFILE (String) The Nashorn __FILE__ of the file-associated build script.
+      *     @return The registered script.
+      */
+    our.fab = function( scriptFILE )
+    {
+        if( !scriptFILE.endsWith( '.fab' )) throw( "Missing '.fab' extension: " + scriptFILE );
+
+        var fab = {};
+        var scriptLoc = new (Java.type('java.net.URI'))( scriptFILE ).getPath(); /* convert __FILE__
+          from a file URI, maybe formed so because script was loaded by URI (grep PortableLoad) */
+        var fileLoc = scriptLoc.substring( 0, scriptLoc.length - '.fab'.length );
+        fab.fileLoc = function() { return fileLoc; };
+        fabArray.push( fab );
+        return fab;
+    };
+
+
+
+    /** The file-associated build scripts of this build.
+      *
+      *     @return (JS Array of Build.fab)
+      */
+    our.fabArray = function()
+    {
+        if( !fabArray )
+        {
+            fabArray = [];
+
+          // Load each script.
+          // - - - - - - - - - -
+            var inRoot = Paths.get( Waymaker.loc(), 'waymaker' );
+            var sourceMatcher = Config.sourceMatcher;
+            Files.walkFileTree( inRoot, new (Java.extend( SimpleFileVisitor ))
+            {
+                preVisitDirectory: function( inDir, inAtt )
+                {
+                    return sourceMatcher.matches(inDir)? CONTINUE: SKIP_SUBTREE;
+                },
+
+                visitFile: function( inFile, inAtt )
+                {
+                    if( sourceMatcher.matches(inFile) && inFile.getFileName().toString().endsWith('.fab') )
+                    {
+                        load( inFile.toUri().toASCIIString() );
+                          // it will register with Build.fab and thereby populating the array
+                    }
+                    return CONTINUE;
+                }
+            });
+        }
+        return fabArray;
+    };
+
+
+        var fabArray;
 
 
 
@@ -214,8 +278,8 @@ if( !waymaker.spec.build.Build ) {
 
 
 
-    /** Returns the command for the Java virtual machine 'java', first smoke testing it if
-      * configuration variable 'jdkBinLoc' is yet untested.
+    /** Returns the command for the Java virtual machine 'java', first smoke testing it if configuration
+      * variable 'jdkBinLoc' is yet untested.
       *
       *     @return (String)
       */
@@ -225,10 +289,8 @@ if( !waymaker.spec.build.Build ) {
         if( !testedSet.contains( 'jdkBinLoc' ))
         {
             try { $EXEC( Waymaker.logCommand( command + ' -version' )); }
-            catch( x )
-            {
-                Waymaker.exit( L + x + L + 'Does your Config.js correctly set jdkBinLoc?' );
-            }
+            catch( x ) { Waymaker.exit( L + x + L + 'Does your Config.js correctly set jdkBinLoc?' ); }
+
             Waymaker.logCommandResult();
             testedSet.add( 'jdkBinLoc' );
         }
@@ -237,8 +299,8 @@ if( !waymaker.spec.build.Build ) {
 
 
 
-    /** Returns the command for the Java compiler 'javac', first smoke testing it if
-      * configuration variable 'jdkBinLoc' or 'jdkVersion' is yet untested.
+    /** Returns the command for the Java compiler 'javac', first smoke testing it if configuration
+      * variable 'jdkBinLoc' or 'jdkVersion' is yet untested.
       *
       *     @return (String)
       */
@@ -249,8 +311,7 @@ if( !waymaker.spec.build.Build ) {
         {
             try
             {
-                $EXEC( Waymaker.logCommand( command + ' -target ' + Config.jdkVersion
-                  + ' -version' ));
+                $EXEC( Waymaker.logCommand( command + ' -target ' + Config.jdkVersion + ' -version' ));
                 Waymaker.logCommandResult();
                 if( $EXIT ) throw $ERR; // probably an older javac rejecting the -target option
             }
@@ -260,6 +321,7 @@ if( !waymaker.spec.build.Build ) {
                   'Does your Config.js correctly set jdkBinLoc?  Is your JDK version '
                   + Config.jdkVersion + ' or later?' );
             }
+
             testedSet.add( 'jdkBinLoc' );
             testedSet.add( 'jdkVersion' );
         }
@@ -268,8 +330,8 @@ if( !waymaker.spec.build.Build ) {
 
 
 
-    /** Returns the command for the Java API documenter 'javadoc', first smoke testing it
-      * if configuration variable 'jdkBinLoc' is yet untested.
+    /** Returns the command for the Java API documenter 'javadoc', first smoke testing it if
+      * configuration variable 'jdkBinLoc' is yet untested.
       *
       *     @return (String)
       */
@@ -279,10 +341,8 @@ if( !waymaker.spec.build.Build ) {
         if( !testedSet.contains( 'jdkBinLoc' ))
         {
             try { $EXEC( Waymaker.logCommand( command + ' -help' )); }
-            catch( x )
-            {
-                Waymaker.exit( L + x + L + 'Does your Config.js correctly set jdkBinLoc?' );
-            }
+            catch( x ) { Waymaker.exit( L + x + L + 'Does your Config.js correctly set jdkBinLoc?' ); }
+
             Waymaker.logCommandResult();
             testedSet.add( 'jdkBinLoc' );
         }
@@ -338,7 +398,7 @@ if( !waymaker.spec.build.Build ) {
         delete our.run; // singleton
 
       // Load each requested target module.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - - - - -
         if( $ARG.length === 0 ) $ARG.unshift( 'whole' ); // default target
         for( var t = $ARG.length - 1; t >= 0; --t )
         {
@@ -355,7 +415,7 @@ if( !waymaker.spec.build.Build ) {
         }
 
       // Build each requested target.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // - - - - - - - - - - - - - - -
         var tN = $ARG.length;
         for( var t = 0; t < tN; ++t ) our.indentAndBuild( $ARG[t] );
     };
@@ -373,9 +433,9 @@ if( !waymaker.spec.build.Build ) {
 
 
 
-    /** The directory for expendable, intermediate output from the build process.  Target
-      * "clean" deletes this directory together with its contents, while others recreate
-      * it as needed.
+    /** The directory for expendable, intermediate output from the build process, a subdirectory of
+      * Waymaker.tmpLoc.  Target "clean" deletes this directory together with its contents, while others
+      * recreate it as needed.
       *
       *     @return (String)
       */
@@ -386,9 +446,54 @@ if( !waymaker.spec.build.Build ) {
 
 
 
+    /** The XML event factory for this build.
+      *
+      *     @return (javax.xml.stream.XMLEventFactory)
+      */
+    our.xmlEventFactory = function()
+    {
+        if( !xmlEventFactory ) xmlEventFactory = Java.type('javax.xml.stream.XMLEventFactory').newFactory();
+        return xmlEventFactory;
+    };
+
+
+        var xmlEventFactory;
+
+
+
+    /** The XML input factory for this build.
+      *
+      *     @return (javax.xml.stream.XMLInputFactory)
+      */
+    our.xmlInputFactory = function()
+    {
+        if( !xmlInputFactory ) xmlInputFactory = Java.type('javax.xml.stream.XMLInputFactory').newFactory();
+        return xmlInputFactory;
+    };
+
+
+        var xmlInputFactory;
+
+
+
+    /** The XML output factory for this build.
+      *
+      *     @return (javax.xml.stream.XMLOutputFactory)
+      */
+    our.xmlOutputFactory = function()
+    {
+        if( !xmlOutputFactory ) xmlOutputFactory = Java.type('javax.xml.stream.XMLOutputFactory').newFactory();
+        return xmlOutputFactory;
+    };
+
+
+        var xmlOutputFactory;
+
+
+
 }() );
     // still under this module's load guard at top
 }
 
 
-// Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+// Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.

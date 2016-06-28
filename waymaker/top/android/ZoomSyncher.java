@@ -45,13 +45,7 @@ import static waymaker.top.android.WayscopeZoom.POLL;
         }
 
         final Object back = decorV.getBackground();
-        if( !(back instanceof ColorDrawable) )
-        {
-            assert false;
-            return DEFAULT_BACK_COLOR;
-        }
-
-        return ((ColorDrawable)back).getColor();
+        return back instanceof ColorDrawable? ((ColorDrawable)back).getColor(): DEFAULT_BACK_COLOR;
     }
 
 

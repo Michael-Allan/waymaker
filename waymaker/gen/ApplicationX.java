@@ -3,6 +3,7 @@ package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymak
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
+import android.util.*;
 import android.os.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,8 +42,12 @@ public @ThreadSafe class ApplicationX extends Application
         super.onCreate(); // obeying API
         if( !isMainThread() ) throw new IllegalStateException(); // at least for visibility of this.preferences
 
-        pxDP = getResources().getDisplayMetrics().density;
         preferences = getSharedPreferences( /*name*/"app", /*mode, typical*/MODE_PRIVATE );
+        final DisplayMetrics metrics = getResources().getDisplayMetrics();
+        pxDP = metrics.density;
+        final float px_per_mm = metrics.xdpi/*px/inch*/ / (General.CM_PER_INCH * 10)/*mm/inch*/;
+        px7mmX = (int)Math.ceil( 7/*mm*/ * px_per_mm );
+        px9mmX = (int)Math.ceil( 9/*mm*/ * px_per_mm );
     }
 
 
@@ -97,7 +102,7 @@ public @ThreadSafe class ApplicationX extends Application
     public static boolean isRemotelyUsable() { return isRemotelyUsable; }
 
 
-        private static volatile boolean isRemotelyUsable; // TEST
+        private static volatile boolean isRemotelyUsable;
 
 
         /** Establishes that an application might run remotely from a server.
@@ -119,6 +124,35 @@ public @ThreadSafe class ApplicationX extends Application
 
         private SharedPreferences preferences; // final after onCreate
           // no cost to hold this ref because any getSharedPreferences will "hold" it anyway
+
+
+
+    /** Returns either the given width or <code>px7mmX</code>, whichever is greater.  The value
+      * <code>px7mmX</code> is the minimum width (as measured in physical pixels) that is not less than
+      * 7 mm.  This is recommended as the absolute minimum for touch targets, demanding some care on the
+      * part of the user, e.g. touching with the tip of the index finger.
+      *
+      *     @param pxWidth The given width as measured in physical pixels.
+      *     @see <a href='http://www.lukew.com/ff/entry.asp?1085' target='_top'>Touch Target Sizes</a>
+      */
+    public final int px7mmExtendedWidth( final int pxWidth ) { return Math.max( pxWidth, px7mmX ); }
+
+
+        private volatile int px7mmX; // final after onCreate
+
+
+
+    /** Returns either the given width or <code>px9mmX</code>, whichever is greater.  The value
+      * <code>px9mmX</code> is the minimum width (as measured in physical pixels) that is not less than
+      * 9 mm.  This is recommended as the general minimum for touch targets.
+      *
+      *     @param pxWidth The given width as measured in physical pixels.
+      *     @see <a href='http://www.lukew.com/ff/entry.asp?1085' target='_top'>Touch Target Sizes</a>
+      */
+    public final int px9mmExtendedWidth( final int pxWidth ) { return Math.max( pxWidth, px9mmX ); }
+
+
+        private volatile int px9mmX; // final after onCreate
 
 
 
@@ -154,6 +188,15 @@ public @ThreadSafe class ApplicationX extends Application
 
 
         private final StringBuilder stringBuilder = new StringBuilder();
+
+
+
+    /** A common value container for isolated use on the application main thread.
+      */
+    public @Warning("thread restricted object, app main") final TypedValue typedValue() { return typedValue; }
+
+
+        private final TypedValue typedValue = new TypedValue();
 
 
 

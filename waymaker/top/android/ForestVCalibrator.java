@@ -119,7 +119,7 @@ import static waymaker.top.android.ForestV.C_TOP_PEER;
         isActivated = false; // allow a subsequent activation
         if( forestV.downClimber.getHeight() < forestV.upClimber.getHeight() ) // then layout is overconstrained
         {
-            throw new IllegalStateException( "Unsupported case" ); // TEST, deferred
+            throw new IllegalStateException( "Unsupported case" ); // support deferred
         }
 
         boolean isWorkingCalibrationChanged = false; // till proven otherwise

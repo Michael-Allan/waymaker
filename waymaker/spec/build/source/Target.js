@@ -26,6 +26,8 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
     var CONTINUE = FileVisitResult.CONTINUE;
     var COPY_ATTRIBUTES = StandardCopyOption.COPY_ATTRIBUTES;
+    var REPLACE_EXISTING = StandardCopyOption.REPLACE_EXISTING;
+    var SKIP_SUBTREE = FileVisitResult.SKIP_SUBTREE;
 
 
 
@@ -46,7 +48,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
         {
             preVisitDirectory: function( inDir, inAtt )
             {
-                if( !sourceMatcher.matches( inDir )) return FileVisitResult.SKIP_SUBTREE;
+                if( !sourceMatcher.matches( inDir )) return SKIP_SUBTREE;
 
                 var outDir = outRoot.resolve( inRoot.relativize( inDir ));
                 if( !Files.isDirectory( outDir )) // assume uniprocess for atomic test/act
@@ -65,14 +67,14 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
                     if( !Files.exists(outFile) ||
                       inAtt.lastModifiedTime().compareTo(Files.getLastModifiedTime(outFile)) > 0 )
                     {
-                        Files.copy( inFile, outFile, COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING );
+                        Files.copy( inFile, outFile, COPY_ATTRIBUTES, REPLACE_EXISTING );
                         ++count;
                     }
                 }
                 return CONTINUE;
             }
         });
-        count = count.intValue(); // [2]
+        count = count.intValue(); // [IV]
         outS.append( '\b\b\b ' ).println( count );
     };
 
@@ -81,6 +83,12 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 }() );
     // still under this module's load guard at top
 }
+
+
+// Note
+// ----
+//  [IV] Using explicit intValue conversion here in order to defeat previous ++ operator's
+//      implicit conversion to double, if only for sake of pretty printing.
 
 
 // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.

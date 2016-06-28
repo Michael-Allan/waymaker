@@ -354,7 +354,7 @@ public final class Wayranging extends ActivityX implements Refreshable
       @Override
     protected void onActivityResult( final int requestCode, final int resultCode, final Intent result )
     {
-System.err.println( " --- onActivityResult wk.isMainThread()=" + wk.isMainThread() ); // TEST
+        assert wk.isMainThread();
         final ActivityResultReceiver receiver = startActivity_resultReceiver;
         guard:
         {
