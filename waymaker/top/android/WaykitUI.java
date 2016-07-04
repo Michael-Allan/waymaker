@@ -82,32 +82,23 @@ public final class WaykitUI extends ApplicationX implements ApplicationX.Activit
       */
     public @ThreadRestricted("app main") void wayrepoTreeLoc( final Uri uri )
     {
+        final int modeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
         final ContentResolver r = getContentResolver();
-        final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
         final String locOld = wayrepoTreeLoc();
         if( locOld != null )
         {
-            try { r.releasePersistableUriPermission( Uri.parse(locOld), flags ); }
+            try { r.releasePersistableUriPermission( Uri.parse(locOld), modeFlags ); }
             catch( final SecurityException x ) { logger.info( x.toString() ); }
         }
         final SharedPreferences.Editor e = preferences().edit();
         if( uri == null ) e.remove( "wayrepoTreeLoc" );
         else
         {
-            e.putString( "wayrepoTreeLoc", uri.toString() );
-            try { r.takePersistableUriPermission( uri, flags ); } // persist permissions too
-                /* * *
-              / ! takePersistableUriPermission throws SecurityException
-              /     " java.lang.SecurityException:
-              /       No persistable permission grants found for UID 10058 and Uri 0
-              /       @ content://de.hahnjo.android.smbprovider/tree/havoc/100-0/
-              /     - new FLAG_GRANT_PERSISTABLE_URI_PERMISSION | FLAG_GRANT_PREFIX_URI_PERMISSION
-              /         ? might those help
-              // recompiled and it took this time
-                  */
+            e.putString( "wayrepoTreeLoc", uri.toString() );      // persist both the location,
+            try { r.takePersistableUriPermission( uri, modeFlags ); } // and permission to access it
             catch( final SecurityException x )
             {
-                logger.log( WARNING, "Cannot persist permissions to access URI " + uri, x );
+                logger.log( WARNING, "Cannot persist permission to access URI " + uri, x );
             }
         }
         e.apply();
@@ -124,7 +115,7 @@ public final class WaykitUI extends ApplicationX implements ApplicationX.Activit
     public static String wayrepoTreeLoc_message( final String loc )
     {
         return "Cannot access wayrepo via " + loc
-          + "\nTry using the wayrepo preview to reselect its location";
+          + "\nTry resetting its location (≡ > Refresh > Find)";
     }
 
 

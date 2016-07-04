@@ -31,6 +31,8 @@ public final class WayrepoReader implements java.io.Closeable
         this.wayrepoTreeUri = wayrepoTreeUri;
         this.contentResolver = contentResolver;
         try { provider = contentResolver.acquireContentProviderClient( wayrepoTreeUri ); }
+          // Fails with "Permission Denial" on x86 Atom system image, level 24 rev 3-4.
+          // https://code.google.com/p/android/issues/detail?id=210861
         catch( final SecurityException x )
         {
             throw new WayrepoAccessFailure( WaykitUI.wayrepoTreeLoc_message(wayrepoTreeUri.toString()), x );

@@ -1,8 +1,8 @@
 <?xml version='1.0'?><!-- incomplete template -->
 <manifest xmlns:a='http://schemas.android.com/apk/res/android' a:versionCode='0' a:versionName='0'>
 
-	<uses-sdk a:minSdkVersion='21' a:targetSdkVersion='24'/>
-        <!--         ↓                targetSdkVersion 24 ← androidVersion in spec/build/ConfigDefault.js
+	<uses-sdk a:minSdkVersion='21' a:targetSdkVersion='24'/> <!-- [V]
+                     ↓                targetSdkVersion 24 ← androidVersion in spec/build/ConfigDefault.js
           grep 'minSdkVersion' to show dependent code -->
 
     <!-- Permissions [P].  Grep short name to show dependent code. -->
@@ -22,5 +22,6 @@
 <!-- Notes - - - - - - - - - - - - - - -
 
     [P] List of all permissions: https://developer.android.com/reference/android/Manifest.permission.html
+    [V] Android version history: https://en.wikipedia.org/wiki/Android_version_history
 
   -->

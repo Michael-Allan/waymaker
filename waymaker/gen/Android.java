@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import java.lang.reflect.Field;
 
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
@@ -64,6 +65,44 @@ public @ThreadSafe final class Android
       *       target='_top'>View.getBottom</a>
       */
     public static int height( final int top, final int bottom ) { return bottom - top; } // undocumented
+
+
+
+    /** Returns a string representation of the given Intent flags.  Inefficient, this method is meant
+      * only for test purposes.
+      *
+      *     @see <a href='https://developer.android.com/reference/android/content/Intent.html#getFlags()'
+      *       target='_top'>getFlags</a>
+      */
+    public static @Warning("non-API") String intentFlagsToString( final int flags )
+    {
+        // after joecks, https://gist.github.com/joecks/4559331
+        final int countEncoded = Integer.bitCount( flags );
+        String s = Integer.toString(countEncoded) + " flags";
+        if( flags > 0 )
+        {
+            s += " including";
+            int countNamed = 0;
+            for( final Field field: Intent.class.getDeclaredFields() )
+            {
+                if( !field.getName().startsWith( "FLAG_" )) continue;
+
+                try
+                {
+                    final int flag = field.getInt( null );
+                    if( (flag & flags) == 0 ) continue;
+
+                    s += " ";
+                    s += field.getName();
+                    if( Integer.bitCount(flag) == 1 ) ++countNamed; // count only 1-bit flags, just in case
+                }
+                catch( final IllegalAccessException x ) { throw new RuntimeException( x ); }
+            }
+
+            for( int c = countNamed; c < countEncoded; ++c ) s += " UNDECLARED";
+        }
+        return s;
+    }
 
 
 
