@@ -145,10 +145,7 @@ public final class CircularIndeces
 
     /** The index to write to.
       */
-    private int write() { return write; }
-
-
-        private int write;
+    private int write;
 
 
 }

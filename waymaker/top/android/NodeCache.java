@@ -1,8 +1,5 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
-import android.os.Parcel;
-import waymaker.spec.VotingID;
-
 
 /** A partial store of the nodes that contribute to a {@linkplain Forest pollar forest}.  Although it
   * might initially comprise just the {@linkplain #ground() ground pseudo-node}, it can grow on demand

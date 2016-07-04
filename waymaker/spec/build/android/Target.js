@@ -56,7 +56,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
     /** Builds this target.
       */
-    our.build = function() // based on [H], q.v. for additional comments
+    our.build = function() // based on [H], q.v. for further comments
     {
         var tmpDir = Paths.get( Android.tmpLoc() );
         var outS = System.out;
@@ -268,10 +268,10 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
                         {
                             for( var lineNumber = 1;; ++lineNumber )
                             {
-                                function assertionMismatchNote()
+                                var lineWas;
+                                function assertionMismatchNote( cause )
                                 {
-                                    return inFile + '( ' + lineNumber +
-                                      ' )\n  Unrecognized pattern of assert statement:\n' + line;
+                                    return inFile + '( ' + lineNumber + ' )\n  ' + cause + ':\n' + lineWas;
                                 }
                                 line = _in.readLine();
                                 if( line === null ) break;
@@ -303,13 +303,23 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
                                     if( !lineHasAssert(cFirst) ) break tr;
 
-                                    var m = this.assertionMatcher.reset( line ).region( cFirst, cN );
-                                    if( !m.matches() ) Waymaker.exit( assertionMismatchNote() );
+                                    lineWas = line;
+                                    var m = this.assertionMatcher.reset( lineWas ).region( cFirst, cN );
+                                    if( !m.matches() )
+                                    {
+                                        Waymaker.exit( assertionMismatchNote(
+                                          'Unrecognized pattern of assert statement' ));
+                                    }
 
                                     line = line.substring( 0, cFirst );
                                     line += this.translateMatchedAssertion();
-                                    if( lineHasAssert(0) ) Waymaker.exit( assertionMismatchNote() );
-                                      // an untranslated assertion remains, maybe the line had two
+                                    if( lineHasAssert(0) ) // then an untranslated assertion remains
+                                    {
+                                        Waymaker.exit( assertionMismatchNote(
+                                          "Malformed assert statement, says 'assert' twice" ));
+                                          // might be multiple assert statements on line, a case this
+                                          // translator cannot reliably distinguish and translate
+                                    }
                                 }
                                 out.append( line );
                                 out.newLine();
@@ -362,15 +372,17 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
                 out.close();
             }
 
-          // Compile the source code to Java bytecode (.class files).
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // .java → .class
+          // - - - - - - - -
             var command = Build.javacTested()
               + ' -bootclasspath ' + Android.androidJarTested()
               + ' -d ' + javacOutDir
               + ' -encoding UTF-8' // of source; instead of platform default, whatever that might be
-              + ' -source 1.7' // Java API version, cannot exceed -target
+              + ' -source 1.8' // Java API version, cannot exceed -target
               + ' -sourcepath ' + jtransSourceOutDir + P + aaptSourceOutDir
-              + ' -target 1.7' // JVM version, limited by Android to 1.7
+              + ' -target 1.8' // JVM version, obeying Android's limit of 1.8
+                   // actual support for 1.8 remains limited, especially on hosts prior to version 24
+                   // https://developer.android.com/preview/j8-jack.html
               + ' -Werror' // terminate compilation when a warning occurs
               + ' -Xdoclint:all,-missing' /* verify all javadoc comments, but allow their omission;
                     changing?  change also in ../javadoc/Target.js */
@@ -389,67 +401,51 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
       // 4. Translate the Java bytecode to Android form.
       // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         var dexFile = tmpDir.resolve( 'classes.dex' );
-        var args =
-            ' --dex'
-          + ' --output=' + dexFile
-          + ' --verbose';
-        dx:
+        bytecode:
         {
-            if( Files.exists( dexFile )) // then update by translating the newly compiled classes
+            if( Files.exists( dexFile )) // then check for newly compiled class files
             {
                 var msCompileTime = Files.getLastModifiedTime( dexFile ).toMillis();
-                msCompileTime += 1; /* Compilation will have occured a considerable time
-                  after previous dexFile was created, so it's safe to add something here.
-                  Adding 1 ms suffices to prevent re-translating class files that were
-                  compiled just before (almost simultaneous with) the last translation. */
+                msCompileTime += 1; /* Any new compilation will have occured long after the dexFile was
+                  created.  ∴ safe to add 1 ms here, which suffices to avoid counting files that were
+                  compiled just before (almost simultaneous with) its creation. */
                 var classesInArray = Build.arrayCompiled( javacOutDir, msCompileTime );
                 var cN = classesInArray.length;
-                if( cN == 0 ) break dx;
+                if( cN == 0 ) break bytecode; // nothing new to translate
+            }
 
-                outS.append( Build.indentation() ).append( '(dx.. ' );
-                var classesInFile = tmpDir.resolve( 'classesIn' );
-                var out = new PrintWriter( classesInFile ); // truncates file if it exists
-                for( var c = 0; c < cN; ++c )
-                {
-                    var classFile = classesInArray[c];
-                    classFile = javacOutDir.relativize( classFile ); // dx expects relative path
-                    out.append( classFile.toString() );
-                    out.println();
-                }
-                out.close();
-                classesInArray = null; // free memory
-                var dir = $ENV.PWD; // dx resolves class files of input-list against working dir
-                $ENV.PWD = javacOutDir.toString(); // so change dir to where the class files are
-                try
-                {
-                    var command = Android.dxTested() + args
-                      + ' --incremental'
-                      + ' --input-list=' + classesInFile;
-                    $EXEC( Waymaker.logCommand( command ));
-                }
-                finally { $ENV.PWD = dir; } // restore working directory
-            }
-            else // translate all classes
-            {
-                outS.append( Build.indentation() ).append( '(dx.. ' );
-                var dxInFile = tmpDir.resolve( 'dxIn' );
-                {
-                    var out = new PrintWriter( dxInFile ); // truncates file if it exists
-                    out.println( javacOutDir.toString() );
-                    for each( var jar in compileTimeJarArray ) out.println( jar.toString() );
-                    out.close();
-                }
-                var command = Android.dxTested() + args + ' --input-list=' + dxInFile;
-                $EXEC( Waymaker.logCommand( command ));
-            }
+          // .class → .jayce
+          // - - - - - - - - -
+            outS.append( Build.indentation() ).append( '(jill.. ' );
+            if( compileTimeJarArray.length > 0 ) Waymaker.exit( 'Jar translation not yet scripted' );
+              // will require separate Jill calls (I guess) producing multiple .jayce files for Jack
+
+            var jayceFile = tmpDir.resolve( 'classes.jayce' );
+            command = Build.javaTested()
+              + ' -jar ' + Android.jillJarTested()
+              + ' --output ' + jayceFile
+              + ' --verbose ' // in case it ever wants to talk
+              + javacOutDir;
+            $EXEC( Waymaker.logCommand( command ));
+
             Waymaker.logCommandResult();
             if( $EXIT ) Waymaker.exit( $ERR );
 
-            var count = 0;
-            var m = Android.DEXED_TOP_CLASS_PATTERN.matcher( $OUT );
-            while( m.find() ) ++count;
-            count = count.intValue(); // [IV]
-            outS.append( '\b\b\b ' ).println( count );
+          // .jayce → .dex
+          // - - - - - - - -
+            outS.append( '\b\b\b ' ).println( ' ' ); // done
+            outS.append( Build.indentation() ).append( '(jack.. ' );
+            command = Build.javaTested()
+              + ' -jar ' + Android.jackJarTested()
+              + ' --import ' + jayceFile
+              + ' --output-dex ' + dexFile.getParent()
+              + ' --verbose INFO'; // in case it ever wants to talk
+            $EXEC( Waymaker.logCommand( command ));
+
+            Waymaker.logCommandResult();
+            if( $EXIT ) Waymaker.exit( $ERR );
+
+            outS.append( '\b\b\b ' ).println( ' ' ); // done
         }
 
       // 5. Make the full APK.
@@ -471,7 +467,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
             outS.append( Build.indentation() ).append( '(apk.. ' );
             var command = Build.javaTested()
               + ' -classpath ' + Android.sdkLibJarTested()
-              + ' com.android.sdklib.build.ApkBuilderMain' // deprecated as explained in [H]
+              + ' com.android.sdklib.build.ApkBuilderMain' // though deprecated as explained in [H]
               + ' ' + apkFullFile
               + ' -d'
               + ' -f ' + dexFile

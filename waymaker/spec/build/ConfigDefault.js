@@ -17,7 +17,7 @@ var waymaker = arguments[0];
  //     empty  Translate each assert to an empty statement, so disabling assertions.
  //     if     Translate each assert to an 'if' statement, so enabling assertions.
  //
- // This is a workaround for a deficiency in the Android runtime: it offers no reliable way to enable
+ // This is a workaround for a deficiency in the Android runtime: it gives no reliable support for
  // assertions.  http://stackoverflow.com/a/34027607/2402790
 
     c.androidAssertTranslation = 'if';
@@ -60,12 +60,12 @@ var waymaker = arguments[0];
 
  // androidVersion
  // ---------------
- // The numerical version of the Android API to build against.  It should normally be the
- // latest installed by the SDK manager.  Look for this directory:
+ // The numerical version of the Android API to build against.  It should normally be the latest
+ // installed by the developer, e.g. using the SDK manager.  Look for this installation directory:
  //
  //     {androidSDKLoc} / platforms / android-{androidVersion}
 
-    c.androidVersion = 23; // changing default?  change also in top/android/AndroidManifest.xml
+    c.androidVersion = 24; // changing?  change also in top/android/AndroidManifest.xml
 
 
 
@@ -77,7 +77,7 @@ var waymaker = arguments[0];
  //
  // Although it looks like a Java-style package name, this name need not (and should not)
  // match the Java source package "waymaker.top.android".  Instead read the instructions
- // linked above, and choose a unique name before publishing your build.
+ // linked above, and set a unique name here before publishing your build.
 
     c.appPackageName = 'com.example.waymaker';
 

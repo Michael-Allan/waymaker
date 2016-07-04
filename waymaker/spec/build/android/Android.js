@@ -68,7 +68,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
       *
       *     @return (java.nio.file.Path)
       */
-    our.androidJarTested = function() // named by the load guard at top
+    our.androidJarTested = function()
     {
         var jar = androidJar;
         if( !jar )
@@ -90,7 +90,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
 
 
-    /** The jars required at compile time.
+    /** The jars required at both compile time and runtime.
       *
       *     @return (JS Array of java.nio.file.Path)
       */
@@ -106,28 +106,53 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
 
 
-    /** Applied repeatedly (Matcher.find) to the verbose output of Android translator 'dx --dex', this
-      * pattern matches once for each top-level class that was translated.  Member classes, recognized
-      * by $ characters in their names, are excluded.
-      */
-    our.DEXED_TOP_CLASS_PATTERN = Pattern.compile(
-   // '^processing [^$\R]+\.class\.*$', Pattern.UNICODE_CHARACTER_CLASS/* for \R */ |
-   ///// [^\R] fails to exclude line ends as promised, but this works on both Unix and Windows:
-      '^processing [^$\n]+\.class\.*$',
-      Pattern.MULTILINE );
-
-
-
-    /** Returns the command for Android build tool 'dx', first smoke testing it if config variable
-      * 'androidBuildToolsLoc' is yet untested.
+    /** Returns the path to bytecode translator "jack.jar", first testing that it exists.
       *
-      *     @return (String)
+      *     @return (java.nio.file.Path)
       */
-    our.dxTested = function()
+    our.jackJarTested = function()
     {
-        var name = Waymaker.osTag() == 'win'? 'dx.bat': 'dx';
-        return androidBuildToolTested( name, '--version' );
+        var jar = jackJar;
+        if( !jar )
+        {
+            jar = Paths.get( Config.androidBuildToolsLoc, 'jack.jar' );
+            if( !Files.exists( jar ))
+            {
+                Waymaker.exit( L + 'Missing SDK file: ' + jar + L
+                  + 'Does your Config.js correctly set androidBuildToolsLoc?' );
+            }
+            jackJar = jar; // cache
+        }
+        return jar;
     };
+
+
+        var jackJar;
+
+
+
+    /** Returns the path to bytecode translator "jill.jar", first testing that it exists.
+      *
+      *     @return (java.nio.file.Path)
+      */
+    our.jillJarTested = function()
+    {
+        var jar = jillJar;
+        if( !jar )
+        {
+            jar = Paths.get( Config.androidBuildToolsLoc, 'jill.jar' );
+            if( !Files.exists( jar ))
+            {
+                Waymaker.exit( L + 'Missing SDK file: ' + jar + L
+                  + 'Does your Config.js correctly set androidBuildToolsLoc?' );
+            }
+            jillJar = jar; // cache
+        }
+        return jar;
+    };
+
+
+        var jillJar;
 
 
 

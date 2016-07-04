@@ -15,7 +15,7 @@ import java.lang.annotation.*;
   * otherwise clean up after itself.  A further search in the source code for ‘co-construct’ should
   * reveal the exact cause.</p>
   *
-  * <h3>Dead code</h3>
+  * <h3>Unused code</h3>
   * <pre>
   *     &#064;Warning("unused code")</pre>
   *
@@ -43,8 +43,9 @@ import java.lang.annotation.*;
   *     &#064;Warning("non-API")
   *         // on public member</pre>
   *
-  * <p>Warns that the member is not part of the general application programming interface.  It is
-  * exposed for internal use only; it should not be used by ordinary API clients.</p>
+  * <p>Warns that the member is not part of the general application programming interface.  It’s not for
+  * ordinary programming purposes.  Rather it’s an implementation detail that couldn’t easily be hidden,
+  * or a temporary test tool, or some other special-purpose code.</p>
   *
   * <h3>Thread restricted</h3>
   * <pre>

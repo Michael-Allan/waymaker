@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import java.util.*;
 
@@ -25,6 +25,16 @@ public abstract class CopyOnResizeArraySet<E> extends CopyOnResizeArrayList<E> i
         if( contains( element )) return false;
 
         return super.add( element );
+    }
+
+
+
+   // - I t e r a b l e --------------------------------------------------------------------------------
+
+
+    public final @Override/*else javac, "inherits unrelated defaults*/ Spliterator<E> spliterator()
+    {
+        return super.spliterator(); // though Set.super might be better, not sure
     }
 
 

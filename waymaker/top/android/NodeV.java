@@ -1,6 +1,5 @@
 package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
-import android.content.Context;
 import android.view.View;
 import android.widget.*;
 import waymaker.gen.*;

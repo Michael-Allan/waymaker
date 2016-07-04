@@ -2,7 +2,7 @@ package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.content.*;
 import android.graphics.Color;
-import android.os.*;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 

@@ -1,11 +1,11 @@
 <?xml version='1.0'?><!-- incomplete template -->
 <manifest xmlns:a='http://schemas.android.com/apk/res/android' a:versionCode='0' a:versionName='0'>
 
-	<uses-sdk a:minSdkVersion='21' a:targetSdkVersion='23'/>
-            <!--               ↓      targetSdkVersion 23 ← androidVersion in spec/build/ConfigDefault.js
-                 minSdkVersion 21 required for SAF directory selection in Wayranging.wayrepoTreeLoc -->
+	<uses-sdk a:minSdkVersion='21' a:targetSdkVersion='24'/>
+        <!--         ↓                targetSdkVersion 24 ← androidVersion in spec/build/ConfigDefault.js
+          grep 'minSdkVersion' to show dependent code -->
 
-    <!-- grep permission names to locate actual uses -->
+    <!-- Permissions [P].  Grep short name to show dependent code. -->
     <uses-permission a:name='android.permission.INTERNET'/>
 
     <application a:name='waymaker.top.android.WaykitUI'>
@@ -18,3 +18,9 @@
         </application>
 
     </manifest>
+
+<!-- Notes - - - - - - - - - - - - - - -
+
+    [P] List of all permissions: https://developer.android.com/reference/android/Manifest.permission.html
+
+  -->

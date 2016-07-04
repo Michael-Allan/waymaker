@@ -1,6 +1,6 @@
 package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
-import java.util.*;
+import java.util.NoSuchElementException;
 import waymaker.gen.*;
 
 

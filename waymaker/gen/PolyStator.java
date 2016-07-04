@@ -1,7 +1,6 @@
 package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.os.Parcel;
-import java.util.*;
 
 
 /** A composite of stators that together persist the composite state of a thing, each component of the

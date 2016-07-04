@@ -1,6 +1,5 @@
 package waymaker.spec; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
 
-import java.util.Arrays;
 import waymaker.gen.ThreadSafe;
 
 

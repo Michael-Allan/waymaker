@@ -49,7 +49,7 @@ import static java.util.logging.Level.WARNING;
         // else prior thread already terminated, nulling en passant imager.tImaging
         connection: try // fetch bitmapOriginal
         {
-            final HttpURLConnection con = Net.openHttpConnection( new URL( imageLoc )); // uses INTERNET
+            final HttpURLConnection con = Net.openHttpConnection( new URL( imageLoc )); // needs INTERNET
             assert con.getUseCaches();
             Net.connect( con );
             final int statusCode = con.getResponseCode();

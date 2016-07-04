@@ -10,7 +10,6 @@ import waymaker.gen.*;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
-import static android.content.Intent.ACTION_OPEN_DOCUMENT;
 import static android.content.Intent.ACTION_OPEN_DOCUMENT_TREE;
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
@@ -60,6 +59,18 @@ public final class RefreshDF extends android.app.DialogFragment // grep AutoRest
             }, destructor );
         }
 
+      // General refresh button, to refresh from all sources.
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        {
+            final Button button = new Button( wr );
+            y.addView( button );
+            button.setText( "From all sources" );
+            button.setOnClickListener( new View.OnClickListener()
+            {
+                public void onClick( View _src ) { wr().refreshFromAllSources(); }
+            });
+        }
+
       // Local refresh button, to refresh from user's local wayrepo.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final SharedPreferences preferences = WaykitUI.i().preferences();
@@ -78,18 +89,6 @@ public final class RefreshDF extends android.app.DialogFragment // grep AutoRest
                   // hint to user that refreshing from a non-existent wayrepo is pointless
                 public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
             }, destructor );
-        }
-
-      // General refresh button, to refresh from all sources.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        {
-            final Button button = new Button( wr );
-            y.addView( button );
-            button.setText( "From all sources" );
-            button.setOnClickListener( new View.OnClickListener()
-            {
-                public void onClick( View _src ) { wr().refreshFromAllSources(); }
-            });
         }
         /* * *
         = also allow trigger of refresh by impatience gesture on refreshable view itself
@@ -150,11 +149,13 @@ public final class RefreshDF extends android.app.DialogFragment // grep AutoRest
                         final Intent request;
                      // try
                      // {
-                            request = new Intent( /*[SAF]*/ACTION_OPEN_DOCUMENT_TREE ); // or:
+                            request = new Intent( /*[SAF], minSdkVersion 21*/ACTION_OPEN_DOCUMENT_TREE );
+
+                         // OR:
                          // request = new Intent( /*[SAF]*/ACTION_OPEN_DOCUMENT ); // simple doc TEST part 1/2
                          // request.addCategory( android.content.Intent.CATEGORY_OPENABLE );
                          // request.setType( "*/*" ); // setType or throws ActivityNotFoundException
-                         /// only to a) doc this request, and b) regression test it in external SMBProvider app
+                         /// only to a) doc this request type, and b) regression test it in external SMBProvider app
                      // }
                      // catch( final ActivityNotFoundException x ) { throw new RuntimeException( x ); }
                      //// but ActivityNotFoundException *is* a RuntimeException
@@ -221,7 +222,7 @@ public final class RefreshDF extends android.app.DialogFragment // grep AutoRest
             }
 
             final Uri uri = result.getData();
-            WaykitUI.i().wayrepoTreeLoc( uri ); // or:
+            WaykitUI.i().wayrepoTreeLoc( uri ); // OR:
          // System.out.println( "URI of selected document: " + uri ); // simple doc TEST part 2/2
         }
 

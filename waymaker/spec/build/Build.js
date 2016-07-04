@@ -368,7 +368,7 @@ if( !waymaker.spec.build.Build ) {
       *
       *     @return (java.nio.file.Path)
       */
-    our.rtJarTested = function() // named by the load guard at top
+    our.rtJarTested = function()
     {
         var jar = rtJar;
         if( !jar )

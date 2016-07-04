@@ -1,9 +1,9 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
 
 import android.content.*;
 import android.database.*;
 import android.net.Uri;
-import android.os.RemoteException;
+import android.os.*;
 import android.provider.DocumentsContract; // grep DocumentsContract-TS
 import waymaker.gen.*;
 
@@ -11,7 +11,6 @@ import static android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME;
 import static android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID;
 import static android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE;
 import static android.provider.DocumentsContract.Document.MIME_TYPE_DIR;
-import static java.util.logging.Level.INFO;
 
 
 /** A tool for reading from the user’s local wayrepo.
@@ -115,7 +114,11 @@ public final class WayrepoReader implements java.io.Closeable
    // - A u t o - C l o s e a b l e --------------------------------------------------------------------
 
 
-    public void close() { provider.release(); } // if not already released
+    public @SuppressWarnings("deprecation") void close()
+    {
+        if( Build.VERSION.SDK_INT >= 24 ) provider.close(); // if not already closed
+        else provider.release();
+    }
 
 
 
