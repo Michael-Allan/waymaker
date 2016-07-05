@@ -119,6 +119,9 @@ import static waymaker.top.android.ForestV.C_TOP_PEER;
         isActivated = false; // allow a subsequent activation
         if( forestV.downClimber.getHeight() < forestV.upClimber.getHeight() ) // then layout is overconstrained
         {
+            // Probable BUG.  Testing for deformation of downClimber assumes that content of forest view
+            // is bottom aligned.  It used to be, but now it's center aligned.  That means upClimber
+            // will probably deform too, making it an unreliable reference to compare against.
             throw new IllegalStateException( "Unsupported case" ); // support deferred
         }
 
