@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtdxhtml11.dtd">
 <html xmlns='http://www.w3.org/1999/xhtml' lang='en-CA' xml:lang='en-CA'>
-    <!-- Copyright 2015, Michael Allan.  Licence MIT-Waymaker. -->
+    <!-- Copyright 2015-216, Michael Allan.  Licence MIT-Waymaker. -->
     <head>
         <title>way</title>
         </head>
@@ -21,9 +21,9 @@
         (end) ultimate end
             ( poll name is always 'end'
             (end', norm', act') pollar choice given by waykit
-                - morally facilitates M2
         (←) end/means relation
-            - morally facilitates M1
+            - realizes moral form G
+            - facilitates right Gr and obediance to moral imperative Gi
         (norm) action norm
             - e.g. plan, law, theory, myth
         (transnorm) transnorm
