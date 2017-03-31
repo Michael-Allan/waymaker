@@ -1,4 +1,4 @@
-/** Build.js - Utilities for building Waymaker
+/** Build.js - General utilities for building Waymaker
   ************
   */
 if( !waymaker.spec.build.Build ) {
