@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 
 /** A pair of indeces to treat an array as a circular buffer.  Here an array of length 10, for example,

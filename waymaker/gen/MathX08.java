@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 
 /** A selection of {@linkplain Math Math} utilities that were added in Java 1.8, and are reproduced here

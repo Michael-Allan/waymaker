@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2016 Michael Allan.  Licence MIT.
 
 
 /** A belled variable that is constrained to a non-null value.  Attempting to set a null value will

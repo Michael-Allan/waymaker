@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2016 Michael Allan.  Licence MIT.
 
 
 /** A closeable that unregisters a callback, detaches from an external resource. or otherwise unwinds a

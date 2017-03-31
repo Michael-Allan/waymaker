@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 
 /** Utilities for working with {@linkplain Object objects}.

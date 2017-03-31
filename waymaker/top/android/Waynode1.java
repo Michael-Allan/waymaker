@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright © 2016 Michael Allan.  Licence MIT.
 
 import android.os.Parcel;
 import waymaker.gen.*;

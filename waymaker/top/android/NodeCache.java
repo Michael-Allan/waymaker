@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 
 /** A partial store of the nodes that contribute to a {@linkplain Forest pollar forest}.  Although it

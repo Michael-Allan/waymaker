@@ -133,4 +133,4 @@ load( Java.type('java.nio.file.Paths').get(__DIR__).toUri().resolve( 'Waymaker.j
 //      user wrapping his configuration script in a closure, but that would be less reliable.
 
 
-// Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+// Copyright © 2015 Michael Allan.  Licence MIT.

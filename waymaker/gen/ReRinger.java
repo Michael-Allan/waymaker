@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 import java.util.Set;
 import waymaker.gen.CopyOnResizeArraySet;

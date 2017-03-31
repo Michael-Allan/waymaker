@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2016 Michael Allan.  Licence MIT.
 
 
 /** A composite destructible.  Unlike destructibles in general, it is guaranteed idempotent; multiple

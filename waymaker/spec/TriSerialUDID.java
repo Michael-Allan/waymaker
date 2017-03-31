@@ -1,4 +1,4 @@
-package waymaker.spec; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.spec; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 
 /** A universally decisive, tri-serial identity tag.  Although it has only a single implementation in

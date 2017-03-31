@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright © 2016 Michael Allan.  Licence MIT.
 
 
 /** Wayscope zoom levels ordered from least to most.

@@ -1,4 +1,4 @@
-package waymaker.spec; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.spec; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 
 /** A universally decisive identity tag for a person.

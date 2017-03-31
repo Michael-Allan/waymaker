@@ -1,4 +1,4 @@
-package waymaker.top.android; // Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.top.android; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 import java.util.List;
 import waymaker.gen.ThreadSafe;

@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2010-2011, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2010 Michael Allan.  Licence MIT.
 
 import java.io.IOException;
 import java.net.*;

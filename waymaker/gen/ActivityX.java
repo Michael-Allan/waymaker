@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2016 Michael Allan.  Licence MIT.
 
 import android.app.Activity;
 import android.os.Bundle;

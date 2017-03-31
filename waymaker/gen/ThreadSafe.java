@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2005, Brian Goetz and Tim Peierls; 2006-2008, 2012, 2015, Michael Allan.  Released under the Creative Commons Attribution License (http://creativecommons.org/licenses/by/2.5).  Official home: http://www.jcip.net.  Any republication or derived work distributed in source code form must include this copyright and license notice.
+package waymaker.gen; // Copyright © 2005 Brian Goetz and Tim Peierls.  Copyright © 2006 Michael Allan.  Released under the Creative Commons Attribution License (http://creativecommons.org/licenses/by/2.5).  Official home: http://www.jcip.net.  Any republication or derived work distributed in source code form must include this copyright and license notice.
 
 import java.lang.annotation.*;
 

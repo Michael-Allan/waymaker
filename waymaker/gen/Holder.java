@@ -1,4 +1,4 @@
-package waymaker.gen; // Copyright 2006, 2012, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2006 Michael Allan.  Licence MIT.
 
 
 /** A universal container with a read accessor.

@@ -40,4 +40,4 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 }
 
 
-// Copyright 2015, Michael Allan.  Licence MIT-Waymaker.
+// Copyright © 2015 Michael Allan.  Licence MIT.

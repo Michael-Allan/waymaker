@@ -99,4 +99,4 @@
   * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.4.5' target='_top'>17.4.5</a>)
   * </p>
   */
-package waymaker.gen; // Copyright 2015-2016, Michael Allan.  Licence MIT-Waymaker.
+package waymaker.gen; // Copyright © 2015 Michael Allan.  Licence MIT.
