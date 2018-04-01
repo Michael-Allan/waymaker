@@ -229,7 +229,7 @@ public abstract class PrecountNode implements CountNode
     /** Finds voterSub.{@linkplain #unadjusted() unadjusted} if the voter list is sufficiently extended,
       * then replaces it with the given voterSub and reorders the list to accomodate any change of
       * {@linkplain #peerOrdinal() ordinal}.  Assumes that otherwise voterSub is a faithful copy of its
-      * unadjusted counterpart, such that no further changes are needed.
+      * unadjusted counterpart, such that no more changes are needed.
       *
       *     @throws NoSuchElementException if the list is complete and the unadjusted counterpart is
       *       absent from the list.
@@ -305,7 +305,7 @@ public abstract class PrecountNode implements CountNode
     /** Sets the waynode to reflect a change in the local wayrepo.
       *
       *     @throws AssertionError if assertions are enabled and the change would be redundant, _waynode
-      *       being equal to the current waynode.  The caller is expected to guard against such an
+      *       being equal to the current waynode.  The caller is expected to avoid such an
       *       inefficient call.
       *     @throws NullPointerException if _waynode is null.
       *     @throws UnsupportedOperationException if this node is the ground.
@@ -314,7 +314,7 @@ public abstract class PrecountNode implements CountNode
 
 
 
-   // - N o d e ----------------------------------------------------------------------------------------
+   // - C o u n t - N o d e ----------------------------------------------------------------------------
 
 
     public final VotingID id() { return unadjusted.id(); }
@@ -362,8 +362,8 @@ public abstract class PrecountNode implements CountNode
           *     @see RootwardCast#votedID()
           *
           *     @throws AssertionError if assertions are enabled and the vote change would be redundant,
-          *       votedID being the identity of the current vote.  The caller is expected to guard
-          *       against such an inefficient call.
+          *       votedID being the identity of the current vote.  The caller is expected to avoid
+          *       such an inefficient call.
           *     @throws UnsupportedOperationException if this node is the ground.
           */
         public abstract void rootwardInThis( VotingID votedID, Precounter precounter );

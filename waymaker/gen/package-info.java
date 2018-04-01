@@ -64,7 +64,7 @@
   * <h3 id='FreezeSync'>Thread synchronization by final freezing (FreezeSync)</h3>
   *
   * <p>“A thread that can only see a reference to an object after that object has been completely initialized
-  * is guaranteed to see the correctly initialized values for that object's final fields...
+  * is guaranteed to see the correctly initialized values for that object’s final fields …
   * [including] versions of any object or array referenced by those final fields
   * that are at least as up-to-date as the final fields are.”
   * (<a href='http://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.5' target='_top'>17.5</a>)
@@ -76,7 +76,7 @@
   * <p>In other words, given a fully constructed and properly referenced instance, a read from one of
   * its final fields <i>happens-after</i> all initialization of values accessible through that field.
   * The initial values of a composite member such as an array or collection, for example, are guaranteed
-  * visible to any reader who accesses it through a final field.</p>
+  * visible to any reader who accesses it (however indirectly) through a final field.</p>
   *
   * <h3 id='StartSync'>Thread synchronization by starting (StartSync)</h3>
   *

@@ -188,9 +188,9 @@ li
 
 /** - memberSummary --------------------
   */
-table.memberSummary code
+table.memberSummary code /* useless, defeat it */
 {
-    font-family: sans-serif; /* defeat pointless use of "code" */
+    font-family: sans-serif;
 }
 
 

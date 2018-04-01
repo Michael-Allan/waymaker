@@ -3,15 +3,15 @@ package waymaker.gen; // Copyright © 2016 Michael Allan.  Licence MIT.
 
 /** A joint runnable that asks permission for each run.
   */
-public abstract class GuardedJointRunnable extends JointRunnable
+public abstract class FencedJointRunnable extends JointRunnable
 {
 
 
-    /** Constructs a GuardedJointRunnable.
+    /** Constructs a FencedJointRunnable.
       *
       *     @see #threadToJoin()
       */
-    public @ThreadSafe GuardedJointRunnable( final Thread threadToJoin ) { super( threadToJoin ); }
+    public @ThreadSafe FencedJointRunnable( final Thread threadToJoin ) { super( threadToJoin ); }
 
 
 

@@ -218,7 +218,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
         // It will "only work with compiled XML files" such as resource files packaged by the aapt tool.
         // (posted to http://stackoverflow.com/a/35464667/2402790)
         //
-        // Further the compiled XML of a proper resource is probably more efficient at runtime.
+        // Moreover the compiled XML of a proper resource is probably more efficient at runtime.
 
         var sourceRoot = Paths.get( Waymaker.loc(), 'waymaker' );
         var sourceFile = Paths.get( fab.fileLoc() );
@@ -446,7 +446,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
 
 }() );
-    // still under this module's load guard at top
+    // still under this module's load fence at top
 }
 
 

@@ -492,7 +492,7 @@ if( !waymaker.spec.build.Build ) {
 
 
 }() );
-    // still under this module's load guard at top
+    // still under this module's load fence at top
 }
 
 

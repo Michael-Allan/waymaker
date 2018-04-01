@@ -244,7 +244,7 @@ public final class ForestCache implements Refreshable
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         final ArrayList<RefreshDemand> demands = new ArrayList<>();
         KittedPolyStatorSR.openToThread(); // (a) before snapOriginalState (b) now in r1 and later in r3
-        final boolean toStrip = !toClear; /* No point stripping if cache to be entirely cleared.  The
+        final boolean toStrip = !toClear; /* No use stripping if cache to be entirely cleared.  The
           only type of demand yet determinable is one that will later be converted to a precount demand
           if precounting is possible, or will otherwise default to a strip demand.  Therefore scope no
           demand here if stripping will not actually occur. */
@@ -530,8 +530,8 @@ public final class ForestCache implements Refreshable
         boolean replacedNodeCache = false;
         if( toClear ) // then apply results to all forests: cached AND precounted but yet uncached:
         {
-            assert stripDemands.size() == 0; /* no point to stripping (see toStrip further above),
-              therefore no point in demanding it */
+            assert stripDemands.size() == 0; /* no use in stripping (see toStrip farther above),
+              therefore no use in demanding it */
             final Collection<Forest> forests = forestMap.values();
             if( forests.size() > 0 )
             {
@@ -616,7 +616,7 @@ public final class ForestCache implements Refreshable
    // ==================================================================================================
 
 
-    private abstract class MainJoin extends GuardedJointRunnable
+    private abstract class MainJoin extends FencedJointRunnable
     {
 
         @ThreadSafe MainJoin( final Thread threadToJoin, final int serial )

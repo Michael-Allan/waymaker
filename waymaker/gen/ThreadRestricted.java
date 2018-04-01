@@ -134,7 +134,7 @@ import java.lang.annotation.*;
   *
   *     @see ThreadSafe
   */
-  @Documented @Retention(RetentionPolicy.SOURCE) // till further retention needed
+  @Documented @Retention(RetentionPolicy.SOURCE) // till more retention needed
   @Target({ ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.TYPE })
 public @interface ThreadRestricted
 {

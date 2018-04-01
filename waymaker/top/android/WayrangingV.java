@@ -43,7 +43,7 @@ import static waymaker.gen.RelativeLayoutJig.jigRelative;
 public @ThreadRestricted("app main") final class WayrangingV extends RelativeLayout
 {
     /* * *
-    - decorational cues (primary)
+    - ornamental cues (primary)
         - in overlap order from top down
             - end/means colours
                 - end/act waynode in WayV

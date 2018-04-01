@@ -93,7 +93,7 @@ if( !waymaker.Waymaker ) {
 
 
     /** Prints a message and aborts the script.  To also print the path and line number of
-      * the currently executing script file, instead just throw the message.
+      * the currently executing script file, instead simply throw the message.
       *
       *     @param message (String) The message to print.
       */
@@ -334,7 +334,7 @@ if( !waymaker.Waymaker ) {
     init();
 
 }() );
-    // still under this module's load guard at top
+    // still under this module's load fence at top
 }
 
 

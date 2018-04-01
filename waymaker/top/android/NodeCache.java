@@ -2,7 +2,7 @@ package waymaker.top.android; // Copyright © 2015 Michael Allan.  Licence MIT.
 
 
 /** A partial store of the nodes that contribute to a {@linkplain Forest pollar forest}.  Although it
-  * might initially comprise just the {@linkplain #ground() ground pseudo-node}, it can grow on demand
+  * might initially comprise a mere {@linkplain #ground() ground pseudo-node}, it can grow on demand
   * by {@linkplain ServerCount#enqueuePeersRequest(VotingID,PeersReceiver,int) requesting} further nodal
   * data from the count server.
   */
@@ -51,7 +51,7 @@ public interface NodeCache
       * as its ‘{@linkplain CountNode#voters() voters}’.  Their {@linkplain CountNode#rootwardInThis()
       * rootward casts} lead to this ground, which serves formally as the ultimate ‘root’ and
       * ‘candidate’.  Meanwhile the rootward cast of the ground itself is null.  This modeling
-      * simplifies the structure of the forest by reducing it to a single super-tree having the ground
+      * simplifies the forest structure by reducing it to a single super-tree having the ground
       * as its root, which in turn simplifies the algorithms for navigating that structure.
       */
     public CountNode ground();

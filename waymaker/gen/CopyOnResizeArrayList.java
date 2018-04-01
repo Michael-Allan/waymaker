@@ -44,7 +44,7 @@ public abstract class CopyOnResizeArrayList<E> implements List<E>, RandomAccess
    // - C o l l e c t i o n ----------------------------------------------------------------------------
 
 
-    /** {@inheritDoc} <p>This method just calls <code>{@linkplain #add(int,Object) add}(size, addendum)</code>
+    /** {@inheritDoc} <p>This method merely calls <code>{@linkplain #add(int,Object) add}(size, addendum)</code>
       * and returns true.</p>
       */
     public boolean add( final E addendum )
@@ -55,7 +55,7 @@ public abstract class CopyOnResizeArrayList<E> implements List<E>, RandomAccess
 
 
 
-    /** {@inheritDoc} <p>This method just calls and returns
+    /** {@inheritDoc} <p>This method merely calls and returns
       * <code>{@linkplain #addAll(int,Collection) addAll}(size, addenda)</code>.</p>
       */
     public final boolean addAll( final Collection<? extends E> addenda )
@@ -85,7 +85,7 @@ public abstract class CopyOnResizeArrayList<E> implements List<E>, RandomAccess
 
 
     /** {@inheritDoc}
-      * This method just calls <code>{@linkplain #listIterator(int) listIterator}(0)</code>.
+      * This method merely calls <code>{@linkplain #listIterator(int) listIterator}(0)</code>.
       */
     public final ListIterator<E> iterator() { return listIterator( 0 ); }
 
@@ -182,7 +182,7 @@ public abstract class CopyOnResizeArrayList<E> implements List<E>, RandomAccess
 
 
     /** {@inheritDoc}
-      * This method just calls <code>{@linkplain #listIterator(int) listIterator}(0)</code>.
+      * This method merely calls <code>{@linkplain #listIterator(int) listIterator}(0)</code>.
       */
     public final ListIterator<E> listIterator() { return listIterator( 0 ); }
 

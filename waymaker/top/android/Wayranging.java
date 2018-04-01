@@ -355,13 +355,13 @@ public final class Wayranging extends ActivityX implements Refreshable
     {
         assert wk.isMainThread();
         final ActivityResultReceiver receiver = startActivity_resultReceiver;
-        guard:
+        fence:
         {
             final String expected;
             if( receiver == null ) expected = "*none*";
             else
             {
-                if( requestCode == startActivity_requestCode ) break guard;
+                if( requestCode == startActivity_requestCode ) break fence;
 
                 expected = Integer.toString( startActivity_requestCode );
             }

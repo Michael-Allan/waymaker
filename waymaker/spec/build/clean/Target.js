@@ -65,7 +65,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
 
 }() );
-    // still under this module's load guard at top
+    // still under this module's load fence at top
 }
 
 

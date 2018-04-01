@@ -66,7 +66,7 @@ public final class PrecountNode1 extends PrecountNode
 
 
 
-   // - N o d e ----------------------------------------------------------------------------------------
+   // - C o u n t - N o d e ----------------------------------------------------------------------------
 
 
     public boolean isGround() { return false; }

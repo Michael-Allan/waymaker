@@ -12,10 +12,9 @@ public @ThreadSafe final class MapX
 
 
 
-    /** Calulates an <code>initialCapacity</code> for the construct “<code>{@linkplain
-      * HashMap#HashMap(int,float) HashMap}( initialCapacity, {@linkplain #HASH_LOAD_FACTOR
-      * HASH_LOAD_FACTOR} )</code>” that will suffice to allow the map to grow to
-      * <code>expectedMaximumSize</code> without a rehash.
+    /** Calulates an <code>initialCapacity</code> for the construction
+      * “<code>new HashMap( initialCapacity, HASH_LOAD_FACTOR )</code>”
+      * such that the map will grow to <code>expectedMaximumSize</code> without a rehash.
       */
     public static int hashCapacity( final int expectedMaximumSize )
     {
@@ -30,7 +29,7 @@ public @ThreadSafe final class MapX
 
     /** A generally good {@linkplain HashMap load factor} for a hash map: {@value}.
       */
-    public static final float HASH_LOAD_FACTOR = 0.75f; // the default for HashMap, last I looked
+    public static final float HASH_LOAD_FACTOR = 0.75f; // the traditional default for HashMap
 
 
 }

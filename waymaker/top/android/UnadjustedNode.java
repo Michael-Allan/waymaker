@@ -51,7 +51,7 @@ public abstract class UnadjustedNode implements CountNode
 
 
 
-   // - N o d e ----------------------------------------------------------------------------------------
+   // - C o u n t - N o d e ----------------------------------------------------------------------------
 
 
     public final RootwardCast<? extends CountNode> rootwardInPrecount()

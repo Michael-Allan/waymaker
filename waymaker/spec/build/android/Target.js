@@ -56,7 +56,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
     /** Builds this target.
       */
-    our.build = function() // based on [H], q.v. for further comments
+    our.build = function() // based on [H], q.v. for more comments
     {
         var tmpDir = Paths.get( Android.tmpLoc() );
         var outS = System.out;
@@ -506,7 +506,7 @@ load( waymaker.Waymaker.ulocTo( 'waymaker/spec/build/Build.js' ));
 
 
 }() );
-    // still under this module's load guard at top
+    // still under this module's load fence at top
 }
 
 

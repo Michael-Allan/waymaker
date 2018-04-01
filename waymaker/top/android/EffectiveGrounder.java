@@ -5,10 +5,10 @@ import waymaker.gen.*;
 
 /** A searcher for an effective ground between two candidate nodes.  An effective ground is a
   * node common to the root paths of both candidates, inclusive of those candidates.  It may
-  * therefore be either of the candidate nodes, or the node of a common candidate further
+  * therefore be either of the candidate nodes, or the node of a common candidate farther
   * downstream, or the actual ground.  Effective grounds have the property of flow invariance during
   * vote shifts between the two candidates; a shift from one candidate to the other is guaranteed to
-  * leave the vote flow at the effective ground unchanged.  Further all candidates of the effective
+  * leave the vote flow at the effective ground unchanged.  More all candidates of the effective
   * ground are themselves effective grounds, so the root path as a whole is flow invariant.
   *
   * <p>This guarantee of flow invariance rests on the assumption that the would-be voter is part of no

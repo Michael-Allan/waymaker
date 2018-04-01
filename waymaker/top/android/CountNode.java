@@ -37,7 +37,7 @@ public interface CountNode
 
 
 
-   // - N o d e ----------------------------------------------------------------------------------------
+   // - C o u n t - N o d e ----------------------------------------------------------------------------
 
 
     /** The identity of the actor who holds the position behind this count node, or null if this is the

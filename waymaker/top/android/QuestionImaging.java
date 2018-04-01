@@ -130,7 +130,7 @@ import static java.util.logging.Level.WARNING;
 
       // Set scaled image as background.
       // - - - - - - - - - - - - - - - - -
-        ApplicationX.i().handler().post( new GuardedJointRunnable( /*threadToJoin*/tCurrent )
+        ApplicationX.i().handler().post( new FencedJointRunnable( /*threadToJoin*/tCurrent )
         {
             // joining back into "app main" thread
             public boolean toProceed()

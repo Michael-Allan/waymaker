@@ -86,7 +86,7 @@ public final class RefreshDF extends android.app.DialogFragment // grep AutoRest
             {
                 { sync(); } // init
                 private void sync() { button.setEnabled( WaykitUI.i().wayrepoTreeLoc() != null ); }
-                  // hint to user that refreshing from a non-existent wayrepo is pointless
+                  // hint to user that refreshing from a non-existent wayrepo is useless
                 public void onSharedPreferenceChanged( SharedPreferences _p, String _key ) { sync(); }
             }, destructor );
         }

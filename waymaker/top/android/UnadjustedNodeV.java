@@ -85,7 +85,7 @@ public abstract class UnadjustedNodeV extends UnadjustedNode
 
 
 
-   // - N o d e ----------------------------------------------------------------------------------------
+   // - C o u n t - N o d e ----------------------------------------------------------------------------
 
 
     public final VotingID id() { return id; }

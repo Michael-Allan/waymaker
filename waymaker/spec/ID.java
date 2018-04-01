@@ -200,7 +200,7 @@ public @ThreadSafe class ID implements TriSerialID
  //
  //         final Class<?> iClass = i.getClass();
  //         final Class<?> jClass = j.getClass();
- //         if( iClass != jClass ) // != for speed; may still be 'equal' in edge cases, so test further:
+ //         if( iClass != jClass ) // != for speed; may still be 'equal' in edge cases, so test more:
  //         {
  //             final int result = iClass.getName().compareTo( jClass.getName() );
  //             if( result != 0 ) return result; // so compatible with equals(), which also tests class

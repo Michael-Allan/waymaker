@@ -305,7 +305,7 @@ public final @Warning("no hold") class Precounter implements UnadjustedNodeV.RKi
                     if( votedID.equals( actorID ))
                     {
                         throw new CountFailure( "Self voting " + actorID + " in file " + docID );
-                          // demand correction of this senseless vote
+                          // demand correction of this useless vote
                     }
                 }
                 // keep going, only final vote applies
